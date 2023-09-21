@@ -10,6 +10,8 @@ type HTTP struct {
 	Swagger bool
 
 	Option ServerOption
+
+	Accounts []Account
 }
 
 // H2 if tls return true
@@ -27,4 +29,9 @@ type ServerOption struct {
 	InitialWindowSize, InitialConnWindowSize int32
 	MaxRecvMsgSize, MaxSendMsgSize           int
 	MaxConcurrentStreams                     uint32
+}
+
+type Account struct {
+	Name     string
+	Password string
 }

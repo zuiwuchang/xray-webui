@@ -110,24 +110,6 @@ esac
 
 function build_static(){
     cd "$Dir"
-    local args=(
-        cp 
-        view/dist/view/3rdpartylicenses.txt
-        static/public/3rdpartylicenses.txt
-    )
-    local exec="${args[@]}"
-    echo $exec
-    eval "$exec"
-
-    args=(
-        cp 
-        LICENSE
-        static/public/LICENSE.txt
-    )
-    exec="${args[@]}"
-    echo $exec
-    eval "$exec"
-
 
     local dst="static/view"
     if [ -d "$dst" ];then

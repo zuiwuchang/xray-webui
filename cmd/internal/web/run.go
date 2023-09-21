@@ -31,8 +31,16 @@ func Run(cnf *configure.HTTP, debug bool) {
 		`addr`, cnf.Addr,
 		`h2`, h2,
 	)
+	// basic auth
+	var accounts map[string]string
+	if len(cnf.Accounts) != 0 {
+		accounts = make(map[string]string)
+		for _, item := range cnf.Accounts {
+			accounts[item.Name] = item.Password
+		}
+	}
 	// serve
-	s := newServer(l, cnf.Swagger, debug, &cnf.Option)
+	s := newServer(l, cnf.Swagger, debug, &cnf.Option, accounts)
 	if h2 {
 		e = s.ServeTLS(cnf.CertFile, cnf.KeyFile)
 	} else {

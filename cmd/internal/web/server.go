@@ -26,7 +26,7 @@ type Server struct {
 	mux *gin.Engine
 }
 
-func newServer(l net.Listener, swagger, debug bool, cnf *configure.ServerOption) (s *Server) {
+func newServer(l net.Listener, swagger, debug bool, cnf *configure.ServerOption, accounts map[string]string) (s *Server) {
 	pipe := ListenPipe()
 	clientConn, e := grpc.Dial(`pipe`,
 		grpc.WithTransportCredentials(
@@ -46,6 +46,9 @@ func newServer(l net.Listener, swagger, debug bool, cnf *configure.ServerOption)
 	gateway := newGateway()
 	mux := gin.Default()
 	mux.RedirectTrailingSlash = false
+	if len(accounts) != 0 {
+		mux.RouterGroup.Use(gin.BasicAuth(accounts))
+	}
 	register.HTTP(clientConn, mux, gateway, swagger)
 
 	if cnf.MaxConcurrentStreams < 1 {

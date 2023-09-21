@@ -2,7 +2,6 @@ package web
 
 import (
 	"context"
-	"time"
 
 	"github.com/zuiwuchang/xray_webui/configure"
 	"github.com/zuiwuchang/xray_webui/m/register"
@@ -25,8 +24,8 @@ func newGRPC(cnf *configure.ServerOption, gateway *runtime.ServeMux, cc *grpc.Cl
 		grpc.InitialWindowSize(cnf.InitialWindowSize),
 		grpc.InitialConnWindowSize(cnf.InitialConnWindowSize),
 
-		grpc.MaxConcurrentStreams(cnf.MaxConcurrentStreams),
-		grpc.ConnectionTimeout(time.Second * 10),
+		// grpc.MaxConcurrentStreams(cnf.MaxConcurrentStreams),
+		// grpc.ConnectionTimeout(time.Second * 10),
 		// grpc.KeepaliveParams(cnf.Keepalive),
 	}
 	if cnf.MaxRecvMsgSize > 0 {
