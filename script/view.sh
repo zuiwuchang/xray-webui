@@ -15,14 +15,12 @@ function help(){
     echo "  $Command [flags]"
     echo
     echo "Flags:"
-    echo "  -i, --i18n          ng extract-i18n [en en-US zh-Hant zh-Hans]"
     echo "  -s, --static        build static"
     echo "  -h, --help          help for $Command"
 }
 
 ARGS=`getopt -o hi:s --long help,i18n:,static -n "$Command" -- "$@"`
 eval set -- "${ARGS}"
-i18n="none"
 static=0
 while true
 do
@@ -30,10 +28,6 @@ do
         -h|--help)
             help
             exit 0
-        ;;
-        -i|--i18n)
-            i18n="$2"
-            shift 2
         ;;
         -s|--static)
             static=1
@@ -50,63 +44,6 @@ do
         ;;
     esac
 done
-
-
-function build_en(){
-    cd "$Dir/view"
-    local args=(
-        ng extract-i18n
-    )
-
-    local exec="${args[@]}"
-    echo $exec
-    eval "$exec"
-}
-function build_lang(){
-    cd "$Dir/view"
-    local args=(
-        ng-xi18n update -s messages.xlf -l "$1"
-    )
-
-    local exec="${args[@]}"
-    echo $exec
-    eval "$exec"
-}
-function build_hans(){
-    cd "$Dir/view"
-    local args=(
-        opencc -i src/locale/zh-Hant.xlf -o src/locale/zh-Hans.xlf -c t2s.json
-    )
-
-    local exec="${args[@]}"
-    echo $exec
-    eval "$exec"
-}
-case "$i18n" in
-    none)
-    ;;
-    en)
-        build_en
-        exit $?
-    ;;
-    en-US)
-        build_lang en-US
-        exit $?
-    ;;
-    zh-Hant)
-        build_lang zh-Hant
-        exit $?
-    ;;
-    zh-Hans)
-        build_hans
-        exit $?
-    ;;
-    *)
-        echo Error: unknown i18n "$i18n" for "$Command"
-        echo "Run '$Command --help' for usage."
-        exit 1
-    ;;
-esac
 
 function build_static(){
     cd "$Dir"
