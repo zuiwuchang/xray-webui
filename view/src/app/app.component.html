@@ -1,1 +1,91 @@
-<router-outlet></router-outlet>
+<!-- 設置頁面主題 -->
+<link rel="stylesheet" [href]="theme">
+
+<ng-container *ngIf="ready;then readyView;else loadView"></ng-container>
+
+<ng-template #loadView>
+    <div class="loading">
+        <p-progressSpinner styleClass="w-8rem h-8rem" strokeWidth="8" fill="var(--surface-ground)"
+            animationDuration=".5s"> </p-progressSpinner>
+    </div>
+
+</ng-template>
+
+<ng-template #readyView>
+    <!-- 保持頂部工具欄始終在屏幕最上方 -->
+    <nav class="sticky top-0 z-5">
+        <!-- 工具欄 -->
+        <p-toolbar>
+            <!-- p-toolbar-group-start 指定工具欄開始位置 -->
+            <div class="p-toolbar-group-start gap-2">
+
+                <a routerLink="/">
+                    <p-button icon="pi pi-home" tooltipPosition="bottom" pTooltip="{{i18n.home|translate}}"></p-button>
+                </a>
+            </div>
+
+            <!-- p-toolbar-group-end 指定工具欄結束位置 -->
+            <div class="p-toolbar-group-end gap-2">
+                <p-button icon="pi pi-cog" tooltipPosition="bottom" pTooltip="{{i18n.theme|translate}}"
+                    (onClick)="toggleSidebar()"></p-button>
+                <!-- pi-language -->
+
+                <p-button icon="pi pi-language" tooltipPosition="bottom" pTooltip="{{i18n.language|translate}}"
+                    (onClick)="menu.toggle($event)">
+                </p-button>
+                <a routerLink="/about">
+                    <p-button icon="pi pi-info" tooltipPosition="bottom" pTooltip="{{i18n.about|translate}}"></p-button>
+                </a>
+            </div>
+
+        </p-toolbar>
+    </nav>
+    <p-menu #menu [model]="langs" [popup]="true"></p-menu>
+
+    <!-- 頁面正文 使用 margin-top 移動到工具欄下方 -->
+    <div class="sticky top-0">
+        <main>
+            <router-outlet></router-outlet>
+        </main>
+
+
+        <!-- 在最下方顯示固定的頁腳內容 -->
+        <footer class="flex flex-row align-items-center pt-2">
+            <div class="flex flex-auto">
+                <span>
+                    Written by <a href="https://book.king011.com" target="_blank">King</a></span>
+            </div>
+            <div class="flex">
+                <a href="https://github.com/zuiwuchang/xray-webui" target="_blank"
+                    pTooltip="{{i18n.sourcecode|translate}}">
+                    <button pButton type="button" icon="pi pi-github"></button>
+                </a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- 主題菜單 -->
+    <ng-container *ngIf="initSidebar">
+        <p-sidebar [(visible)]="themeSidebar" position="right" [style]="{width:'550px'}">
+            <div *ngFor="let theme of themes">
+                <h4>{{theme.title}}</h4>
+                <div class="grid">
+                    <div *ngFor="let val of theme.values" class="col-3 flex flex-column gap-2">
+                        <ng-container *ngIf="val.src">
+                            <div class="relative">
+                                <p-button class="flex justify-content-center" styleClass="p-button-link"
+                                    (onClick)="onClickTheme(val.value)" [ariaLabel]="val.value">
+                                    <img [src]="val.src" style="width: 58px;">
+                                </p-button>
+
+                                <i class="text-primary text-xl pi pi-check-circle absolute top-0 right-0"
+                                    *ngIf="isTheme(val.value)"></i>
+                            </div>
+                            <div class="flex justify-content-center" style="font-size: 14px;">{{val.label}}</div>
+                        </ng-container>
+                    </div>
+                </div>
+            </div>
+        </p-sidebar>
+    </ng-container>
+</ng-template>

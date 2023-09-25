@@ -1,0 +1,13 @@
+{
+    "editor.formatOnSave": true,
+    "files.exclude": {
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.factorypath": true,
+        "**/node_modules": true,
+    },
+    "files.associations": {
+        "*.json": "jsonc"
+    },
+}

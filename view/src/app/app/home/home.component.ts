@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { i18n } from 'src/app/i18n';
+
 
 @Component({
   selector: 'app-home',
@@ -7,5 +7,5 @@ import { i18n } from 'src/app/i18n';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent {
-  i18n = i18n
+
 }

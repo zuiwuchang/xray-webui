@@ -1,4 +1,5 @@
 import { NgModule } from '@angular/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
 
 // import ngx-translate and the http loader
@@ -7,20 +8,32 @@ import { TranslateHttpLoader } from '@ngx-translate/http-loader';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { LocationStrategy } from '@angular/common';
 
+// primeng
+import { ToolbarModule } from 'primeng/toolbar';
+import { ButtonModule } from 'primeng/button';
+import { TooltipModule } from 'primeng/tooltip';
+import { SidebarModule } from 'primeng/sidebar';
+import { MessagesModule } from 'primeng/messages';
+import { MessageModule } from 'primeng/message';
+import { MenuModule } from 'primeng/menu';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
+
+import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HomeComponent } from './app/home/home.component';
+import { NotfoundComponent } from './app/notfound/notfound.component';
 
 import defaultLanguage from '../assets/i18n/zh-Hant.json';
 import { BehaviorSubject } from 'rxjs';
-class MyTranslateLoader extends TranslateHttpLoader {
-  override getTranslation(lang: string) {
-    if (lang == "default") {
-      return new BehaviorSubject<Object>(defaultLanguage)
-    }
-    return super.getTranslation(lang)
-  }
-}
+// class MyTranslateLoader extends TranslateHttpLoader {
+//   override getTranslation(lang: string) {
+//     if (lang == "default") {
+//       return new BehaviorSubject<Object>(defaultLanguage)
+//     }
+//     return super.getTranslation(lang)
+//   }
+// }
 // 如果要支持 AOT 需要定義一個函數，而不能使用 內聯的匿名函數
 export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationStrategy): TranslateHttpLoader {
   let url = locationStrategy.getBaseHref()
@@ -29,27 +42,32 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
   } else {
     url += '/assets/i18n/'
   }
-  return new MyTranslateLoader(http, url, '.json')
+  return new TranslateHttpLoader(http, url, '.json')
 }
 
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent
+    HomeComponent,
+    NotfoundComponent
   ],
   imports: [
-    BrowserModule,
+    BrowserModule, BrowserAnimationsModule,
     // ngx-translate and the loader module
     HttpClientModule,
     TranslateModule.forRoot({
-      defaultLanguage: "default",// 指定默認語言
+      // defaultLanguage: "default",// 指定默認語言
       loader: {
         provide: TranslateLoader,
         useFactory: HttpLoaderFactory, // 使用 http 加載語言包
         deps: [HttpClient, LocationStrategy],
       },
     }),
-    AppRoutingModule
+
+    ToolbarModule, ButtonModule, TooltipModule, SidebarModule,
+    MessagesModule, MessageModule, MenuModule, ProgressSpinnerModule,
+
+    RouterModule, AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]

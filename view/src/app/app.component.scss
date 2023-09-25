@@ -1,0 +1,19 @@
+.sticky {
+    // 設置一個邊距，用於防止頁面滾動條出現後滾動條遮擋了頁面右邊內容
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+img {
+    transition-duration: 100ms;
+    transition-timing-function: linear;
+}
+
+img:hover {
+    transform: scale(1.1);
+}
+
+.loading {
+    text-align: center;
+    margin-top: 8rem;
+}

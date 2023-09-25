@@ -1,4 +1,8 @@
 {
-	"home": "home",
-	"start": "start"
+	"H": "Home",
+	"NF": "Not found page: ",
+	"SC": "Source Code",
+	"L": "Language",
+	"T": "Theme",
+	"A": "About"
 }

@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { environment } from 'src/environments/environment';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { getItem, setItem } from 'src/internal/local-storage';
 
 export interface Lang {
   id: string
@@ -10,7 +11,14 @@ export interface Lang {
   providedIn: 'root'
 })
 export class LangService {
-  readonly defaultLang: string
+  private ready_ = new BehaviorSubject<boolean>(false)
+  get ready(): Observable<boolean> {
+    return this.ready_
+  }
+  private lang_: string
+  get lang() {
+    return this.lang_
+  }
   readonly langs: Array<Lang> = [
     {
       id: 'zh-Hant',
@@ -26,7 +34,18 @@ export class LangService {
     },
   ]
   constructor(private translateService: TranslateService) {
-    let lang = translateService.getBrowserCultureLang()?.toLowerCase() ?? 'en'
+    let lang = getItem('lang')
+    if (lang) {
+      for (const node of this.langs) {
+        if (node.id == lang) {
+          this.lang_ = lang
+          this._use(lang)
+          return
+        }
+      }
+    }
+
+    lang = translateService.getBrowserCultureLang()?.toLowerCase() ?? 'en'
     if (lang == 'zh') {
       lang = 'zh-Hant'
     } else if (lang.startsWith('zh-')) {
@@ -38,13 +57,27 @@ export class LangService {
     } else {
       lang = 'en'
     }
-    this.defaultLang = lang
+    this.lang_ = lang
+    this._use(lang)
   }
-  start() {
-    if (!environment.production) {
-      return
+  private _use(lang: string) {
+    this.translateService.use(lang).subscribe((v) => {
+      this.ready_.next(true)
+    })
+  }
+  use(lang: string): boolean {
+    if (lang == this.lang_) {
+      return false
     }
-    console.log('defaultLang', this.defaultLang)
-    this.translateService.use(this.defaultLang)
+
+    for (const node of this.langs) {
+      if (node.id == lang) {
+        this.lang_ = node.id
+        this.translateService.use(lang)
+        setItem('lang', lang)
+        return true
+      }
+    }
+    return false
   }
 }

@@ -1,10 +1,26 @@
 export const i18n = {
 	/**
-	* 首頁
+	* 主頁
 	*/
-	home: "home",
+	home: "H",
 	/**
-	* 開始
+	* 頁面未找到：
 	*/
-	start: "start",
+	notfound: "NF",
+	/**
+	* 源碼
+	*/
+	sourcecode: "SC",
+	/**
+	* 語言
+	*/
+	language: "L",
+	/**
+	* 主題
+	*/
+	theme: "T",
+	/**
+	* 關於
+	*/
+	about: "A",
 }
