@@ -6,6 +6,11 @@ option go_package = "github.com/zuiwuchang/xray_webui/protocol/system";
 import "google/api/annotations.proto";
 
 service System {
+    rpc Title (TitleRequest) returns (TitleResponse){
+        option (google.api.http) = {
+            get: "/api/v1/system/title"
+        };
+    }
     // return version info
     rpc Version (VersionRequest) returns (VersionResponse){
         option (google.api.http) = {
@@ -18,6 +23,11 @@ service System {
             get: "/api/v1/system/start_at"
         };
     }
+}
+message TitleRequest{
+}
+message TitleResponse{
+    string result = 1;
 }
 message VersionRequest{
 }

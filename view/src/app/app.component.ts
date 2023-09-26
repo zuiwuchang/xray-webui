@@ -2,10 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { LangService } from './core/lang.service';
 import { MenuItem, PrimeNGConfig } from 'primeng/api';
 import { SettingsService, Themes } from './core/settings.service';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, Title } from '@angular/platform-browser';
 import { filter, first } from 'rxjs';
 import { Delay } from 'src/internal/ui';
 import { i18n } from 'src/app/i18n';
+import { TranslateService } from '@ngx-translate/core';
+import { HttpClient } from '@angular/common/http';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -13,14 +15,37 @@ import { i18n } from 'src/app/i18n';
 })
 export class AppComponent implements OnInit {
   constructor(
+    translateService: TranslateService,
     private readonly langService: LangService,
     private readonly primengConfig: PrimeNGConfig,
     private readonly settingsService: SettingsService,
-    private readonly sanitizer: DomSanitizer,) {
+    private readonly sanitizer: DomSanitizer,
+    private readonly httpClient: HttpClient,
+    private readonly title: Title,
+  ) {
 
     this.theme = this.sanitizer.bypassSecurityTrustResourceUrl(`assets/themes/${settingsService.theme.value}/theme.css`)
 
     this._updateLangs(langService)
+    translateService.onLangChange.subscribe(() => {
+      this.apps = [
+        {
+          label: translateService.instant(i18n.menuSettings.general),
+          icon: 'pi pi-wrench',
+          routerLink: ['/settings/general'],
+        },
+        {
+          label: translateService.instant(i18n.menuSettings.strategy),
+          icon: 'pi pi-tags',
+          routerLink: ['/settings/strategy'],
+        },
+        {
+          label: translateService.instant(i18n.menuSettings.firewall),
+          icon: 'pi pi-globe',
+          routerLink: ['/settings/firewall'],
+        },
+      ]
+    })
   }
   i18n = i18n
   ready = false
@@ -35,8 +60,20 @@ export class AppComponent implements OnInit {
         this.ready = true
       })
     })
+
+    this.httpClient.get<{ result: string }>('/api/v1/system/title').subscribe({
+      next: (resp) => {
+        if (typeof resp.result === "string" && resp.result != '') {
+          this.title.setTitle(resp.result)
+        }
+      },
+      error: (e) => {
+        console.warn(e)
+      },
+    })
   }
   langs: Array<MenuItem> = []
+  apps: Array<MenuItem> = []
   private _updateLangs(langService: LangService) {
     this.langs = langService.langs.map((lang) => {
       return {

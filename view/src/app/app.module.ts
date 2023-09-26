@@ -17,15 +17,18 @@ import { MessagesModule } from 'primeng/messages';
 import { MessageModule } from 'primeng/message';
 import { MenuModule } from 'primeng/menu';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { AccordionModule } from 'primeng/accordion';
 
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
+
 import { AppComponent } from './app.component';
 import { HomeComponent } from './app/home/home.component';
 import { NotfoundComponent } from './app/notfound/notfound.component';
+import { AboutComponent } from './app/about/about.component';
 
-import defaultLanguage from '../assets/i18n/zh-Hant.json';
-import { BehaviorSubject } from 'rxjs';
+// import defaultLanguage from '../assets/i18n/zh-Hant.json';
+// import { BehaviorSubject } from 'rxjs';
 // class MyTranslateLoader extends TranslateHttpLoader {
 //   override getTranslation(lang: string) {
 //     if (lang == "default") {
@@ -34,6 +37,7 @@ import { BehaviorSubject } from 'rxjs';
 //     return super.getTranslation(lang)
 //   }
 // }
+
 // 如果要支持 AOT 需要定義一個函數，而不能使用 內聯的匿名函數
 export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationStrategy): TranslateHttpLoader {
   let url = locationStrategy.getBaseHref()
@@ -49,7 +53,8 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
   declarations: [
     AppComponent,
     HomeComponent,
-    NotfoundComponent
+    NotfoundComponent,
+    AboutComponent
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule,
@@ -66,6 +71,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
 
     ToolbarModule, ButtonModule, TooltipModule, SidebarModule,
     MessagesModule, MessageModule, MenuModule, ProgressSpinnerModule,
+    AccordionModule,
 
     RouterModule, AppRoutingModule
   ],

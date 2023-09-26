@@ -15,6 +15,8 @@ func Default() *Configure {
 }
 
 type Configure struct {
+	Title  string
+	Script string
 	HTTP   HTTP
 	Logger log.Options
 }

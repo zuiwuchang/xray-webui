@@ -2,15 +2,37 @@ package system
 
 import (
 	"context"
+	"time"
+
 	"github.com/zuiwuchang/xray_webui/m/helper"
 	grpc_system "github.com/zuiwuchang/xray_webui/protocol/system"
 	"github.com/zuiwuchang/xray_webui/version"
-	"time"
 )
 
 type server struct {
 	grpc_system.UnimplementedSystemServer
 	helper.Helper
+}
+
+var (
+	emptyTitleResponse grpc_system.TitleResponse
+	titleResponse      grpc_system.TitleResponse
+)
+
+func (s server) Title(ctx context.Context, req *grpc_system.TitleRequest) (resp *grpc_system.TitleResponse, e error) {
+	s.SetHTTPCacheMaxAge(ctx, 60)
+	e = s.ServeMessage(ctx,
+		time.Unix(startAtResponse.Result, 0),
+		func(nobody bool) error {
+			if nobody {
+				resp = &emptyTitleResponse
+			} else {
+				resp = &titleResponse
+			}
+			return nil
+		},
+	)
+	return
 }
 
 var (

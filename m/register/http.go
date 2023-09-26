@@ -30,6 +30,9 @@ func HTTP(cc *grpc.ClientConn, engine *gin.Engine, gateway *runtime.ServeMux, sw
 	}, func(c *gin.Context) {
 		p := c.Request.URL.Path
 		if strings.HasPrefix(p, `/api/`) {
+			if c.Request.Method == `GET` || c.Request.Method == `HEAD` {
+				c.Request.Header.Set(`Method`, c.Request.Method)
+			}
 			gateway.ServeHTTP(c.Writer, c.Request)
 		} else {
 			readerFilesystem(c, static.View(), p, true)

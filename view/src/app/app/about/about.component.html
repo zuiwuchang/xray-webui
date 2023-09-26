@@ -1,0 +1,25 @@
+<p>
+    <p-accordion [activeIndex]="0">
+        <p-accordionTab header="{{i18n.about|translate}}">
+            <p>{{i18n.aboutText|translate}}</p>
+            <p>{{i18n.aboutText1|translate}}</p>
+
+            <ul>
+                <li> angular {{angular}}</li>
+                <ng-container *ngIf="version">
+                    <li> {{version.platform}}</li>
+                    <li> {{version.version}}</li>
+                </ng-container>
+                <ng-container *ngIf="started">
+                    <li>start at {{startat}}, started for {{started}}</li>
+                </ng-container>
+            </ul>
+        </p-accordionTab>
+        <p-accordionTab header="LICENSE">
+            <pre>{{LICENSE}}</pre>
+        </p-accordionTab>
+        <p-accordionTab header="3rdpartylicenses.txt">
+            <pre>{{rdpartylicenses}}</pre>
+        </p-accordionTab>
+    </p-accordion>
+</p>
