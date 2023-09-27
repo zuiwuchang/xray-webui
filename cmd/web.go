@@ -9,6 +9,7 @@ import (
 
 	"github.com/zuiwuchang/xray_webui/cmd/internal/web"
 	"github.com/zuiwuchang/xray_webui/configure"
+	"github.com/zuiwuchang/xray_webui/db/manipulator"
 	"github.com/zuiwuchang/xray_webui/js"
 	"github.com/zuiwuchang/xray_webui/log"
 	"github.com/zuiwuchang/xray_webui/utils"
@@ -73,6 +74,13 @@ func init() {
 			system.Format(basePath)
 
 			// 初始化數據庫
+			e = manipulator.Init(system.DB)
+			if e != nil {
+				slog.Error(`init db fail`,
+					log.Error, e,
+				)
+				os.Exit(1)
+			}
 
 			// 初始化腳本
 			runtime, e := js.New(system.Script)
