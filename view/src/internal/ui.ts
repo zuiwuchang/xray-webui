@@ -11,6 +11,12 @@ export class Delay {
     static after(ms: number): Delay {
         return new Delay(Date.now() + ms)
     }
+    /**
+     * 創建一個默認的延遲器
+     */
+    static default(): Delay {
+        return new Delay(Date.now() + 500)
+    }
     constructor(readonly deadline: number) { }
     /**
      * 確保時間到達 deadline 或 deadline 之後調用函數 f 

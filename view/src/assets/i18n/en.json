@@ -12,6 +12,7 @@
 	"ms": {
 		"g": "General",
 		"s": "Strategy",
-		"f": "firewall"
-	}
+		"f": "Firewall"
+	},
+	"R": "Refresh"
 }

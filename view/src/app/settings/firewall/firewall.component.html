@@ -1,1 +1,29 @@
-<p>firewall works!</p>
+<p [ngSwitch]="state">
+    <ng-template ngSwitchCase="run">
+        <p-card header="{{i18n.menuSettings.firewall | translate}}">
+            <p-progressBar mode="indeterminate" [style]="{ height: '6px' }"></p-progressBar>
+        </p-card>
+    </ng-template>
+    <ng-template ngSwitchCase="error">
+        <p-card header="{{i18n.menuSettings.firewall | translate}}">
+            <p-messages severity="error">
+                <ng-template pTemplate>
+                    <div class="ml-2">
+                        <pre class="wrap-pre">{{error}}</pre>
+                    </div>
+                </ng-template>
+            </p-messages>
+            <ng-template pTemplate="footer">
+                <p-button label="{{i18n.refresh|translate}}" (onClick)="onClickRefresh()"></p-button>
+            </ng-template>
+        </p-card>
+    </ng-template>
+    <ng-template ngSwitchCase="none">
+        <p-card header="{{i18n.menuSettings.firewall | translate}}">
+            <pre class="wrap-pre">{{message}}</pre>
+            <ng-template pTemplate="footer">
+                <p-button label="{{i18n.refresh|translate}}" (onClick)="onClickRefresh()"></p-button>
+            </ng-template>
+        </p-card>
+    </ng-template>
+</p>

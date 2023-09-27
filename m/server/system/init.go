@@ -17,7 +17,7 @@ type Module int
 func (Module) RegisterGRPC(srv *grpc.Server) {
 	grpc_system.RegisterSystemServer(srv, server{})
 
-	title := strings.TrimSpace(configure.Default().Title)
+	title := strings.TrimSpace(configure.Default().System.Title)
 	if title != `` {
 		titleResponse.Result = title
 	}

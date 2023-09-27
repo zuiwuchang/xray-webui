@@ -51,7 +51,7 @@ export class AppComponent implements OnInit {
   ready = false
   ngOnInit(): void {
     this.primengConfig.ripple = true
-    const dely = Delay.after(500)
+    const dely = Delay.default()
     this.langService.ready.pipe(
       filter((v) => { return v }),
       first(),

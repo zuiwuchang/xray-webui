@@ -40,7 +40,7 @@ func init() {
 		`version`,
 		`v`,
 		false,
-		`show version`,
+		`display version`,
 	)
 }
 

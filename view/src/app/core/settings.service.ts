@@ -22,7 +22,7 @@ export class SettingsString {
 export class SettingsService {
   theme = new SettingsString(
     "theme",
-    "bootstrap4-dark-purple", // 默認主題
+    "md-dark-deeppurple", // 默認主題
   )
 }
 /**

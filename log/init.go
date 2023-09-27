@@ -28,6 +28,7 @@ func Init(basePath string, conf *Options) {
 				Compress:   conf.Compress,
 			},
 		)
+		os.MkdirAll(filepath.Dir(filename), 0775)
 	} else {
 		w = os.Stdout
 	}

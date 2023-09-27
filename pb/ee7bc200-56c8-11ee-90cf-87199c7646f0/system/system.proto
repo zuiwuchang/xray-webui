@@ -6,18 +6,19 @@ option go_package = "github.com/zuiwuchang/xray_webui/protocol/system";
 import "google/api/annotations.proto";
 
 service System {
+    // 返回瀏覽器標題
     rpc Title (TitleRequest) returns (TitleResponse){
         option (google.api.http) = {
             get: "/api/v1/system/title"
         };
     }
-    // return version info
+    // 返回當前程式版本信息
     rpc Version (VersionRequest) returns (VersionResponse){
         option (google.api.http) = {
             get: "/api/v1/system/version"
         };
     }
-    // return server start at unix
+    // 返回服務啓動時間
     rpc StartAt (StartAtRequest) returns (StartAtResponse){
         option (google.api.http) = {
             get: "/api/v1/system/start_at"

@@ -15,5 +15,6 @@ exports.keys = {
         general: make('g', '常規'),
         strategy: make('s', '策略'),
         firewall: make('f', '防火牆'),
-    }
+    },
+    refresh: make('R', '刷新'),
 }

@@ -53,4 +53,8 @@ export const i18n = {
 		*/
 		firewall: "ms.f",
 	},
+	/**
+	* 刷新
+	*/
+	refresh: "R",
 }

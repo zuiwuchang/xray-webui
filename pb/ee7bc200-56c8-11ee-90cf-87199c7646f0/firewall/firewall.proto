@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package jsgenerate_xray_webui.firewall;
+option go_package = "github.com/zuiwuchang/xray_webui/protocol/firewall";
+
+import "google/api/annotations.proto";
+
+service Firewall {
+    // 返回當前 防火牆設定信息
+    rpc Get (GetRequest) returns (GetResponse){
+        option (google.api.http) = {
+            get: "/api/v1/firewall"
+        };
+    }
+    // 設定防火牆 啓動全局代理
+    rpc Set (SetRequest) returns (SetResponse){
+        option (google.api.http) = {
+            post: "/api/v1/firewall"
+            body: "*"
+        };
+    }
+    // 設定防火牆 關閉全局代理
+    rpc Clear (ClearRequest) returns (ClearResponse){
+        option (google.api.http) = {
+            post: "/api/v1/firewall/clear"
+            body: "*"
+        };
+    }
+}
+message GetRequest{}
+message GetResponse{
+    string result = 1;
+}
+message SetRequest{}
+message SetResponse{}
+message ClearRequest{}
+message ClearResponse{}

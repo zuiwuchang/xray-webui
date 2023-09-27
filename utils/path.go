@@ -27,12 +27,12 @@ func BasePath() string {
 	return basePath
 }
 
-// Abs Use bashPath as the working directory to return the absolute path
-func Abs(bashPath, path string) string {
+// Abs Use basePath as the working directory to return the absolute path
+func Abs(basePath, path string) string {
 	if filepath.IsAbs(path) {
 		path = filepath.Clean(path)
 	} else {
-		path = filepath.Clean(filepath.Join(bashPath, path))
+		path = filepath.Clean(filepath.Join(basePath, path))
 	}
 	return path
 }

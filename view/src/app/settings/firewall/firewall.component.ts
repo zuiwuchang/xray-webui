@@ -1,10 +1,49 @@
-import { Component } from '@angular/core';
-
+import { HttpClient } from '@angular/common/http';
+import { Component, OnInit } from '@angular/core';
+import { i18n } from 'src/app/i18n';
+import { Closed } from 'src/internal/closed';
+import { getErrorString } from 'src/internal/error';
+import { Delay } from 'src/internal/ui';
+enum State {
+  none = 'none',
+  error = 'error',
+  run = 'run',
+}
 @Component({
   selector: 'app-firewall',
   templateUrl: './firewall.component.html',
   styleUrls: ['./firewall.component.scss']
 })
-export class FirewallComponent {
+export class FirewallComponent extends Closed implements OnInit {
+  i18n = i18n
+  constructor(private readonly httpClient: HttpClient) {
+    super()
+  }
+  state = State.none
+  error = ''
+  message = ''
+  ngOnInit(): void {
+    this.onClickRefresh()
+  }
+  onClickRefresh() {
+    if (this.state == State.run) {
+      return
+    }
+    this.state = State.run
+    const dely = Delay.default()
 
+    this.httpClient.get<GetResponse>('/api/v1/firewall').pipe(this.takeUntil()).subscribe({
+      next: (resp) => dely.do(() => {
+        this.message = resp.result
+        this.state = State.none
+      }),
+      error: (e) => dely.do(() => {
+        this.error = getErrorString(e)
+        this.state = State.error
+      }),
+    })
+  }
+}
+interface GetResponse {
+  result: string
 }

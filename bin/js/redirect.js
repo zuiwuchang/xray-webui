@@ -1,11 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.create = void 0;
-var MyProvider = /** @class */ (function () {
-    function MyProvider() {
-    }
-    return MyProvider;
-}());
+const provider_1 = require("./core/provider");
+class MyProvider extends provider_1.BaseProvider {
+}
 function create() {
     return new MyProvider();
 }
