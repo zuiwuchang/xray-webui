@@ -1,4 +1,5 @@
 
+import { environment } from 'src/environments/environment';
 /**
  * 一些 ui 狀態切換太快會導致動畫效果很差，Delay用於解決此類問題，它用於延後修改 ui 狀態以保證 ui 能夠有足夠的動畫運行時間
  */
@@ -15,7 +16,8 @@ export class Delay {
      * 創建一個默認的延遲器
      */
     static default(): Delay {
-        return new Delay(Date.now() + 500)
+        // return new Delay(500)
+        return new Delay(Date.now() + (environment.production ? 500 : 0))
     }
     constructor(readonly deadline: number) { }
     /**

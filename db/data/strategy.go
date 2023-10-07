@@ -11,25 +11,19 @@ func init() {
 }
 
 const StrategyBucket = "strategy"
-const StrategyDefault = "Default"
+const StrategyDefault = 1
 
 // 代理策略
 type Strategy struct {
-	// 唯一的名稱 供人類查看
-	// 名稱 default 是系統保留的策略，其它策略將繼承這個策略 Name 和 Value 之外的所有值
-	Name string `json:"name"`
-
-	// 供腳本參考的 策略值 ，腳本應該使用此值生成 xray 的配置
+	// 供腳本參考的 策略值 ，腳本應該依據此值生成 xray 的配置
 	//
-	//
-	// 系統定義了幾個默認值和推薦的處理方案，但如何處理它們完全是腳本決定的
-	// * 0 使用默認的代理規則
-	// * 1 全域代理
-	// * 100 略過區域網路的代理(僅對公網ip使用代理)
-	// * 200 略過區域網路和西朝鮮的代理
-	// * 900 直連優先 (僅對非西朝鮮公網使用代理)
-	// * 1000 直接連接
-	Value int `json:"value"`
+	// * 1 默認的代理規則
+	// * 2 全域代理
+	// * 3 略過區域網路的代理(僅對公網ip使用代理)
+	// * 4 略過區域網路和西朝鮮的代理
+	// * 5 直連優先 (僅對非西朝鮮公網使用代理)
+	// * 6 直接連接
+	ID uint32 `json:"value"`
 
 	// 靜態 ip 列表
 	// baidu.com 127.0.0.1
@@ -69,8 +63,7 @@ func (s *Strategy) Encoder() (b []byte, e error) {
 }
 func (s *Strategy) ToValue() *StrategyValue {
 	return &StrategyValue{
-		Name:         s.Name,
-		Value:        s.Value,
+		ID:           s.ID,
 		Host:         s.spliteHost(s.Host),
 		ProxyIP:      s.splite(s.ProxyIP),
 		ProxyDomain:  s.splite(s.ProxyDomain),
@@ -128,21 +121,15 @@ func (s *Strategy) spliteHost(text string) (result [][]string) {
 
 // 代理策略
 type StrategyValue struct {
-	// 唯一的名稱 供人類查看
-	// 名稱 default 是系統保留的策略，其它策略將繼承這個策略 Name 和 Value 之外的所有值
-	Name string `json:"name"`
-
-	// 供腳本參考的 策略值 ，腳本應該使用此值生成 v2ray 的配置
+	// 供腳本參考的 策略值 ，腳本應該依據此值生成 xray 的配置
 	//
-	//
-	// 系統定義了幾個默認值，但如何處理它們完全是腳本決定的
-	// * 0 使用默認的代理規則
-	// * 1 全域代理
-	// * 100 略區域網路的代理
-	// * 200 略過區域網路和西朝鮮的代理
-	// * 900 直連優先 (僅對非西朝鮮網路使用代理)
-	// * 1000 直接連接
-	Value int `json:"value"`
+	// * 1 默認的代理規則
+	// * 2 全域代理
+	// * 3 略過區域網路的代理(僅對公網ip使用代理)
+	// * 4 略過區域網路和西朝鮮的代理
+	// * 5 直連優先 (僅對非西朝鮮公網使用代理)
+	// * 6 直接連接
+	ID uint32 `json:"value"`
 
 	// 靜態 ip 列表
 	// baidu.com 127.0.0.1

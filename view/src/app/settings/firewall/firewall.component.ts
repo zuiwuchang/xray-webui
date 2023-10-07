@@ -1,14 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { i18n } from 'src/app/i18n';
-import { Closed } from 'src/internal/closed';
+import { Closed, State } from 'src/internal/closed';
 import { getErrorString } from 'src/internal/error';
 import { Delay } from 'src/internal/ui';
-enum State {
-  none = 'none',
-  error = 'error',
-  run = 'run',
-}
+
 @Component({
   selector: 'app-firewall',
   templateUrl: './firewall.component.html',
@@ -38,6 +34,7 @@ export class FirewallComponent extends Closed implements OnInit {
         this.state = State.none
       }),
       error: (e) => dely.do(() => {
+        console.warn(e)
         this.error = getErrorString(e)
         this.state = State.error
       }),

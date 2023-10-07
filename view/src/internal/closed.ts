@@ -1,5 +1,11 @@
 import { Component } from "@angular/core";
 import { BehaviorSubject, filter, MonoTypeOperatorFunction, Observable, takeUntil } from "rxjs";
+
+export enum State {
+    none = 'none',
+    error = 'error',
+    run = 'run',
+}
 @Component({
     selector: 'app-closed',
     template: '',

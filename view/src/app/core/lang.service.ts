@@ -33,7 +33,7 @@ export class LangService {
       name: '🇺🇸 English'
     },
   ]
-  constructor(private translateService: TranslateService) {
+  constructor(private readonly translateService: TranslateService) {
     let lang = getItem('lang')
     if (lang) {
       for (const node of this.langs) {

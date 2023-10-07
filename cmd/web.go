@@ -70,11 +70,10 @@ func init() {
 			// 初始化日誌
 			log.Init(basePath, &cnf.Logger)
 
-			system := cnf.System
-			system.Format(basePath)
+			cnf.System.Format(basePath)
 
 			// 初始化數據庫
-			e = manipulator.Init(system.DB)
+			e = manipulator.Init(cnf.System.DB)
 			if e != nil {
 				slog.Error(`init db fail`,
 					log.Error, e,
@@ -83,7 +82,7 @@ func init() {
 			}
 
 			// 初始化腳本
-			runtime, e := js.New(system.Script)
+			runtime, e := js.New(cnf.System.Script)
 			if e != nil {
 				slog.Error(`init js fail`,
 					log.Error, e,

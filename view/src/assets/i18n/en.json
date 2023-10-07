@@ -9,10 +9,37 @@
 	"S": "Settings",
 	"AT": "Project X provides the people of West Korea with the core tools to break through the dictator's Internet blockade. However, its desktop software xray does not provide an easy-to-use and cross-platform UI, so it is very inconvenient to use. So I developed this desktop suite, which provides a simple and consistent desktop environment for xray.",
 	"AT1": "In addition, this program provides support for js scripts. You can customize the script to replace the underlying call to xray, and even the underlying layer may not be xray but other proxy software. Another advantage of this is that when xray supports a new protocol or better agent software appears, you can get the latest support without updating the program and only updating the script.",
-	"ms": {
+	"_ms": {
 		"g": "General",
 		"s": "Strategy",
 		"f": "Firewall"
 	},
-	"R": "Refresh"
+	"R": "Refresh",
+	"E": "Edit",
+	"D0": "Domain",
+	"_s": {
+		"d": "Default Strategy",
+		"g": "Global Proxy",
+		"p": "Public IP Proxy",
+		"P": "Proxy First",
+		"k": "Direct First",
+		"D": "Global Direct",
+		"th": "Set static IPs, one per line. The format is 'domain name + delimiter + IP + delimiter + IP...', the delimiter can be any character in '\\t,;' or a space. If the line starts with #, the content of this line will be ignored.",
+		"tp": "These IPs and domain names will be accessed using a proxy. Multiple values ​​are separated by a delimiter. The delimiter can be any character in '\\n\\t,;' or a space. If the line starts with #, the line content is ignored.",
+		"td": "These IPs and domain names will be accessed directly. Multiple values ​​are separated by a delimiter. The delimiter can be any character in '\\n\\t,;' or a space. If the line starts with #, the line content is ignored.",
+		"tb": "These IPs and domain names will be blocked from access. Multiple values ​​are separated by a delimiter. The delimiter can be any character in '\\n\\t,;' or a space. If the line starts with #, the line content is ignored.",
+		"nh": "Host",
+		"np": "Proxy",
+		"nd": "Direct",
+		"nb": "Block"
+	},
+	"_b": {
+		"s": "Submit",
+		"c": "Close"
+	},
+	"_a": {
+		"S": "Success: ",
+		"E": "Error: ",
+		"U": "Data has been updated"
+	}
 }

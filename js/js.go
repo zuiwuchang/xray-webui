@@ -2,6 +2,7 @@ package js
 
 import (
 	"github.com/dop251/goja"
+	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -17,6 +18,7 @@ func New(path string) (runtime *Runtime, e error) {
 	vm := goja.New()
 	registry := Registry()
 	requireModule := registry.Enable(vm)
+	console.Enable(vm)
 
 	ret, e := requireModule.Require(path)
 	if e != nil {

@@ -1,1 +1,103 @@
-<p>strategy works!</p>
+<p [ngSwitch]="state">
+    <ng-template ngSwitchCase="run">
+        <p-card header="{{i18n.menuSettings.strategy| translate}}">
+            <p-progressBar mode="indeterminate" [style]="{ height: '6px' }"></p-progressBar>
+        </p-card>
+    </ng-template>
+    <ng-template ngSwitchCase="error">
+        <p-card header="{{i18n.menuSettings.strategy | translate}}">
+            <p-messages severity="error">
+                <ng-template pTemplate>
+                    <div class="ml-2">
+                        <pre class="wrap-pre">{{error}}</pre>
+                    </div>
+                </ng-template>
+            </p-messages>
+            <ng-template pTemplate="footer">
+                <p-button label="{{i18n.refresh|translate}}" (onClick)="onClickRefresh()"></p-button>
+            </ng-template>
+        </p-card>
+    </ng-template>
+    <ng-template ngSwitchCase="none">
+        <p-card header="{{i18n.menuSettings.strategy | translate}}">
+            <p-dataView [value]="data" [rows]="6" [paginator]="false">
+                <ng-template let-node pTemplate="listItem">
+                    <div pRipple class="col-12 cursor-pointer border-round-md p-2" (click)="onClickEdit(node)">
+                        <div class="flex flex-row justify-content-between m-2">
+
+                            <span class="flex align-items-center">
+                                <i class="pi pi-flag-fill"></i>
+                                <span class="ml-1">{{name(node.id)|translate}}</span>
+                            </span>
+                        </div>
+                    </div>
+                </ng-template>
+            </p-dataView>
+        </p-card>
+    </ng-template>
+</p>
+
+
+<p-dialog header="{{name(current.id)|translate}}" [(visible)]="visible" [style]="{width: '80vw'}" [maximizable]="false"
+    [modal]="true" [closable]="false" appendTo="body">
+    <p-tabView>
+        <p-tabPanel header="{{i18n.strategy.nameHost|translate}}">
+            {{i18n.strategy.tableHost|translate}}
+            <p class="p-float-label">
+                <textarea id="float-input-host" rows="13" pInputTextarea [(ngModel)]="current.host"
+                    [disabled]="disabled"></textarea>
+                <label for="float-input-host">{{i18n.strategy.nameHost|translate}}</label>
+            </p>
+        </p-tabPanel>
+        <p-tabPanel header="{{i18n.strategy.nameProxy|translate}}">
+            {{i18n.strategy.tableProxy|translate}}
+            <p class="p-float-label">
+                <textarea id="float-input-proxyDomain" rows="5" pInputTextarea [(ngModel)]="current.proxyDomain"
+                    [disabled]="disabled"></textarea>
+                <label for="float-input-proxyDomain">{{i18n.domain|translate}}</label>
+            </p>
+            <p class="p-float-label">
+                <textarea id="float-input-proxyIP" rows="5" pInputTextarea [(ngModel)]="current.proxyIP"
+                    [disabled]="disabled"></textarea>
+                <label for="float-input-proxyIP">IP</label>
+            </p>
+        </p-tabPanel>
+        <p-tabPanel header="{{i18n.strategy.nameDirect|translate}}">
+            {{i18n.strategy.tableDirect|translate}}
+            <p class="p-float-label">
+                <textarea id="float-input-directDomain" rows="5" pInputTextarea [(ngModel)]="current.directDomain"
+                    [disabled]="disabled"></textarea>
+                <label for="float-input-directDomain">{{i18n.domain|translate}}</label>
+            </p>
+            <p class="p-float-label">
+                <textarea id="float-input-directIP" rows="5" pInputTextarea [(ngModel)]="current.directIP"
+                    [disabled]="disabled"></textarea>
+                <label for="float-input-directIP">IP</label>
+            </p>
+        </p-tabPanel>
+        <p-tabPanel header="{{i18n.strategy.nameBlock|translate}}">
+            {{i18n.strategy.tableBlock|translate}}
+            <p class="p-float-label">
+                <textarea id="float-input-blockDomain" rows="5" pInputTextarea [(ngModel)]="current.blockDomain"
+                    [disabled]="disabled"></textarea>
+                <label for="float-input-blockDomain">{{i18n.domain|translate}}</label>
+            </p>
+            <p class="p-float-label">
+                <textarea id="float-input-blockIP" rows="5" pInputTextarea [(ngModel)]="current.blockIP"
+                    [disabled]="disabled"></textarea>
+                <label for="float-input-blockIP">IP</label>
+            </p>
+        </p-tabPanel>
+    </p-tabView>
+
+    <p-messages [(value)]="messages" [enableService]="false" ></p-messages>
+
+    <ng-template pTemplate="footer">
+
+        <p-progressSpinner *ngIf="disabled" styleClass="w-3rem h-3rem mr-2" strokeWidth="5" fill="var(--surface-ground)"
+            animationDuration=".5s"></p-progressSpinner>
+        <p-button label="{{i18n.button.submit|translate}}" (onClick)="onClickSubmit()"
+            [disabled]="disabled || isNotChanged"></p-button>
+        <p-button label="{{i18n.button.close|translate}}" (onClick)="onClickClose()" [disabled]="disabled"></p-button>
+    </ng-template>
+</p-dialog>

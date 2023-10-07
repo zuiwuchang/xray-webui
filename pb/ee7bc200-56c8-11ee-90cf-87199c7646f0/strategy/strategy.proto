@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package jsgenerate_xray_webui.strategy;
+option go_package = "github.com/zuiwuchang/xray_webui/protocol/strategy";
+
+import "google/api/annotations.proto";
+
+service Strategy {
+    // 返回所有策略
+    rpc List (ListRequest) returns (ListResponse){
+        option (google.api.http) = {
+            get: "/api/v1/strategy"
+        };
+    }
+    // 更新策略
+    rpc Set (SetRequest) returns (SetResponse){
+        option (google.api.http) = {
+            post: "/api/v1/strategy/{id}"
+            body: "*"
+        };
+    }
+}
+message Data{
+	// 供腳本參考的 策略值 ，腳本應該依據此值生成 xray 的配置
+	//
+	// * 1 默認的代理規則
+	// * 2 全域代理
+	// * 3 略過區域網路的代理(僅對公網ip使用代理)
+	// * 4 略過區域網路和西朝鮮的代理
+	// * 5 直連優先 (僅對非西朝鮮公網使用代理)
+	// * 6 直接連接
+	uint32 id = 1;
+
+	// 靜態 ip 列表
+	// baidu.com 127.0.0.1
+	// dns.google 8.8.8.8 8.8.4.4
+	string host = 2;
+
+	// 這些 ip 使用代理
+	string proxyIP = 3;
+	// 這些 域名 使用代理
+	string proxyDomain = 4;
+
+	// 這些 ip 直連
+	string directIP = 5;
+	// 這些 域名 直連
+	string directDomain = 6;
+
+	// 這些 ip 阻止訪問
+	string blockIP = 7;
+	// 這些 域名 阻止訪問
+	string blockDomain = 8;
+}
+message ListRequest{}
+message ListResponse{
+    repeated Data data=1;
+}
+message SetRequest{
+	// 供腳本參考的 策略值 ，腳本應該依據此值生成 xray 的配置
+	//
+	// * 1 默認的代理規則
+	// * 2 全域代理
+	// * 3 略過區域網路的代理(僅對公網ip使用代理)
+	// * 4 略過區域網路和西朝鮮的代理
+	// * 5 直連優先 (僅對非西朝鮮公網使用代理)
+	// * 6 直接連接
+	uint32 id = 1;
+
+	// 靜態 ip 列表
+	// baidu.com 127.0.0.1
+	// dns.google 8.8.8.8 8.8.4.4
+	string host = 2;
+
+	// 這些 ip 使用代理
+	string proxyIP = 3;
+	// 這些 域名 使用代理
+	string proxyDomain = 4;
+
+	// 這些 ip 直連
+	string directIP = 5;
+	// 這些 域名 直連
+	string directDomain = 6;
+
+	// 這些 ip 阻止訪問
+	string blockIP = 7;
+	// 這些 域名 阻止訪問
+	string blockDomain = 8;
+}
+message SetResponse{}
