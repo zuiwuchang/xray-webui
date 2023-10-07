@@ -14,4 +14,5 @@ Protos=(
     system/system.proto
     firewall/firewall.proto
     strategy/strategy.proto
+    settings/settings.proto
 )

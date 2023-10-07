@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package jsgenerate_xray_webui.settings;
+option go_package = "github.com/zuiwuchang/xray_webui/protocol/settings";
+
+import "google/api/annotations.proto";
+
+service Settings {
+    // 返回 常規設定
+    rpc GetGeneral (GetGeneralRequest) returns (General){
+        option (google.api.http) = {
+            get: "/api/v1/settings/general"
+        };
+    }
+    // 更新 常規設定
+    rpc SetGeneral (General) returns (SetGeneralResponse){
+        option (google.api.http) = {
+            post: "/api/v1/settings/general"
+            body: "*"
+        };
+    }
+}
+message General{
+	// 測試速度請求的 url
+	string url = 1;
+	// 啓動時自動運行 代理服務
+	bool run = 2;
+	// 因爲 Run 而自動啓動服務後 設置服務器規則
+	bool firewall = 3;
+	// 使用的策略，默認爲 1
+	uint32 strategy = 4;
+	// 自定義設定， jsonnet 字符串
+	string userdata = 5;
+}
+message GetGeneralRequest{}
+message SetGeneralResponse{}

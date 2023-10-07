@@ -44,16 +44,10 @@ func (m Strategy) init(tx *bolt.Tx) (bucket *bolt.Bucket, e error) {
 }
 func (m Strategy) Init(tx *bolt.Tx, version int) (e error) {
 	_, e = m.init(tx)
-	if e != nil {
-		return
-	}
 	return
 }
 func (m Strategy) Upgrade(tx *bolt.Tx, oldVersion, newVersion int) (e error) {
 	_, e = m.init(tx)
-	if e != nil {
-		return
-	}
 	return
 }
 func (m Strategy) List() (result []*data.Strategy, e error) {

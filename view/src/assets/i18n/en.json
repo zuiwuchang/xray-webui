@@ -41,5 +41,12 @@
 		"S": "Success: ",
 		"E": "Error: ",
 		"U": "Data has been updated"
+	},
+	"_g": {
+		"u": "Speed ​​test URL",
+		"r": "Automatically run proxy services",
+		"f": "Automatically set global proxy",
+		"s": "Strategy",
+		"c": "Custom settings"
 	}
 }

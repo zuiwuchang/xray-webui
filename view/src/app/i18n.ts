@@ -150,4 +150,26 @@ export const i18n = {
 		*/
 		updated: "_a.U",
 	},
+	general: {
+		/**
+		* 速度測試網址
+		*/
+		url: "_g.u",
+		/**
+		* 自動運行代理服務
+		*/
+		run: "_g.r",
+		/**
+		* 自動設置全局代理
+		*/
+		firewall: "_g.f",
+		/**
+		* 策略
+		*/
+		strategy: "_g.s",
+		/**
+		* 自定義設定
+		*/
+		custom: "_g.c",
+	},
 }

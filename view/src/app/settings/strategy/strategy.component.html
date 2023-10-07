@@ -44,8 +44,8 @@
         <p-tabPanel header="{{i18n.strategy.nameHost|translate}}">
             {{i18n.strategy.tableHost|translate}}
             <p class="p-float-label">
-                <textarea id="float-input-host" rows="13" pInputTextarea [(ngModel)]="current.host"
-                    [disabled]="disabled"></textarea>
+                <textarea id="float-input-host" rows="13" pInputTextarea [(ngModel)]="current.host" autocapitalize="off"
+                    autocomplete="off" autocorrect="off" spellcheck="false" [disabled]="disabled"></textarea>
                 <label for="float-input-host">{{i18n.strategy.nameHost|translate}}</label>
             </p>
         </p-tabPanel>
@@ -53,11 +53,13 @@
             {{i18n.strategy.tableProxy|translate}}
             <p class="p-float-label">
                 <textarea id="float-input-proxyDomain" rows="5" pInputTextarea [(ngModel)]="current.proxyDomain"
+                    autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                     [disabled]="disabled"></textarea>
                 <label for="float-input-proxyDomain">{{i18n.domain|translate}}</label>
             </p>
             <p class="p-float-label">
                 <textarea id="float-input-proxyIP" rows="5" pInputTextarea [(ngModel)]="current.proxyIP"
+                    autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                     [disabled]="disabled"></textarea>
                 <label for="float-input-proxyIP">IP</label>
             </p>
@@ -66,11 +68,13 @@
             {{i18n.strategy.tableDirect|translate}}
             <p class="p-float-label">
                 <textarea id="float-input-directDomain" rows="5" pInputTextarea [(ngModel)]="current.directDomain"
+                    autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                     [disabled]="disabled"></textarea>
                 <label for="float-input-directDomain">{{i18n.domain|translate}}</label>
             </p>
             <p class="p-float-label">
                 <textarea id="float-input-directIP" rows="5" pInputTextarea [(ngModel)]="current.directIP"
+                    autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                     [disabled]="disabled"></textarea>
                 <label for="float-input-directIP">IP</label>
             </p>
@@ -79,25 +83,29 @@
             {{i18n.strategy.tableBlock|translate}}
             <p class="p-float-label">
                 <textarea id="float-input-blockDomain" rows="5" pInputTextarea [(ngModel)]="current.blockDomain"
+                    autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                     [disabled]="disabled"></textarea>
                 <label for="float-input-blockDomain">{{i18n.domain|translate}}</label>
             </p>
             <p class="p-float-label">
                 <textarea id="float-input-blockIP" rows="5" pInputTextarea [(ngModel)]="current.blockIP"
+                    autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
                     [disabled]="disabled"></textarea>
                 <label for="float-input-blockIP">IP</label>
             </p>
         </p-tabPanel>
     </p-tabView>
 
-    <p-messages [(value)]="messages" [enableService]="false" ></p-messages>
+    <p-messages [(value)]="messages" [enableService]="false"></p-messages>
 
     <ng-template pTemplate="footer">
-
-        <p-progressSpinner *ngIf="disabled" styleClass="w-3rem h-3rem mr-2" strokeWidth="5" fill="var(--surface-ground)"
-            animationDuration=".5s"></p-progressSpinner>
-        <p-button label="{{i18n.button.submit|translate}}" (onClick)="onClickSubmit()"
-            [disabled]="disabled || isNotChanged"></p-button>
-        <p-button label="{{i18n.button.close|translate}}" (onClick)="onClickClose()" [disabled]="disabled"></p-button>
+        <div class="flex justify-content-end">
+            <p-progressSpinner *ngIf="disabled" styleClass="w-3rem h-3rem mr-2" strokeWidth="5"
+                fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+            <p-button label="{{i18n.button.submit|translate}}" (onClick)="onClickSubmit()"
+                [disabled]="disabled || isNotChanged"></p-button>
+            <p-button label="{{i18n.button.close|translate}}" (onClick)="onClickClose()" [disabled]="disabled">
+            </p-button>
+        </div>
     </ng-template>
 </p-dialog>

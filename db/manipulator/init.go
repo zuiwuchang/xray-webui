@@ -35,6 +35,7 @@ func Init(path string) (e error) {
 		}
 		buckets := []manipulator{
 			Strategy{},
+			Settings{},
 		}
 		if oldVersion == 0 {
 			for i := 0; i < len(buckets); i++ {

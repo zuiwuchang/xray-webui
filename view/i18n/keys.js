@@ -48,5 +48,13 @@ exports.keys = {
         success: make('S', '成功'),
         error: make('E', '錯誤'),
         updated: make('U', '數據已更新')
+    },
+    general: {
+        __id: '_g',
+        url: make('u', '速度測試網址'),
+        run: make('r', '自動運行代理服務'),
+        firewall: make('f', '自動設置全局代理'),
+        strategy: make('s', '策略'),
+        custom: make('c', '自定義設定')
     }
 }

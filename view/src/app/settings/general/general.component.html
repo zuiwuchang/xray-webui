@@ -1,1 +1,75 @@
-<p>general works!</p>
+<p [ngSwitch]="state">
+    <ng-template ngSwitchCase="run">
+        <p-card header="{{i18n.menuSettings.general| translate}}">
+            <p-progressBar mode="indeterminate" [style]="{ height: '6px' }"></p-progressBar>
+        </p-card>
+    </ng-template>
+    <ng-template ngSwitchCase="error">
+        <p-card header="{{i18n.menuSettings.general | translate}}">
+            <p-messages severity="error">
+                <ng-template pTemplate>
+                    <div class="ml-2">
+                        <pre class="wrap-pre">{{error}}</pre>
+                    </div>
+                </ng-template>
+            </p-messages>
+            <ng-template pTemplate="footer">
+                <div class="flex justify-content-end">
+                    <p-button label="{{i18n.refresh|translate}}" (onClick)="onClickRefresh()"></p-button>
+                </div>
+            </ng-template>
+        </p-card>
+    </ng-template>
+    <ng-template ngSwitchCase="none">
+        <p-card header="{{i18n.menuSettings.general | translate}}">
+            <div class="formgrid grid">
+                <p class="field col-12 p-float-label">
+                    <input type="text" pInputText id="float-input-url" [(ngModel)]="data.url" [disabled]="disabled"
+                        class="w-full" />
+                    <label for="float-input-url">{{i18n.general.url| translate}}</label>
+                </p>
+                <p class="field col-12 md:col-4  flex justify-content-start align-items-center">
+                    <p-checkbox [(ngModel)]="data.run" label="{{i18n.general.run|translate}}" [binary]="true"
+                        inputId="run" [disabled]="disabled"></p-checkbox>
+                </p>
+                <p class="field col-12 md:col-4  flex justify-content-start align-items-center">
+                    <p-checkbox [(ngModel)]="data.firewall" label="{{i18n.general.firewall|translate}}" [binary]="true"
+                        inputId="firewall" [disabled]="disabled"></p-checkbox>
+                </p>
+                <p class="field col-12 md:col-4 flex justify-content-start align-items-center">
+                    <label for="float-input-state"
+                        [class]="disabled?'nowrap p-disabled':'nowrap'">{{i18n.general.strategy|translate}}</label>
+                    <select id="float-input-state"
+                        class="ml-2 w-full text-base  surface-overlay p-2 border-1 border-solid surface-border border-round outline-none focus:border-primary"
+                        style="appearance: auto" [(ngModel)]="data.strategy" [disabled]="disabled">
+                        <option value="1">{{i18n.strategy.default | translate}}</option>
+                        <option value="2">{{i18n.strategy.global | translate}}</option>
+                        <option value="3">{{i18n.strategy.public | translate}}</option>
+                        <option value="4">{{i18n.strategy.proxy | translate}}</option>
+                        <option value="5">{{i18n.strategy.korea | translate}}</option>
+                        <option value="6">{{i18n.strategy.direct | translate}}</option>
+                    </select>
+                </p>
+
+
+                <p class="field col-12 p-float-label">
+                    <textarea id="float-input-userdata" type="text" rows="8" pInputTextarea [(ngModel)]="data.userdata"
+                        [disabled]="disabled" autocapitalize="off" autocomplete="off" autocorrect="off"
+                        spellcheck="false"
+                        class="text-base text-color surface-overlay p-2 border-1 border-solid surface-border border-round appearance-none outline-none focus:border-primary w-full"></textarea>
+                    <label for="float-input-userdata">{{i18n.general.custom| translate}}</label>
+                </p>
+            </div>
+
+            <ng-template pTemplate="footer">
+                <div class="flex justify-content-end">
+                    <p-progressSpinner *ngIf="disabled" styleClass="w-3rem h-3rem mr-2" strokeWidth="5"
+                        fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+                    <p-button label="{{i18n.button.submit|translate}}" (onClick)="onClickSubmit()"
+                        [disabled]="disabled">
+                    </p-button>
+                </div>
+            </ng-template>
+        </p-card>
+    </ng-template>
+</p>

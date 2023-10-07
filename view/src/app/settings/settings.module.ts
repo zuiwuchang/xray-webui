@@ -16,6 +16,9 @@ import { TabViewModule } from 'primeng/tabview';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { RippleModule } from 'primeng/ripple';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputTextModule } from 'primeng/inputtext';
+import { CascadeSelectModule } from 'primeng/cascadeselect';
 
 import { SettingsRoutingModule } from './settings-routing.module';
 import { GeneralComponent } from './general/general.component';
@@ -37,7 +40,8 @@ import { FirewallComponent } from './firewall/firewall.component';
     CardModule, ProgressBarModule, MessagesModule, MessageModule,
     ButtonModule, TooltipModule, DataViewModule,
     TabViewModule, DialogModule, InputTextareaModule,
-    RippleModule, ProgressSpinnerModule,
+    RippleModule, ProgressSpinnerModule, CheckboxModule,
+    InputTextModule, CascadeSelectModule,
     SettingsRoutingModule
   ]
 })

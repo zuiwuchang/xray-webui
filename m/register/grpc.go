@@ -6,6 +6,7 @@ import (
 
 	"github.com/zuiwuchang/xray_webui/log"
 	m_firewall "github.com/zuiwuchang/xray_webui/m/server/firewall"
+	m_settings "github.com/zuiwuchang/xray_webui/m/server/settings"
 	m_strategy "github.com/zuiwuchang/xray_webui/m/server/strategy"
 	m_system "github.com/zuiwuchang/xray_webui/m/server/system"
 
@@ -18,6 +19,7 @@ func GRPC(srv *grpc.Server, gateway *runtime.ServeMux, cc *grpc.ClientConn) {
 		m_system.Module(0),
 		m_firewall.Module(0),
 		m_strategy.Module(0),
+		m_settings.Module(0),
 	}
 	for _, m := range ms {
 		m.RegisterGRPC(srv)
