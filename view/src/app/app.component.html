@@ -72,7 +72,7 @@
 
     <!-- 主題菜單 -->
     <ng-container *ngIf="initSidebar">
-        <p-sidebar [(visible)]="themeSidebar" position="right" [style]="{width:'550px'}">
+        <p-sidebar [(visible)]="themeSidebar" position="right" styleClass="w-24rem md:w-28rem">
             <div *ngFor="let theme of themes">
                 <h4>{{theme.title}}</h4>
                 <div class="grid">
@@ -81,13 +81,13 @@
                             <div class="relative">
                                 <p-button class="flex justify-content-center" styleClass="p-button-link"
                                     (onClick)="onClickTheme(val.value)" [ariaLabel]="val.value">
-                                    <img [src]="val.src" style="width: 58px;">
+                                    <img [src]="val.src" style="width: 100%;">
                                 </p-button>
 
                                 <i class="text-primary text-xl pi pi-check-circle absolute top-0 right-0"
                                     *ngIf="isTheme(val.value)"></i>
                             </div>
-                            <div class="flex justify-content-center" style="font-size: 14px;">{{val.label}}</div>
+                            <div class="text-center">{{val.label}}</div>
                         </ng-container>
                     </div>
                 </div>
