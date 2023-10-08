@@ -18,7 +18,6 @@ import { RippleModule } from 'primeng/ripple';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
-import { CascadeSelectModule } from 'primeng/cascadeselect';
 
 import { SettingsRoutingModule } from './settings-routing.module';
 import { GeneralComponent } from './general/general.component';
@@ -41,7 +40,7 @@ import { FirewallComponent } from './firewall/firewall.component';
     ButtonModule, TooltipModule, DataViewModule,
     TabViewModule, DialogModule, InputTextareaModule,
     RippleModule, ProgressSpinnerModule, CheckboxModule,
-    InputTextModule, CascadeSelectModule,
+    InputTextModule,
     SettingsRoutingModule
   ]
 })

@@ -66,7 +66,7 @@
                     <p-progressSpinner *ngIf="disabled" styleClass="w-3rem h-3rem mr-2" strokeWidth="5"
                         fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
                     <p-button label="{{i18n.button.submit|translate}}" (onClick)="onClickSubmit()"
-                        [disabled]="disabled">
+                        [disabled]="disabled || isNotChanged">
                     </p-button>
                 </div>
             </ng-template>

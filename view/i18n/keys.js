@@ -47,7 +47,9 @@ exports.keys = {
         __id: '_a',
         success: make('S', '成功'),
         error: make('E', '錯誤'),
-        updated: make('U', '數據已更新')
+        warn: make('W', '警告'),
+        waitDataSave: make('ws', '正在存儲數據，請稍等。'),
+        updated: make('U', '數據已更新'),
     },
     general: {
         __id: '_g',
@@ -56,5 +58,5 @@ exports.keys = {
         firewall: make('f', '自動設置全局代理'),
         strategy: make('s', '策略'),
         custom: make('c', '自定義設定')
-    }
+    },
 }

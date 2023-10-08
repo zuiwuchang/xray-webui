@@ -38,8 +38,10 @@
 		"c": "Close"
 	},
 	"_a": {
-		"S": "Success: ",
-		"E": "Error: ",
+		"S": "Success",
+		"E": "Error",
+		"W": "Warn",
+		"ws": "Data is being stored, please wait.",
 		"U": "Data has been updated"
 	},
 	"_g": {

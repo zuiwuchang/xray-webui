@@ -146,6 +146,14 @@ export const i18n = {
 		*/
 		error: "_a.E",
 		/**
+		* 警告
+		*/
+		warn: "_a.W",
+		/**
+		* 正在存儲數據，請稍等。
+		*/
+		waitDataSave: "_a.ws",
+		/**
 		* 數據已更新
 		*/
 		updated: "_a.U",

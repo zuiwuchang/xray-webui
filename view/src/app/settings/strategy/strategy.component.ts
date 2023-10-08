@@ -1,23 +1,22 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { Message } from 'primeng/api';
+import { ToastService } from 'src/app/core/toast.service';
 import { i18n } from 'src/app/i18n';
 import { Closed, State } from 'src/internal/closed';
 import { getErrorString } from 'src/internal/error';
 import { Delay } from 'src/internal/ui';
 import { ListResponse, Strategy } from './strategy';
-const emptyMessage: Message[] = []
 @Component({
   selector: 'app-strategy',
   templateUrl: './strategy.component.html',
   styleUrls: ['./strategy.component.scss'],
-  providers: []
 })
 export class StrategyComponent extends Closed implements OnInit {
   i18n = i18n
   constructor(private readonly httpClient: HttpClient,
     private readonly translateService: TranslateService,
+    private readonly toastService: ToastService,
   ) {
     super()
   }
@@ -97,7 +96,6 @@ export class StrategyComponent extends Closed implements OnInit {
     }
     this.current_ = data
     this.visible = true
-    this.messages = emptyMessage
   }
   disabled = false
   visible = false
@@ -109,13 +107,11 @@ export class StrategyComponent extends Closed implements OnInit {
       l.directIP == r.directIP && l.directDomain == r.directDomain &&
       l.blockIP == r.blockIP && l.blockDomain == r.blockDomain
   }
-  messages: Message[] = emptyMessage;
   onClickSubmit() {
     if (this.disabled) {
       return
     }
     this.disabled = true
-    this.messages = emptyMessage
     const dely = Delay.default()
     const data = this.current
     const node = this.current_
@@ -136,21 +132,13 @@ export class StrategyComponent extends Closed implements OnInit {
         node.directDomain = data.directDomain
         node.blockIP = data.blockIP
         node.blockDomain = data.blockDomain
-        this.messages = [
-          {
-            severity: 'success', summary: this.translateService.instant(i18n.action.success), detail: this.translateService.instant(i18n.action.updated)
-          },
-        ]
+        this.toastService.add({ severity: 'success', summary: this.translateService.instant(i18n.action.success), detail: this.translateService.instant(i18n.action.updated) });
         this.disabled = false
       }),
       error: (e) => dely.do(() => {
         console.warn(e)
 
-        this.messages = [
-          {
-            severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: getErrorString(e),
-          },
-        ]
+        this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: getErrorString(e) });
         this.disabled = false
       }),
     })

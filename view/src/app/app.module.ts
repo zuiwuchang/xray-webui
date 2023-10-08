@@ -18,6 +18,7 @@ import { MessageModule } from 'primeng/message';
 import { MenuModule } from 'primeng/menu';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AccordionModule } from 'primeng/accordion';
+import { ToastModule } from 'primeng/toast';
 
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
@@ -71,7 +72,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
 
     ToolbarModule, ButtonModule, TooltipModule, SidebarModule,
     MessagesModule, MessageModule, MenuModule, ProgressSpinnerModule,
-    AccordionModule,
+    AccordionModule, ToastModule,
 
     RouterModule, AppRoutingModule
   ],

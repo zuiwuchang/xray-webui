@@ -16,7 +16,7 @@ export class Delay {
      * 創建一個默認的延遲器
      */
     static default(): Delay {
-        // return new Delay(500)
+        // return new Delay(Date.now() + 500)
         return new Delay(Date.now() + (environment.production ? 500 : 0))
     }
     constructor(readonly deadline: number) { }

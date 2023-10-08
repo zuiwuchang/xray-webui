@@ -2,7 +2,6 @@ package settings
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"time"
 
@@ -64,12 +63,11 @@ func (s server) SetGeneral(ctx context.Context, req *grpc_settings.General) (res
 		return
 	}
 	vm := jsonnet.MakeVM()
-	jsonStr, e := vm.EvaluateAnonymousSnippet(`userdata.jsonnet`, req.Userdata)
+	_, e = vm.EvaluateAnonymousSnippet(`userdata.jsonnet`, req.Userdata)
 	if e != nil {
 		e = s.Error(codes.InvalidArgument, e.Error())
 		return
 	}
-	fmt.Println(jsonStr)
 
 	var m manipulator.Settings
 	e = m.PutGeneral(&data.General{

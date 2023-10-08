@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { saveGuard } from '../core/guard/save.guard';
 import { FirewallComponent } from './firewall/firewall.component';
 import { GeneralComponent } from './general/general.component';
 import { StrategyComponent } from './strategy/strategy.component';
@@ -9,6 +10,7 @@ const routes: Routes = [
   {
     path: 'general',
     component: GeneralComponent,
+    canDeactivate: [saveGuard]
   },
   {
     path: 'strategy',
