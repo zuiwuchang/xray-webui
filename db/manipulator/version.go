@@ -4,11 +4,9 @@ import (
 	"encoding/binary"
 	"errors"
 
+	"github.com/zuiwuchang/xray_webui/version"
 	bolt "go.etcd.io/bbolt"
 )
-
-// 數據庫 當前版本
-const Version = 1
 
 // 定義數據庫 操縱器 接口
 type manipulator interface {
@@ -32,12 +30,12 @@ func updateVersion(tx *bolt.Tx) (oldVersion int, e error) {
 		oldVersion = int(binary.LittleEndian.Uint32(b))
 	}
 	// 設置新版本
-	if oldVersion > Version {
+	if oldVersion > version.DB {
 		e = errors.New(`the local database version is greater than the current version`)
 		return
-	} else if Version > oldVersion {
+	} else if version.DB > oldVersion {
 		b = make([]byte, 4)
-		binary.LittleEndian.PutUint32(b, Version)
+		binary.LittleEndian.PutUint32(b, uint32(version.DB))
 		e = bucket.Put(keyVersion, b)
 	}
 	return

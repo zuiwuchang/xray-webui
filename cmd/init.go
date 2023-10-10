@@ -20,12 +20,12 @@ var rootCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		if v {
 			fmt.Println(version.Platform)
-			fmt.Println(version.Version)
+			fmt.Println(version.Version, version.DB)
 			fmt.Println(version.Commit)
 			fmt.Println(version.Date)
 		} else {
 			fmt.Println(version.Platform)
-			fmt.Println(version.Version)
+			fmt.Println(version.Version, version.DB)
 			fmt.Println(version.Commit)
 			fmt.Println(version.Date)
 			fmt.Printf(`Use "%v --help" for more information about this program.

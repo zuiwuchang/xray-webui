@@ -1,1 +1,134 @@
-<p>subscription works!</p>
+<p [ngSwitch]="state">
+    <ng-template ngSwitchCase="run">
+        <p-card header="{{i18n.subscription| translate}}">
+            <p-progressBar mode="indeterminate" [style]="{ height: '6px' }"></p-progressBar>
+        </p-card>
+    </ng-template>
+    <ng-template ngSwitchCase="error">
+        <p-card header="{{i18n.subscription | translate}}">
+            <p-messages severity="error">
+                <ng-template pTemplate>
+                    <div class="ml-2">
+                        <pre class="wrap-pre">{{error}}</pre>
+                    </div>
+                </ng-template>
+            </p-messages>
+            <ng-template pTemplate="footer">
+                <div class="flex justify-content-end">
+                    <p-button label="{{i18n.refresh|translate}}" (onClick)="onClickRefresh()"></p-button>
+                </div>
+            </ng-template>
+        </p-card>
+    </ng-template>
+    <ng-template ngSwitchCase="none">
+        <p-card header="{{i18n.subscription | translate}}">
+            <p-dataView [value]="data" [rows]="data.length" [paginator]="false">
+                <ng-template let-node pTemplate="listItem">
+                    <form [class]="disabledClass('col-12 border-round-md p-2')" #form="ngForm">
+
+                        <ng-container *ngIf="node.add;then addView;else listView"></ng-container>
+                        <ng-template #addView>
+                            <div class="flex flex-row gap-3 align-items-center">
+                                <i class="pi pi-tags text-3xl"></i>
+                                <div class="flex-grow-1">
+                                    <div class="flex md:flex-row flex-column gap-2">
+                                        <div class="relative md:flex-none flex-1">
+                                            <p class="field p-float-label">
+                                                <input type="text" pInputText [(ngModel)]="node.data.name"
+                                                    [disabled]="disabled" class="w-full" appNameValidator name="name"
+                                                    #name="ngModel" />
+                                                <label for="name">{{i18n.name| translate}}</label>
+                                            </p>
+                                            <small *ngIf="name.dirty && name.invalid"
+                                                class="p-error absolute">{{i18n.invalid.name|translate}}</small>
+                                        </div>
+                                        <div class="relative flex-1">
+                                            <p class="field p-float-label">
+                                                <input type="text" pInputText [(ngModel)]="node.data.url"
+                                                    [disabled]="disabled" class="w-full" appUrlValidator name="url"
+                                                    #url="ngModel" />
+                                                <label>{{i18n.url| translate}}</label>
+                                            </p>
+                                            <small *ngIf="url.dirty && url.invalid"
+                                                class="p-error absolute">{{i18n.invalid.url|translate}}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex flex-row gap-3 align-items-center ">
+
+                                    <p-progressSpinner *ngIf="node.run" styleClass="w-2rem h-2rem" strokeWidth="5"
+                                        fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+                                    <i pRipple [class]="formClass(form,'pi pi-plus text-3xl cursor-pointer')"
+                                        pTooltip="{{i18n.action.add|translate}}" tooltipPosition="left"
+                                        (click)="onClickAdd(node,form)"></i>
+                                </div>
+                            </div>
+                        </ng-template>
+                        <ng-template #listView>
+                            <div class="flex flex-row gap-3">
+                                <span class="flex  gap-3 flex-grow-1 align-items-center">
+                                    <i class="pi pi-tags text-3xl"></i>
+                                    <div class="flex-grow-1">
+                                        <ng-container *ngIf="node.view;then viewViewView;else viewEditView">
+                                        </ng-container>
+                                        <ng-template #viewViewView>
+                                            <div>{{node.backup.name}}</div>
+                                            <div>{{node.backup.url}}</div>
+                                        </ng-template>
+                                        <ng-template #viewEditView>
+                                            <div class="flex md:flex-row flex-column gap-2">
+                                                <div class="relative md:flex-none flex-1">
+                                                    <p class="field p-float-label">
+                                                        <input type="text" pInputText [(ngModel)]="node.data.name"
+                                                            [disabled]="disabled" class="w-full" appNameValidator
+                                                            name="name" #name="ngModel" />
+                                                        <label for="name">{{i18n.name| translate}}</label>
+                                                    </p>
+                                                    <small *ngIf="name.dirty && name.invalid"
+                                                        class="p-error absolute">{{i18n.invalid.name|translate}}</small>
+                                                </div>
+                                                <div class="relative flex-1">
+                                                    <p class="field p-float-label">
+                                                        <input type="text" pInputText [(ngModel)]="node.data.url"
+                                                            [disabled]="disabled" class="w-full" appUrlValidator
+                                                            name="url" #url="ngModel" />
+                                                        <label>{{i18n.url| translate}}</label>
+                                                    </p>
+                                                    <small *ngIf="url.dirty && url.invalid"
+                                                        class="p-error absolute">{{i18n.invalid.url|translate}}</small>
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                    </div>
+                                </span>
+                                <div class="flex flex-row gap-3 align-items-center ">
+                                    <p-progressSpinner *ngIf="node.run" styleClass="w-2rem h-2rem" strokeWidth="5"
+                                        fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+                                    <ng-container *ngIf="node.view;then buttonViewView;else buttonEditView">
+                                    </ng-container>
+                                    <ng-template #buttonEditView>
+                                        <i pRipple class="pi pi-times-circle text-3xl cursor-pointer"
+                                            pTooltip="{{i18n.action.cancel|translate}}" tooltipPosition="left"
+                                            (click)="node.view=true"></i>
+                                        <i pRipple [class]="saveClass(form,node,'pi pi-save text-3xl cursor-pointer')"
+                                            pTooltip="{{i18n.action.save|translate}}" tooltipPosition="left"
+                                            (click)="onClickSave(node)"></i>
+                                    </ng-template>
+                                    <ng-template #buttonViewView>
+                                        <i pRipple class="pi pi-file-edit text-3xl cursor-pointer"
+                                            pTooltip="{{i18n.edit|translate}}" tooltipPosition="left"
+                                            (click)="onClickEdit(node)"></i>
+                                        <p-confirmPopup></p-confirmPopup>
+                                        <i pRipple class="pi pi-trash text-3xl cursor-pointer"
+                                            pTooltip="{{i18n.delete|translate}}" tooltipPosition="left"
+                                            (click)="onClickDelete($event,node)"></i>
+                                    </ng-template>
+                                </div>
+                            </div>
+                        </ng-template>
+                    </form>
+                </ng-template>
+            </p-dataView>
+        </p-card>
+    </ng-template>
+</p>

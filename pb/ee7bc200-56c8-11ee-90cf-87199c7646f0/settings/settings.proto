@@ -19,6 +19,38 @@ service Settings {
             body: "*"
         };
     }
+    // 列舉全部訂閱信息
+    rpc ListSubscription (ListSubscriptionRequest) returns (ListSubscriptionResponse){
+        option (google.api.http) = {
+            get: "/api/v1/settings/subscription"
+        };
+    }
+    // 返回指定的訂閱信息
+    rpc GetSubscription (GetSubscriptionRequest) returns (Subscription){
+        option (google.api.http) = {
+            get: "/api/v1/settings/subscription/{id}"
+        };
+    }
+    // 修改訂閱信息
+    rpc PutSubscription (Subscription) returns (PutSubscriptionResponse){
+        option (google.api.http) = {
+            put: "/api/v1/settings/subscription/{id}"
+            body: "*"
+        };
+    }
+    // 新增訂閱
+    rpc AddSubscription (AddSubscriptionRequest) returns (AddSubscriptionResponse){
+        option (google.api.http) = {
+            post: "/api/v1/settings/subscription"
+            body: "*"
+        };
+    }
+    // 刪除訂閱
+    rpc RemoveSubscription (RemoveSubscriptionRequest) returns (RemoveSubscriptionResponse){
+        option (google.api.http) = {
+            delete: "/api/v1/settings/subscription/{id}"
+        };
+    } 
 }
 message General{
 	// 測試速度請求的 url
@@ -34,3 +66,36 @@ message General{
 }
 message GetGeneralRequest{}
 message SetGeneralResponse{}
+message Subscription{
+    // 唯一識別碼
+	uint64 id = 1;
+	// 給人類看的名稱
+	string name = 2;
+	// 訂閱地址
+	string url = 3;
+}
+message ListSubscriptionRequest{}
+message ListSubscriptionResponse{
+    repeated Subscription data = 1;
+}
+message GetSubscriptionRequest{
+    // 唯一識別碼
+	uint64 id = 1;
+}
+message PutSubscriptionResponse{}
+message AddSubscriptionRequest{
+	// 給人類看的名稱
+	string name = 2;
+	// 訂閱地址
+	string url = 3;
+}
+message AddSubscriptionResponse{
+    // 唯一識別碼
+	uint64 id = 1;
+}
+message RemoveSubscriptionRequest{
+    // 唯一識別碼
+	uint64 id = 1;
+}
+message RemoveSubscriptionResponse{
+}

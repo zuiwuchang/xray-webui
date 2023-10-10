@@ -7,8 +7,9 @@
             <ul>
                 <li> angular {{angular}}</li>
                 <ng-container *ngIf="version">
-                    <li> {{version.platform}}</li>
-                    <li> {{version.version}}</li>
+                    <li>{{version.platform}}</li>
+                    <li>{{version.date}} version={{version.version}} db={{version.db}}</li>
+                    <li>{{version.commit}}</li>
                 </ng-container>
                 <ng-container *ngIf="started">
                     <li>start at {{startat}}, started for {{started}}</li>

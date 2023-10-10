@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/zuiwuchang/xray_webui/log"
+	"github.com/zuiwuchang/xray_webui/version"
 	bolt "go.etcd.io/bbolt"
 )
 
@@ -36,17 +37,18 @@ func Init(path string) (e error) {
 		buckets := []manipulator{
 			Strategy{},
 			Settings{},
+			Subscription{},
 		}
 		if oldVersion == 0 {
 			for i := 0; i < len(buckets); i++ {
-				e = buckets[i].Init(tx, Version)
+				e = buckets[i].Init(tx, version.DB)
 				if e != nil {
 					return
 				}
 			}
-		} else if oldVersion < Version {
+		} else if oldVersion < version.DB {
 			for i := 0; i < len(buckets); i++ {
-				e = buckets[i].Upgrade(tx, oldVersion, Version)
+				e = buckets[i].Upgrade(tx, oldVersion, version.DB)
 				if e != nil {
 					return
 				}

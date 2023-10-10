@@ -19,6 +19,7 @@ const routes: Routes = [
   {
     path: 'subscription',
     component: SubscriptionComponent,
+    canDeactivate: [saveGuard],
   },
   {
     path: 'firewall',

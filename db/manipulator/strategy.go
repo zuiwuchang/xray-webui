@@ -215,11 +215,16 @@ func (m Strategy) Import(vals []*data.Strategy) error {
 		}
 	}
 	return _db.Update(func(tx *bolt.Tx) (e error) {
-		bucket := tx.Bucket([]byte(data.StrategyBucket))
-		if bucket == nil {
-			e = fmt.Errorf("bucket not exist : %s", data.StrategyBucket)
+		bucketName := []byte(data.StrategyBucket)
+		e = tx.DeleteBucket(bucketName)
+		if e != bolt.ErrBucketExists {
 			return
 		}
+		bucket, e := tx.CreateBucket(bucketName)
+		if e != nil {
+			return
+		}
+
 		var b []byte
 		var key [4]byte
 		for _, val := range vals {

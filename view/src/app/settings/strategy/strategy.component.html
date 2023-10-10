@@ -14,7 +14,9 @@
                 </ng-template>
             </p-messages>
             <ng-template pTemplate="footer">
-                <p-button label="{{i18n.refresh|translate}}" (onClick)="onClickRefresh()"></p-button>
+                <div class="flex justify-content-end">
+                    <p-button label="{{i18n.refresh|translate}}" (onClick)="onClickRefresh()"></p-button>
+                </div>
             </ng-template>
         </p-card>
     </ng-template>

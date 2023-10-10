@@ -14,10 +14,14 @@ import (
 type Module int
 
 var _general atomic.Value
+var _subscription atomic.Value
 
 func (Module) RegisterGRPC(srv *grpc.Server) {
 	grpc_settings.RegisterSettingsServer(srv, server{})
-	_general.Store(time.Now())
+
+	now := time.Now()
+	_general.Store(now)
+	_subscription.Store(now)
 }
 func (Module) RegisterGateway(gateway *runtime.ServeMux, cc *grpc.ClientConn) error {
 	return grpc_settings.RegisterSettingsHandler(context.Background(), gateway, cc)

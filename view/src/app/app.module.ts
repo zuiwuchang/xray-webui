@@ -28,6 +28,7 @@ import { HomeComponent } from './app/home/home.component';
 import { NotfoundComponent } from './app/notfound/notfound.component';
 import { AboutComponent } from './app/about/about.component';
 
+
 // import defaultLanguage from '../assets/i18n/zh-Hant.json';
 // import { BehaviorSubject } from 'rxjs';
 // class MyTranslateLoader extends TranslateHttpLoader {
@@ -55,7 +56,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
     AppComponent,
     HomeComponent,
     NotfoundComponent,
-    AboutComponent
+    AboutComponent,
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule,

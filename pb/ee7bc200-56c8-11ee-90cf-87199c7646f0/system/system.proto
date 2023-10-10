@@ -33,8 +33,16 @@ message TitleResponse{
 message VersionRequest{
 }
 message VersionResponse{
+    // 服務平臺
     string platform = 1;
+    // 程式版本
     string version = 2;
+    // git 提交號
+    string commit = 3;
+    // 編譯日期 unix
+    string date = 4;
+    // 數據庫版本
+    uint32 db = 5;
 }
 message StartAtRequest{
 }

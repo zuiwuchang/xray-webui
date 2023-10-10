@@ -31,6 +31,11 @@ export class AppComponent implements OnInit {
     this.theme = this.sanitizer.bypassSecurityTrustResourceUrl(`assets/themes/${settingsService.theme.value}/theme.css`)
 
     this._updateLangs(langService)
+    translateService.stream('primeng').subscribe({
+      next: (res) => {
+        primengConfig.setTranslation(res)
+      }
+    })
     translateService.onLangChange.subscribe(() => {
       this.apps = [
         {
@@ -40,7 +45,7 @@ export class AppComponent implements OnInit {
         },
         {
           label: translateService.instant(i18n.menuSettings.strategy),
-          icon: 'pi pi-tags',
+          icon: 'pi pi-compass',
           routerLink: ['/settings/strategy'],
         },
         {

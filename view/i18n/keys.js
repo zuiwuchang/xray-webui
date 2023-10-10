@@ -1,5 +1,6 @@
 const { make } = require('./i18n');
 exports.keys = {
+    primeng: require('./primeng').primeng,
     home: make('H', '主頁'),
     subscription: make('s', '訂閱'),
     notfound: make('NF', '頁面未找到：'),
@@ -18,6 +19,7 @@ exports.keys = {
     },
     refresh: make('R', '刷新'),
     edit: make('E', '編輯'),
+    delete: make('D', '刪除'),
     domain: make('D0', '域名'),
     strategy: {
         __id: '_s',
@@ -50,6 +52,11 @@ exports.keys = {
         warn: make('W', '警告'),
         waitDataSave: make('ws', '正在存儲數據，請稍等。'),
         updated: make('U', '數據已更新'),
+        save: make('s', '保存'),
+        cancel: make('c', '取消'),
+        add: make('a', '添加'),
+        remove: make('R', "數據一旦刪除將無法恢復，請確認？"),
+        removeSuccess: make('r', '數據刪除成功'),
     },
     general: {
         __id: '_g',
@@ -59,4 +66,11 @@ exports.keys = {
         strategy: make('s', '策略'),
         custom: make('c', '自定義設定')
     },
+    name: make('N', '名稱'),
+    url: make('U', '網址'),
+    invalid: {
+        __id: '_i',
+        name: make('n', '名稱不能爲空白'),
+        url: make('u', '訂閱網址必須是 http 或 https'),
+    }
 }

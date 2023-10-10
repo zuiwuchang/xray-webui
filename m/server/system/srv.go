@@ -40,6 +40,9 @@ var (
 	versionResponse      = grpc_system.VersionResponse{
 		Platform: version.Platform,
 		Version:  version.Version,
+		Commit:   version.Commit,
+		Date:     version.Date,
+		Db:       uint32(version.DB),
 	}
 )
 

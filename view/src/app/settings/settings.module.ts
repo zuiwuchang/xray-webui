@@ -18,12 +18,14 @@ import { RippleModule } from 'primeng/ripple';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
+import { ConfirmPopupModule } from 'primeng/confirmpopup';
 
 import { SettingsRoutingModule } from './settings-routing.module';
 import { GeneralComponent } from './general/general.component';
 import { StrategyComponent } from './strategy/strategy.component';
 import { SubscriptionComponent } from './subscription/subscription.component';
 import { FirewallComponent } from './firewall/firewall.component';
+import { SharedModule } from '../shared/shared.module';
 
 
 @NgModule({
@@ -36,11 +38,12 @@ import { FirewallComponent } from './firewall/firewall.component';
   imports: [
     CommonModule, FormsModule,
     TranslateModule,
+    SharedModule,
     CardModule, ProgressBarModule, MessagesModule, MessageModule,
     ButtonModule, TooltipModule, DataViewModule,
     TabViewModule, DialogModule, InputTextareaModule,
     RippleModule, ProgressSpinnerModule, CheckboxModule,
-    InputTextModule,
+    InputTextModule, ConfirmPopupModule,
     SettingsRoutingModule
   ]
 })

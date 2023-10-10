@@ -5,8 +5,16 @@ import { i18n } from 'src/app/i18n';
 import { Closed } from 'src/internal/closed';
 
 interface VersionResponse {
+  // 服務平臺
   platform: string
+  // 程式版本
   version: string
+  // git 提交號
+  commit: string
+  // 編譯日期 unix
+  date: string
+  // 數據庫版本
+  db: number
 }
 interface StartAtResponse {
   result: string
@@ -33,10 +41,7 @@ export class AboutComponent extends Closed implements OnInit {
 
     httpClient.get<VersionResponse>('/api/v1/system/version').pipe(this.takeUntil()).subscribe({
       next: (resp) => {
-        this.version = {
-          platform: resp.platform,
-          version: resp.version,
-        }
+        this.version = resp
       },
       error: (e) => {
         console.warn(e)
