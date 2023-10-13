@@ -9,14 +9,13 @@ import (
 	"github.com/zuiwuchang/xray_webui/js"
 	"github.com/zuiwuchang/xray_webui/log"
 	"github.com/zuiwuchang/xray_webui/m/web"
-	"google.golang.org/grpc"
 )
 
 type Firewall struct {
 	web.Helper
 }
 
-func (h Firewall) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
+func (h Firewall) Register(router *gin.RouterGroup) {
 	r := router.Group(`firewall`)
 	r.GET(``, h.get)
 	r.HEAD(``, h.get)

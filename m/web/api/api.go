@@ -7,7 +7,6 @@ import (
 	"github.com/zuiwuchang/xray_webui/configure"
 	"github.com/zuiwuchang/xray_webui/m/web"
 	v1 "github.com/zuiwuchang/xray_webui/m/web/api/v1"
-	"google.golang.org/grpc"
 )
 
 const BaseURL = `api`
@@ -18,7 +17,7 @@ type Helper struct {
 
 var maxBytesReader int64
 
-func (h Helper) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
+func (h Helper) Register(router *gin.RouterGroup) {
 	maxBytesReader = int64(configure.Default().HTTP.Option.MaxRecvMsgSize)
 	r := router.Group(BaseURL)
 	if maxBytesReader > 0 {
@@ -29,7 +28,7 @@ func (h Helper) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
 		v1.Helper{},
 	}
 	for _, m := range ms {
-		m.Register(cc, r)
+		m.Register(r)
 	}
 }
 

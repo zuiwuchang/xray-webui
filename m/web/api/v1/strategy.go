@@ -11,7 +11,6 @@ import (
 	"github.com/zuiwuchang/xray_webui/db/manipulator"
 	"github.com/zuiwuchang/xray_webui/log"
 	"github.com/zuiwuchang/xray_webui/m/web"
-	"google.golang.org/grpc"
 )
 
 type Strategy struct {
@@ -20,7 +19,7 @@ type Strategy struct {
 	modtime atomic.Value
 }
 
-func (h *Strategy) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
+func (h *Strategy) Register(router *gin.RouterGroup) {
 	h.maxage = 0
 	h.modtime.Store(time.Now())
 

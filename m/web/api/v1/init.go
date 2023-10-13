@@ -2,7 +2,6 @@ package v1
 
 import (
 	"github.com/zuiwuchang/xray_webui/m/web"
-	"google.golang.org/grpc"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,7 +12,7 @@ type Helper struct {
 	web.Helper
 }
 
-func (h Helper) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
+func (h Helper) Register(router *gin.RouterGroup) {
 	r := router.Group(BaseURL)
 
 	ms := []web.IHelper{
@@ -23,6 +22,6 @@ func (h Helper) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
 		&Settings{},
 	}
 	for _, m := range ms {
-		m.Register(cc, r)
+		m.Register(r)
 	}
 }

@@ -8,17 +8,6 @@ import (
 
 var LICENSE embed.FS
 
-//go:embed document/*
-var document embed.FS
-
-func Document() http.FileSystem {
-	f, e := fs.Sub(document, `document`)
-	if e != nil {
-		panic(e)
-	}
-	return http.FS(f)
-}
-
 //go:embed public/*
 var static embed.FS
 

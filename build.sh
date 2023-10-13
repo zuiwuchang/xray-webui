@@ -22,7 +22,6 @@ function help(){
     if [[ $View == 1 ]];then
         echo "  view              view build helper"
     fi
-    echo "  grpc              grpc protoc helper"
     echo "  pack              pack release"
     echo "  run               run project"
     echo "  docker            docker build helper"
@@ -60,11 +59,6 @@ case "$1" in
             echo "Run '$0 --help' for usage."
             exit 1
         fi
-    ;;
-    grpc)
-        shift
-        export Command="$0 grpc"
-        "$BashDir/script/grpc.sh" "$@"
     ;;
     run)
         shift

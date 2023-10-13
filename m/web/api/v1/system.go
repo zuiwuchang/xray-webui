@@ -8,7 +8,6 @@ import (
 	"github.com/zuiwuchang/xray_webui/configure"
 	"github.com/zuiwuchang/xray_webui/m/web"
 	"github.com/zuiwuchang/xray_webui/version"
-	"google.golang.org/grpc"
 )
 
 type System struct {
@@ -17,7 +16,7 @@ type System struct {
 	startAt time.Time
 }
 
-func (h *System) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
+func (h *System) Register(router *gin.RouterGroup) {
 	h.maxage = 60
 	h.startAt = time.Now()
 

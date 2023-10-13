@@ -3,10 +3,12 @@ package web
 import (
 	"log/slog"
 	"net"
+	"net/http"
 	"os"
 
 	"github.com/zuiwuchang/xray_webui/configure"
 	"github.com/zuiwuchang/xray_webui/log"
+	"github.com/zuiwuchang/xray_webui/m/register"
 
 	"github.com/gin-gonic/gin"
 )
@@ -31,6 +33,8 @@ func Run(cnf *configure.HTTP, debug bool) {
 		`addr`, cnf.Addr,
 		`h2`, h2,
 	)
+	mux := gin.Default()
+	mux.RedirectTrailingSlash = false
 	// basic auth
 	var accounts map[string]string
 	if len(cnf.Accounts) != 0 {
@@ -38,13 +42,14 @@ func Run(cnf *configure.HTTP, debug bool) {
 		for _, item := range cnf.Accounts {
 			accounts[item.Name] = item.Password
 		}
+		mux.RouterGroup.Use(gin.BasicAuth(accounts))
 	}
 	// serve
-	s := newServer(l, cnf.Swagger, debug, &cnf.Option, accounts)
+	register.HTTP(mux)
 	if h2 {
-		e = s.ServeTLS(cnf.CertFile, cnf.KeyFile)
+		http.ServeTLS(l, mux, cnf.CertFile, cnf.KeyFile)
 	} else {
-		e = s.Serve()
+		http.Serve(l, mux)
 	}
 	if e != nil {
 		slog.Error(`serve fail`,

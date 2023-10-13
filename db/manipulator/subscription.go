@@ -8,8 +8,6 @@ import (
 	"github.com/zuiwuchang/xray_webui/db/data"
 	"github.com/zuiwuchang/xray_webui/log"
 	bolt "go.etcd.io/bbolt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type Subscription struct {
@@ -75,8 +73,7 @@ func (m Subscription) Put(node *data.Subscription) (e error) {
 		binary.LittleEndian.PutUint64(key[:], node.ID)
 		val := bucket.Get(key[:])
 		if val == nil {
-			return status.Errorf(codes.NotFound, "key not exist : %s.%v", data.SubscriptionBucket, node.ID)
-
+			return fmt.Errorf("key not exist : %s.%v", data.SubscriptionBucket, node.ID)
 		}
 		return bucket.Put(key[:], value)
 	})
@@ -101,7 +98,7 @@ func (m Subscription) get(t *bolt.Tx, id uint64) (result *data.Subscription, e e
 	binary.LittleEndian.PutUint64(key[:], id)
 	val := bucket.Get(key[:])
 	if val == nil {
-		e = status.Errorf(codes.NotFound, "key not exist : %s.%v", data.SubscriptionBucket, id)
+		e = fmt.Errorf("key not exist : %s.%v", data.SubscriptionBucket, id)
 		return
 	}
 	var node data.Subscription

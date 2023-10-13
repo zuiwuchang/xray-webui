@@ -7,19 +7,17 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/zuiwuchang/xray_webui/m/web"
 	"github.com/zuiwuchang/xray_webui/m/web/api"
 	"github.com/zuiwuchang/xray_webui/static"
 	"github.com/zuiwuchang/xray_webui/version"
-	"google.golang.org/grpc"
 )
 
 const (
 	cacheControl = `max-age=300`
 )
 
-func HTTP(cc *grpc.ClientConn, engine *gin.Engine, gateway *runtime.ServeMux, swagger bool) {
+func HTTP(engine *gin.Engine) {
 	var w web.Helper
 	compression := w.Compression()
 	engine.NoRoute(func(c *gin.Context) {
@@ -30,10 +28,6 @@ func HTTP(cc *grpc.ClientConn, engine *gin.Engine, gateway *runtime.ServeMux, sw
 	}, func(c *gin.Context) {
 		p := c.Request.URL.Path
 		if strings.HasPrefix(p, `/api/`) {
-			// if c.Request.Method == `GET` || c.Request.Method == `HEAD` {
-			// 	c.Request.Header.Set(`Method`, c.Request.Method)
-			// }
-			// gateway.ServeHTTP(c.Writer, c.Request)
 			c.String(http.StatusNotImplemented, `api not implemented`)
 		} else {
 			readerFilesystem(c, static.View(), p, true)
@@ -41,17 +35,13 @@ func HTTP(cc *grpc.ClientConn, engine *gin.Engine, gateway *runtime.ServeMux, sw
 	})
 	registerFilesystem(engine.Group(`static`).Use(compression), static.Static())
 
-	if swagger {
-		registerFilesystem(engine.Group(`document`).Use(compression), static.Document())
-	}
-
 	// LICENSE
 	engine.GET(`LICENSE`, compression, readerLICENSE)
 	engine.HEAD(`LICENSE`, compression, readerLICENSE)
 
 	// other gin route
 	var apis api.Helper
-	apis.Register(cc, &engine.RouterGroup)
+	apis.Register(&engine.RouterGroup)
 }
 func registerFilesystem(routers gin.IRoutes, fs http.FileSystem) {
 	f := func(c *gin.Context) {

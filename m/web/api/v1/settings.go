@@ -15,7 +15,6 @@ import (
 	"github.com/zuiwuchang/xray_webui/db/manipulator"
 	"github.com/zuiwuchang/xray_webui/log"
 	"github.com/zuiwuchang/xray_webui/m/web"
-	"google.golang.org/grpc"
 )
 
 type Settings struct {
@@ -26,7 +25,7 @@ type Settings struct {
 	element      atomic.Value
 }
 
-func (h *Settings) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
+func (h *Settings) Register(router *gin.RouterGroup) {
 	h.maxage = 0
 	now := time.Now()
 	h.general.Store(now)

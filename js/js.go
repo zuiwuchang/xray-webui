@@ -1,11 +1,11 @@
 package js
 
 import (
+	"errors"
+
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 type Runtime struct {
@@ -26,12 +26,12 @@ func New(path string) (runtime *Runtime, e error) {
 	}
 	o, ok := ret.(*goja.Object)
 	if !ok {
-		e = status.Error(codes.Unimplemented, `script must exports an Object`)
+		e = errors.New(`script must exports an Object`)
 		return
 	}
 	create, ok := goja.AssertFunction(o.Get(`create`))
 	if !ok {
-		e = status.Error(codes.Unimplemented, `script must export function create`)
+		e = errors.New(`script must export function create`)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (vm *Runtime) Check() (e error) {
 	for _, name := range names {
 		_, ok := goja.AssertFunction(self.ToObject(vm.Runtime).Get(name))
 		if !ok {
-			e = status.Error(codes.Unimplemented, `script method `+name+` not implemented`)
+			e = errors.New(`script method ` + name + ` not implemented`)
 			return
 		}
 	}
@@ -70,7 +70,7 @@ func (vm *Runtime) assertFunction(name string) (self goja.Value, f, destroy goja
 	}
 	o, ok := self.(*goja.Object)
 	if !ok {
-		e = status.Error(codes.FailedPrecondition, `script method create must  return Provider`)
+		e = errors.New(`script method create must  return Provider`)
 		return
 	}
 	val := o.Get(`destroy`)
@@ -82,7 +82,7 @@ func (vm *Runtime) assertFunction(name string) (self goja.Value, f, destroy goja
 	val = o.Get(name)
 	callable, ok = goja.AssertFunction(val)
 	if !ok {
-		e = status.Error(codes.Unimplemented, `script method `+name+` not implemented`)
+		e = errors.New(`script method ` + name + ` not implemented`)
 		if destroy != nil {
 			destroy(self)
 		}
