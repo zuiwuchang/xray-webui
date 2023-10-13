@@ -1,1 +1,77 @@
-<p>home works!</p>
+<p [ngSwitch]="state">
+    <ng-template ngSwitchCase="run">
+        <p-card header="{{i18n.proxy.element| translate}}">
+            <p-progressBar mode="indeterminate" [style]="{ height: '6px' }"></p-progressBar>
+        </p-card>
+    </ng-template>
+    <ng-template ngSwitchCase="error">
+        <p-card header="{{i18n.proxy.element | translate}}">
+            <p-messages severity="error">
+                <ng-template pTemplate>
+                    <div class="ml-2">
+                        <pre class="wrap-pre">{{error}}</pre>
+                    </div>
+                </ng-template>
+            </p-messages>
+            <ng-template pTemplate="footer">
+                <div class="flex justify-content-end">
+                    <p-button label="{{i18n.refresh|translate}}" (onClick)="onClickRefresh()"></p-button>
+                </div>
+            </ng-template>
+        </p-card>
+    </ng-template>
+    <ng-template ngSwitchCase="ok">
+        <p-accordion [activeIndex]="2">
+            <p-accordionTab>
+                <ng-template pTemplate="header">
+                    <div class="flex align-items-center">
+                        <i class="pi pi-slack mr-2"></i>
+                        <span class="nowrap vertical-align-middle">{{i18n.proxy.none|translate}}</span>
+                    </div>
+                </ng-template>
+            </p-accordionTab>
+
+            <p-accordionTab *ngFor="let item of items; let i=index; let odd=odd; trackBy: trackById">
+                <ng-template pTemplate="header">
+                    <div class="flex align-items-center">
+                        <i class="pi pi-tags mr-2"></i>
+                        <ng-container *ngIf="i==0 then manualView;else autoView;"></ng-container>
+                        <ng-template #manualView>
+                            <span class="nowrap vertical-align-middle">{{i18n.proxy.manual|translate}} -
+                                {{item.data.length}}</span>
+                        </ng-template>
+                        <ng-template #autoView>
+                            <span class="nowrap vertical-align-middle">{{item.name}} - {{item.data.length}}</span>
+                        </ng-template>
+                        <i class="primary-color pi pi-check ml-2 ml-2" *ngIf="item.run"></i>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="content">
+                    <div [class]="disabledClass('flex flex-wrap gap-2')">
+                        <i pRipple class="pi pi-sort-amount-down-alt text-2xl cursor-pointer"
+                            pTooltip="{{i18n.proxy.sort|translate}}" tooltipPosition="bottom"
+                            (click)="onClickSort(item)"></i>
+                        <i pRipple class="pi pi-bolt text-2xl cursor-pointer" pTooltip="{{i18n.proxy.test|translate}}"
+                            tooltipPosition="bottom" (click)="onClickTest(item)"></i>
+                        <i pRipple class="pi pi-plus text-2xl cursor-pointer" pTooltip="{{i18n.proxy.add|translate}}"
+                            tooltipPosition="bottom" (click)="onClickAdd(item)"></i>
+                        <i pRipple class="pi pi-times text-2xl cursor-pointer" pTooltip="{{i18n.proxy.clear|translate}}"
+                            tooltipPosition="bottom" (click)="onClickClear(item)"></i>
+                        <i pRipple class="pi pi-qrcode text-2xl cursor-pointer" pTooltip="{{i18n.proxy.qr|translate}}"
+                            tooltipPosition="bottom" (click)="onClickQR(item)"></i>
+                        <i pRipple class="pi pi-copy text-2xl cursor-pointer" pTooltip="{{i18n.proxy.copy|translate}}"
+                            tooltipPosition="bottom" (click)="onClickCopy(item)"></i>
+                        <i pRipple class="pi pi-sync text-2xl cursor-pointer" pTooltip="{{i18n.proxy.update|translate}}"
+                            tooltipPosition="bottom" (click)="onClickUpdate(item)" *ngIf="i!=0"></i>
+                    </div>
+                    <br>
+                    <p-dropdown class="w-full" [styleClass]="'w-full'" [options]="strategys" [(ngModel)]="strategy"
+                        [disabled]="disabled" optionLabel="name" optionValue="value">
+                    </p-dropdown>
+                </ng-template>
+            </p-accordionTab>
+
+        </p-accordion>
+    </ng-template>
+</p>

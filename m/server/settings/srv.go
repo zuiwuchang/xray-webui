@@ -11,7 +11,6 @@ import (
 	"github.com/zuiwuchang/xray_webui/log"
 	"github.com/zuiwuchang/xray_webui/m/helper"
 	grpc_settings "github.com/zuiwuchang/xray_webui/protocol/settings"
-	bolt "go.etcd.io/bbolt"
 	"google.golang.org/grpc/codes"
 )
 
@@ -30,25 +29,22 @@ func (s server) GetGeneral(ctx context.Context, req *grpc_settings.GetGeneralReq
 		func(nobody bool) error {
 			if nobody {
 				resp = &emptyGeneral
-			} else {
-				var m manipulator.Settings
-				data, e := m.GetGeneral()
-				if e != nil {
-					if e != nil {
-						slog.Warn("settings get general",
-							log.Error, e,
-						)
-					}
-					return e
-				} else {
-					resp = &grpc_settings.General{
-						Url:      data.URL,
-						Run:      data.Run,
-						Firewall: data.Firewall,
-						Strategy: data.Strategy,
-						Userdata: data.Userdata,
-					}
-				}
+				return nil
+			}
+			var m manipulator.Settings
+			data, e := m.GetGeneral()
+			if e != nil {
+				slog.Warn("settings get general",
+					log.Error, e,
+				)
+				return e
+			}
+			resp = &grpc_settings.General{
+				Url:      data.URL,
+				Run:      data.Run,
+				Firewall: data.Firewall,
+				Strategy: data.Strategy,
+				Userdata: data.Userdata,
 			}
 			return nil
 		},
@@ -111,28 +107,26 @@ func (s server) ListSubscription(ctx context.Context, req *grpc_settings.ListSub
 		func(nobody bool) error {
 			if nobody {
 				resp = &emptyListSubscriptionResponse
+				return nil
+			}
+			var m manipulator.Subscription
+			items, e := m.List()
+			if e != nil {
+				slog.Warn("settings list subscription",
+					log.Error, e,
+				)
+				return e
+			} else if len(items) == 0 {
+				resp = &emptyListSubscriptionResponse
 			} else {
-				var m manipulator.Subscription
-				items, e := m.List()
-				if e != nil {
-					if e != nil {
-						slog.Warn("settings list subscription",
-							log.Error, e,
-						)
-					}
-					return e
-				} else if len(items) == 0 {
-					resp = &emptyListSubscriptionResponse
-				} else {
-					resp = &grpc_settings.ListSubscriptionResponse{
-						Data: make([]*grpc_settings.Subscription, len(items)),
-					}
-					for i, item := range items {
-						resp.Data[i] = &grpc_settings.Subscription{
-							Id:   item.ID,
-							Name: item.Name,
-							Url:  item.URL,
-						}
+				resp = &grpc_settings.ListSubscriptionResponse{
+					Data: make([]*grpc_settings.Subscription, len(items)),
+				}
+				for i, item := range items {
+					resp.Data[i] = &grpc_settings.Subscription{
+						Id:   item.ID,
+						Name: item.Name,
+						Url:  item.URL,
 					}
 				}
 			}
@@ -152,23 +146,20 @@ func (s server) GetSubscription(ctx context.Context, req *grpc_settings.GetSubsc
 		func(nobody bool) error {
 			if nobody {
 				resp = &emptySubscription
-			} else {
-				var m manipulator.Subscription
-				item, e := m.Get(req.Id)
-				if e != nil {
-					if e != nil {
-						slog.Warn("settings get subscription",
-							log.Error, e,
-						)
-					}
-					return e
-				} else {
-					resp = &grpc_settings.Subscription{
-						Id:   item.ID,
-						Name: item.Name,
-						Url:  item.URL,
-					}
-				}
+				return nil
+			}
+			var m manipulator.Subscription
+			item, e := m.Get(req.Id)
+			if e != nil {
+				slog.Warn("settings get subscription",
+					log.Error, e,
+				)
+				return e
+			}
+			resp = &grpc_settings.Subscription{
+				Id:   item.ID,
+				Name: item.Name,
+				Url:  item.URL,
 			}
 			return nil
 		},
@@ -236,14 +227,102 @@ var emptyRemoveSubscriptionResponse grpc_settings.RemoveSubscriptionResponse
 func (s server) RemoveSubscription(ctx context.Context, req *grpc_settings.RemoveSubscriptionRequest) (resp *grpc_settings.RemoveSubscriptionResponse, e error) {
 	var m manipulator.Subscription
 	e = m.Remove(req.Id)
-	if e == nil {
-		_subscription.Store(time.Now())
-	} else if e == bolt.ErrBucketNotFound {
-		_subscription.Store(time.Now())
-		e = nil
-	} else {
+	if e != nil {
+		slog.Warn("settings remove subscription",
+			log.Error, e,
+		)
 		return
 	}
+	slog.Info("settings remove subscription",
+		`id`, req.Id,
+	)
+	_subscription.Store(time.Now())
 	resp = &emptyRemoveSubscriptionResponse
+	return
+}
+
+var emptyListElementResponse grpc_settings.ListElementResponse
+
+func (s server) ListElement(ctx context.Context, req *grpc_settings.ListElementRequest) (resp *grpc_settings.ListElementResponse, e error) {
+	s.SetHTTPCacheMaxAge(ctx, 0)
+	modtime := _subscription.Load().(time.Time)
+	modtime0 := _element.Load().(time.Time)
+	if modtime.Before(modtime0) {
+		modtime = modtime0
+	}
+	e = s.ServeMessage(ctx,
+		modtime,
+		func(nobody bool) error {
+			if nobody {
+				resp = &emptyListElementResponse
+				return nil
+			}
+
+			var mSubscription manipulator.Subscription
+			subscriptions, e := mSubscription.List()
+			if e != nil {
+				slog.Warn("settings list element",
+					log.Error, e,
+				)
+				return e
+			}
+			result := grpc_settings.ListElementResponse{
+				Data: make([]*grpc_settings.Group, 1, 1+len(subscriptions)),
+			}
+			items, e := s.getElements(0)
+			if e != nil {
+				slog.Warn("settings list element",
+					log.Error, e,
+				)
+				return e
+			}
+			result.Data[0] = &grpc_settings.Group{
+				Id:   0,
+				Name: `manual`,
+				Url:  ``,
+				Data: items,
+			}
+
+			for _, subscription := range subscriptions {
+				e = ctx.Err()
+				if e != nil {
+					return e
+				}
+				items, e = s.getElements(subscription.ID)
+				if e != nil {
+					slog.Warn("settings list element",
+						log.Error, e,
+					)
+					return e
+				}
+				result.Data = append(result.Data, &grpc_settings.Group{
+					Id:   subscription.ID,
+					Name: subscription.Name,
+					Url:  subscription.URL,
+					Data: items,
+				})
+			}
+			resp = &result
+			return nil
+		},
+	)
+	return
+}
+func (s server) getElements(id uint64) (result []*grpc_settings.Element, e error) {
+	var m manipulator.Element
+	items, e := m.List(id)
+	if e != nil {
+		return
+	}
+	if len(items) == 0 {
+		return
+	}
+	result = make([]*grpc_settings.Element, len(items))
+	for j, item := range items {
+		result[j] = &grpc_settings.Element{
+			Id:  item.ID,
+			Url: item.URL,
+		}
+	}
 	return
 }

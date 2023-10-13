@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 
 // import ngx-translate and the http loader
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -19,6 +20,10 @@ import { MenuModule } from 'primeng/menu';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { AccordionModule } from 'primeng/accordion';
 import { ToastModule } from 'primeng/toast';
+import { CardModule } from 'primeng/card';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { DropdownModule } from 'primeng/dropdown';
+import { RippleModule } from 'primeng/ripple';
 
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
@@ -60,6 +65,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule,
+    FormsModule,
     // ngx-translate and the loader module
     HttpClientModule,
     TranslateModule.forRoot({
@@ -73,7 +79,8 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
 
     ToolbarModule, ButtonModule, TooltipModule, SidebarModule,
     MessagesModule, MessageModule, MenuModule, ProgressSpinnerModule,
-    AccordionModule, ToastModule,
+    AccordionModule, ToastModule, CardModule, ProgressBarModule,
+    DropdownModule, RippleModule,
 
     RouterModule, AppRoutingModule
   ],

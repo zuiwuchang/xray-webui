@@ -21,6 +21,11 @@ export class GeneralComponent extends Closed implements OnInit, Deactivate {
     private readonly toastService: ToastService,
   ) {
     super()
+    translateService.onLangChange.pipe(this.takeUntil()).subscribe({
+      next: () => {
+        this._updateStrategys()
+      },
+    })
   }
   state = State.none
   error = ''
@@ -39,6 +44,7 @@ export class GeneralComponent extends Closed implements OnInit, Deactivate {
     userdata: '',
   }
   ngOnInit(): void {
+    this._updateStrategys()
     this.onClickRefresh()
   }
   onClickRefresh() {
@@ -58,7 +64,7 @@ export class GeneralComponent extends Closed implements OnInit, Deactivate {
           strategy: resp.strategy,
           userdata: resp.userdata,
         }
-        this.state = State.none
+        this.state = State.ok
       }),
       error: (e) => dely.do(() => {
         console.warn(e)
@@ -111,5 +117,36 @@ export class GeneralComponent extends Closed implements OnInit, Deactivate {
     this.toastService.add({
       severity: 'warn', summary: this.translateService.instant(i18n.action.warn), detail: this.translateService.instant(i18n.action.waitDataSave)
     })
+  }
+  strategys: Array<{ name: string, value: number | string }> = []
+
+  private _updateStrategys() {
+    const translate = this.translateService
+    this.strategys = [
+      {
+        name: translate.instant(i18n.strategy.default),
+        value: 1,
+      },
+      {
+        name: translate.instant(i18n.strategy.global),
+        value: 2,
+      },
+      {
+        name: translate.instant(i18n.strategy.public),
+        value: 3,
+      },
+      {
+        name: translate.instant(i18n.strategy.proxy),
+        value: 4,
+      },
+      {
+        name: translate.instant(i18n.strategy.korea),
+        value: 5,
+      },
+      {
+        name: translate.instant(i18n.strategy.direct),
+        value: 6,
+      },
+    ]
   }
 }

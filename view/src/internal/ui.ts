@@ -17,7 +17,7 @@ export class Delay {
      */
     static default(): Delay {
         return new Delay(Date.now() + 400)
-        return new Delay(Date.now() + (environment.production ? 400 : 0))
+        // return new Delay(Date.now() + (environment.production ? 400 : 0))
     }
     constructor(readonly deadline: number) { }
     /**

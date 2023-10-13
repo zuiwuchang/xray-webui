@@ -50,6 +50,10 @@
 
 /* 主題相關 */
 
+.primary-color {
+    color: var(--primary-color);
+}
+
 // 將主題變量設置到 body
 body {
     font-family: var(--font-family);

@@ -69,7 +69,7 @@ export class SubscriptionComponent extends Closed implements OnInit {
             }
           }))
         }
-        this.state = State.none
+        this.state = State.ok
       }),
       error: (e) => dely.do(() => {
         console.warn(e)

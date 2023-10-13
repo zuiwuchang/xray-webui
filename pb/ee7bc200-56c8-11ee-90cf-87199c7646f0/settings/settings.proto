@@ -50,7 +50,27 @@ service Settings {
         option (google.api.http) = {
             delete: "/api/v1/settings/subscription/{id}"
         };
-    } 
+    }
+
+    // 返回訂閱節點
+    rpc ListElement (ListElementRequest) returns (ListElementResponse){
+        option (google.api.http) = {
+            get: "/api/v1/settings/element"
+        };
+    }
+
+    // 更新訂閱的節點
+    rpc UpdateElement (UpdateElementRequest) returns (UpdateElementResponse){
+        option (google.api.http) = {
+            post: "/api/v1/settings/element/{id}"
+        };
+    }
+    // 返回節點元信息
+    rpc Metadata (MetadataRequest) returns (MetadataResponse){
+        option (google.api.http) = {
+            post: "/api/v1/settings/metadata"
+        };
+    }
 }
 message General{
 	// 測試速度請求的 url
@@ -98,4 +118,38 @@ message RemoveSubscriptionRequest{
 	uint64 id = 1;
 }
 message RemoveSubscriptionResponse{
+}
+
+// 訂閱節點
+message Element{
+    // 唯一識別碼
+	uint64 id = 1;
+	// 節點信息
+	string url = 3;
+}
+message Group{
+    // 所屬訂閱組
+	uint64 id = 1;
+	// 訂閱名稱
+	string name = 2;
+	// 訂閱地址
+	string url = 3;
+
+    // 代理節點
+    repeated Element data = 4;
+}
+message ListElementRequest{}
+message ListElementResponse{
+    repeated Group data = 1;
+}
+message UpdateElementRequest{
+    uint64 id = 1;
+}
+message UpdateElementResponse{
+    repeated Element data = 4;
+}
+
+message MetadataRequest{}
+message MetadataResponse{
+    repeated Metadata data = 1;
 }

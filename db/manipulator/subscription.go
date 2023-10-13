@@ -132,9 +132,19 @@ func (m Subscription) Add(node *data.Subscription) error {
 		if e != nil {
 			return e
 		}
-		return bucket.Put(key[:], val)
-	})
+		e = bucket.Put(key[:], val)
+		if e != nil {
+			return e
+		}
 
+		// 創建 element
+		bucket, e = t.CreateBucketIfNotExists([]byte(data.ElementBucket))
+		if e != nil {
+			return e
+		}
+		_, e = bucket.CreateBucketIfNotExists(key[:])
+		return e
+	})
 }
 
 // 刪除記錄
@@ -148,9 +158,6 @@ func (m Subscription) Remove(id uint64) error {
 		binary.LittleEndian.PutUint64(key[:], id)
 		e := bucket.Delete(key[:])
 		if e != nil {
-			if e == bolt.ErrBucketNotFound {
-				return nil
-			}
 			return e
 		}
 		// 刪除 訂閱
@@ -159,10 +166,10 @@ func (m Subscription) Remove(id uint64) error {
 			return nil
 		}
 		e = bucket.DeleteBucket(key[:])
-		if e != nil {
-			return e
+		if e == bolt.ErrBucketNotFound {
+			return nil
 		}
-		return nil
+		return e
 	})
 }
 func (m Subscription) Import(vals []*data.Subscription) error {
@@ -173,6 +180,13 @@ func (m Subscription) Import(vals []*data.Subscription) error {
 			return
 		}
 		bucket, e := tx.CreateBucket(bucketName)
+		if e != nil {
+			return
+		} else if len(vals) == 0 {
+			return
+		}
+
+		bucketElement, e := tx.CreateBucketIfNotExists([]byte(data.ElementBucket))
 		if e != nil {
 			return
 		}
@@ -188,6 +202,12 @@ func (m Subscription) Import(vals []*data.Subscription) error {
 			}
 			binary.LittleEndian.PutUint64(key[:], val.ID)
 			e = bucket.Put(key[:], b)
+			if e != nil {
+				return
+			}
+
+			// 創建 element
+			_, e = bucketElement.CreateBucketIfNotExists(key[:])
 			if e != nil {
 				return
 			}

@@ -16,7 +16,9 @@ type Helper struct {
 func (h Helper) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
 	r := router.Group(BaseURL)
 
-	ms := []web.IHelper{}
+	ms := []web.IHelper{
+		&System{},
+	}
 	for _, m := range ms {
 		m.Register(cc, r)
 	}

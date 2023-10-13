@@ -20,7 +20,7 @@
             </ng-template>
         </p-card>
     </ng-template>
-    <ng-template ngSwitchCase="none">
+    <ng-template ngSwitchCase="ok">
         <p-card header="{{i18n.menuSettings.strategy | translate}}">
             <p-dataView [value]="data" [rows]="6" [paginator]="false">
                 <ng-template let-node pTemplate="listItem">

@@ -19,6 +19,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
+import { DropdownModule } from 'primeng/dropdown';
 
 import { SettingsRoutingModule } from './settings-routing.module';
 import { GeneralComponent } from './general/general.component';
@@ -43,7 +44,7 @@ import { SharedModule } from '../shared/shared.module';
     ButtonModule, TooltipModule, DataViewModule,
     TabViewModule, DialogModule, InputTextareaModule,
     RippleModule, ProgressSpinnerModule, CheckboxModule,
-    InputTextModule, ConfirmPopupModule,
+    InputTextModule, ConfirmPopupModule, DropdownModule,
     SettingsRoutingModule
   ]
 })

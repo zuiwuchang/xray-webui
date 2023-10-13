@@ -72,5 +72,20 @@ exports.keys = {
         __id: '_i',
         name: make('n', '名稱不能爲空白'),
         url: make('u', '訂閱網址必須是 http 或 https'),
-    }
+    },
+    proxy: {
+        __id: '_p',
+        element: make('E', '代理節點'),
+        none: make('N', '服務尚未啓動'),
+        started: make('S', '服務已經啓動'),
+        manual: make('M', '手動節點'),
+
+        sort: make('s', '速度排序'),
+        test: make('t', '測試速度'),
+        add: make('a', '添加節點'),
+        clear: make('ca', '清空節點'),
+        qr: make('q', '分享二維碼'),
+        copy: make('c', '複製鏈接'),
+        update: make('u', '更新訂閱'),
+    },
 }

@@ -56,7 +56,7 @@ export class StrategyComponent extends Closed implements OnInit {
     this.httpClient.get<ListResponse>('/api/v1/strategy').pipe(this.takeUntil()).subscribe({
       next: (resp) => dely.do(() => {
         this.data = resp.data
-        this.state = State.none
+        this.state = State.ok
       }),
       error: (e) => dely.do(() => {
         console.warn(e)

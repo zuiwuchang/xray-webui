@@ -38,6 +38,7 @@ func Init(path string) (e error) {
 			Strategy{},
 			Settings{},
 			Subscription{},
+			Element{},
 		}
 		if oldVersion == 0 {
 			for i := 0; i < len(buckets); i++ {

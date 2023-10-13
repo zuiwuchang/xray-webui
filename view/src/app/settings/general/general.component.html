@@ -20,7 +20,7 @@
             </ng-template>
         </p-card>
     </ng-template>
-    <ng-template ngSwitchCase="none">
+    <ng-template ngSwitchCase="ok">
         <p-card header="{{i18n.menuSettings.general | translate}}">
             <div class="formgrid grid">
                 <p class="field col-12 p-float-label">
@@ -37,7 +37,10 @@
                         inputId="firewall" [disabled]="disabled"></p-checkbox>
                 </p>
                 <p class="field col-12 md:col-4 flex justify-content-start align-items-center">
-                    <label for="float-input-state"
+                    <p-dropdown class="w-full" [styleClass]="'w-full'" [options]="strategys" [(ngModel)]="data.strategy"
+                        [disabled]="disabled" optionLabel="name" optionValue="value">
+                    </p-dropdown>
+                    <!-- <label for="float-input-state"
                         [class]="disabled?'nowrap p-disabled ':'nowrap'">{{i18n.general.strategy|translate}}</label>
                     <select id="float-input-state"
                         class="ml-2 w-full text-base  surface-overlay p-2 border-1 border-solid surface-border border-round outline-none focus:border-primary"
@@ -48,7 +51,7 @@
                         <option value="4">{{i18n.strategy.proxy | translate}}</option>
                         <option value="5">{{i18n.strategy.korea | translate}}</option>
                         <option value="6">{{i18n.strategy.direct | translate}}</option>
-                    </select>
+                    </select> -->
                 </p>
 
 

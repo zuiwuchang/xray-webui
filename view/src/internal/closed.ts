@@ -5,6 +5,7 @@ export enum State {
     none = 'none',
     error = 'error',
     run = 'run',
+    ok = 'ok',
 }
 @Component({
     selector: 'app-closed',
@@ -15,7 +16,7 @@ export class Closed {
     protected get closed(): Observable<boolean> {
         return this.closed_.pipe(filter((v) => v))
     }
-    protected takeUntil<T>(): MonoTypeOperatorFunction<T> {
+    takeUntil<T>(): MonoTypeOperatorFunction<T> {
         return takeUntil(this.closed_.pipe(filter((v) => v)))
     }
     get isClosed(): boolean {

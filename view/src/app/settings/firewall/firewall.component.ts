@@ -31,7 +31,7 @@ export class FirewallComponent extends Closed implements OnInit {
     this.httpClient.get<GetResponse>('/api/v1/firewall').pipe(this.takeUntil()).subscribe({
       next: (resp) => dely.do(() => {
         this.message = resp.result
-        this.state = State.none
+        this.state = State.ok
       }),
       error: (e) => dely.do(() => {
         console.warn(e)

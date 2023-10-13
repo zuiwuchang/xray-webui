@@ -159,5 +159,18 @@
 	"_i": {
 		"n": "Name cannot be blank",
 		"u": "Subscription URL must be http or https"
+	},
+	"_p": {
+		"E": "Proxy Element",
+		"N": "Service has not been started",
+		"S": "Service has been started",
+		"M": "Manual",
+		"s": "Speed ​​sorting",
+		"t": "Test speed",
+		"a": "Add node",
+		"ca": "Clear node",
+		"q": "Share QR code",
+		"c": "Copy link",
+		"u": "Update subscription"
 	}
 }

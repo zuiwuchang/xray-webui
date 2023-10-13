@@ -1,7 +1,12 @@
 package web
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
 	"net/http"
+	"strconv"
+	"time"
 
 	"github.com/zuiwuchang/xray_webui/m/web/contrib/compression"
 	"google.golang.org/grpc/codes"
@@ -108,4 +113,52 @@ func (h Helper) BindQuery(c *gin.Context, obj interface{}) error {
 }
 func (h Helper) Compression() gin.HandlerFunc {
 	return _compression
+}
+func (h Helper) SetHTTPCacheMaxAge(c *gin.Context, maxAge int) {
+	c.Writer.Header().Set(`Cache-Control`, `max-age=`+strconv.Itoa(maxAge))
+}
+func (h Helper) ServeJSON(c *gin.Context, name string, modtime time.Time, o any) {
+	h.ServeLazyJSON(c, name, modtime, func() (any, error) {
+		return o, nil
+	})
+}
+func (h Helper) ServeLazyJSON(c *gin.Context, name string, modtime time.Time, f func() (any, error)) {
+	c.Writer.Header().Set(`Content-Type`, `application/json; charset=utf-8`)
+	http.ServeContent(c.Writer, c.Request, name, modtime, &lazyJSON{f: f})
+}
+
+type lazyJSON struct {
+	f       func() (any, error)
+	content io.ReadSeeker
+}
+
+func (l *lazyJSON) Read(p []byte) (int, error) {
+	if l.content == nil {
+		e := l.init()
+		if e != nil {
+			return 0, e
+		}
+	}
+	return l.content.Read(p)
+}
+func (l *lazyJSON) Seek(offset int64, whence int) (int64, error) {
+	if l.content == nil {
+		e := l.init()
+		if e != nil {
+			return 0, e
+		}
+	}
+	return l.content.Seek(offset, whence)
+}
+func (l *lazyJSON) init() error {
+	o, e := l.f()
+	if e != nil {
+		return e
+	}
+	b, e := json.Marshal(o)
+	if e != nil {
+		return e
+	}
+	l.content = bytes.NewReader(b)
+	return nil
 }

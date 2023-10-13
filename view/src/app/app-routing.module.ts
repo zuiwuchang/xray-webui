@@ -3,11 +3,13 @@ import { RouterModule, Routes } from '@angular/router';
 import { AboutComponent } from './app/about/about.component';
 import { HomeComponent } from './app/home/home.component';
 import { NotfoundComponent } from './app/notfound/notfound.component';
+import { saveGuard } from './core/guard/save.guard';
 
 const routes: Routes = [
   {
     path: '',
     component: HomeComponent,
+    canDeactivate: [saveGuard]
   },
   {
     path: 'about',
