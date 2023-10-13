@@ -88,6 +88,7 @@ func (h Strategy) Set(c *gin.Context) {
 		)
 		return
 	}
+	h.modtime.Store(time.Now())
 	slog.Info("strategy set",
 		`id`, req.ID,
 		`host`, req.Host,
@@ -98,6 +99,4 @@ func (h Strategy) Set(c *gin.Context) {
 		`blockIP`, req.BlockIP,
 		`blockDomain`, req.BlockDomain,
 	)
-	h.modtime.Store(time.Now())
-
 }

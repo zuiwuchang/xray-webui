@@ -7,7 +7,7 @@ import { i18n } from 'src/app/i18n';
 import { Closed, State } from 'src/internal/closed';
 import { getErrorString } from 'src/internal/error';
 import { Delay } from 'src/internal/ui';
-import { AddResponse, ListResponse, Subscription, SubscriptionView } from './subscription';
+import { AddResponse, Subscription, SubscriptionView } from './subscription';
 
 @Component({
   selector: 'app-subscription',
@@ -50,10 +50,10 @@ export class SubscriptionComponent extends Closed implements OnInit {
     this.state = State.run
     const dely = Delay.default()
 
-    this.httpClient.get<ListResponse>('/api/v1/settings/subscription').pipe(this.takeUntil()).subscribe({
+    this.httpClient.get<Array<Subscription>>('/api/v1/settings/subscription').pipe(this.takeUntil()).subscribe({
       next: (resp) => dely.do(() => {
-        if (resp.data && resp.data.length > 0) {
-          this.data.push(...resp.data.map<SubscriptionView>((v) => {
+        if (resp && resp.length > 0) {
+          this.data.push(...resp.map<SubscriptionView>((v) => {
             return {
               data: {
                 id: v.id,

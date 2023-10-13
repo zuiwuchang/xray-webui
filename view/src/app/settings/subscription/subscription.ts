@@ -1,6 +1,4 @@
-export interface ListResponse {
-    data: Array<Subscription>
-}
+
 export interface Subscription {
     // 唯一識別碼
     id: string

@@ -20,6 +20,7 @@ func (h Helper) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
 		&System{},
 		Firewall{},
 		&Strategy{},
+		&Settings{},
 	}
 	for _, m := range ms {
 		m.Register(cc, r)

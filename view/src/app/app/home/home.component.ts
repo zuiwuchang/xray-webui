@@ -7,7 +7,7 @@ import { Closed, State } from 'src/internal/closed';
 import { getErrorString } from 'src/internal/error';
 import { Prepare } from 'src/internal/prepare';
 import { Delay } from 'src/internal/ui';
-import { GeneralStep, General, ListGroup, ListResponse, ListStep } from './steps';
+import { GeneralStep, General, ListGroup, ListStep } from './steps';
 
 
 @Component({
@@ -81,9 +81,9 @@ export class HomeComponent extends Closed {
     this.prepare_.do().then(() => {
       if (this.isNotClosed) {
         dely.do(() => {
-          const resp = this.prepare_.steps[0].data as ListResponse
-          if (resp && Array.isArray(resp.data) && resp.data.length > 0) {
-            this.items = resp.data.map((val) => new Source(val))
+          const resp = this.prepare_.steps[0].data as Array<ListGroup>
+          if (Array.isArray(resp) && resp.length > 0) {
+            this.items = resp.map((val) => new Source(val))
           }
           const general = this.prepare_.steps[1].data as General
           switch (general.strategy) {

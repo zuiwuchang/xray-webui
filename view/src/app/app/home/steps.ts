@@ -18,21 +18,19 @@ export interface ListGroup {
     // 代理節點
     data: Array<ListElement>
 }
-export interface ListResponse {
-    data: Array<ListGroup>
-}
-export class ListStep implements Step<ListResponse> {
+
+export class ListStep implements Step<Array<ListGroup>> {
     constructor(private readonly closed: Closed,
         private readonly httpClient: HttpClient,
     ) { }
-    data?: ListResponse
+    data?: Array<ListGroup>
     err?: any
-    do(): Promise<ListResponse> {
+    do(): Promise<Array<ListGroup>> {
         const data = this.data
         if (data) {
             return Promise.resolve(data)
         }
-        return firstValueFrom(this.httpClient.get<ListResponse>('/api/v1/settings/element').pipe(
+        return firstValueFrom(this.httpClient.get<Array<ListGroup>>('/api/v1/settings/element').pipe(
             this.closed.takeUntil()
         ))
     }

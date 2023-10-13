@@ -59,7 +59,7 @@ func (h Helper) ServeJSON(c *gin.Context, name string, modtime time.Time, o any)
 		return o, nil
 	})
 }
-func (h Helper) ServeLazyJSON(c *gin.Context, name string, modtime time.Time, f func() (any, error)) {
+func (h Helper) ServeLazyJSON(c *gin.Context, name string, modtime time.Time, f func() (resp any, e error)) {
 	c.Writer.Header().Set(`Content-Type`, `application/json; charset=utf-8`)
 	http.ServeContent(c.Writer, c.Request, name, modtime, &lazyJSON{f: f})
 }
