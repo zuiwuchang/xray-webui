@@ -1,6 +1,4 @@
-export interface ListResponse {
-    data: Array<Strategy>
-}
+
 export interface Strategy {
     // 供腳本參考的 策略值 ，腳本應該依據此值生成 xray 的配置
     //

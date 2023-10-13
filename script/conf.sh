@@ -11,8 +11,5 @@ Platforms=(
 )
 UUID="ee7bc200-56c8-11ee-90cf-87199c7646f0"
 Protos=(
-    system/system.proto
-    firewall/firewall.proto
-    strategy/strategy.proto
     settings/settings.proto
 )

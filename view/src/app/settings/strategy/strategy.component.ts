@@ -6,7 +6,7 @@ import { i18n } from 'src/app/i18n';
 import { Closed, State } from 'src/internal/closed';
 import { getErrorString } from 'src/internal/error';
 import { Delay } from 'src/internal/ui';
-import { ListResponse, Strategy } from './strategy';
+import { Strategy } from './strategy';
 @Component({
   selector: 'app-strategy',
   templateUrl: './strategy.component.html',
@@ -53,9 +53,11 @@ export class StrategyComponent extends Closed implements OnInit {
     this.state = State.run
     const dely = Delay.default()
 
-    this.httpClient.get<ListResponse>('/api/v1/strategy').pipe(this.takeUntil()).subscribe({
+    this.httpClient.get<Array<Strategy>>('/api/v1/strategy').pipe(this.takeUntil()).subscribe({
       next: (resp) => dely.do(() => {
-        this.data = resp.data
+        if (Array.isArray(resp)) {
+          this.data = resp
+        }
         this.state = State.ok
       }),
       error: (e) => dely.do(() => {
@@ -80,7 +82,7 @@ export class StrategyComponent extends Closed implements OnInit {
       case 6:
         return i18n.strategy.direct
       default:
-        return 'unknow'
+        return 'unknow '
     }
   }
   onClickEdit(data: Strategy) {
@@ -115,7 +117,7 @@ export class StrategyComponent extends Closed implements OnInit {
     const dely = Delay.default()
     const data = this.current
     const node = this.current_
-    this.httpClient.post<ListResponse>(`/api/v1/strategy/${data.id}`, {
+    this.httpClient.post(`/api/v1/strategy/${data.id}`, {
       host: data.host,
       proxyIP: data.proxyIP,
       proxyDomain: data.proxyDomain,

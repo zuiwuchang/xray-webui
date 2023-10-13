@@ -11,37 +11,37 @@ import (
 	"google.golang.org/grpc"
 )
 
-var (
-	startAt      = time.Now()
-	systemMaxAge = 0
-)
-
 type System struct {
 	web.Helper
+	maxage  int
+	startAt time.Time
 }
 
-func (h System) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
+func (h *System) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
+	h.maxage = 60
+	h.startAt = time.Now()
+
 	r := router.Group(`system`)
 
-	r.GET(`title`, h.title)
-	r.HEAD(`title`, h.title)
-	r.GET(`version`, h.version)
-	r.HEAD(`version`, h.version)
-	r.GET(`start_at`, h.startAt)
-	r.HEAD(`start_at`, h.startAt)
+	r.GET(`title`, h.Title)
+	r.HEAD(`title`, h.Title)
+	r.GET(`version`, h.Version)
+	r.HEAD(`version`, h.Version)
+	r.GET(`start_at`, h.StartAt)
+	r.HEAD(`start_at`, h.StartAt)
 
 }
-func (h System) title(c *gin.Context) {
-	h.SetHTTPCacheMaxAge(c, systemMaxAge)
-	h.ServeLazyJSON(c, ``, startAt, func() (any, error) {
+func (h *System) Title(c *gin.Context) {
+	h.SetHTTPCacheMaxAge(c, h.maxage)
+	h.ServeLazyJSON(c, ``, h.startAt, func() (any, error) {
 		return map[string]any{
 			`result`: configure.Default().System.Title,
 		}, nil
 	})
 }
-func (h System) version(c *gin.Context) {
-	h.SetHTTPCacheMaxAge(c, systemMaxAge)
-	h.ServeLazyJSON(c, ``, startAt, func() (any, error) {
+func (h *System) Version(c *gin.Context) {
+	h.SetHTTPCacheMaxAge(c, h.maxage)
+	h.ServeLazyJSON(c, ``, h.startAt, func() (any, error) {
 		return map[string]any{
 			`platform`: version.Platform,
 			`version`:  version.Version,
@@ -51,11 +51,11 @@ func (h System) version(c *gin.Context) {
 		}, nil
 	})
 }
-func (h System) startAt(c *gin.Context) {
-	h.SetHTTPCacheMaxAge(c, systemMaxAge)
-	h.ServeLazyJSON(c, ``, startAt, func() (any, error) {
+func (h *System) StartAt(c *gin.Context) {
+	h.SetHTTPCacheMaxAge(c, h.maxage)
+	h.ServeLazyJSON(c, ``, h.startAt, func() (any, error) {
 		return map[string]any{
-			`result`: strconv.FormatInt(startAt.Unix(), 10),
+			`result`: strconv.FormatInt(h.startAt.Unix(), 10),
 		}, nil
 	})
 }

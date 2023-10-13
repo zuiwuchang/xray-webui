@@ -148,7 +148,7 @@ message UpdateElementRequest{
 message UpdateElementResponse{
     repeated Element data = 4;
 }
-
+message Metadata{}
 message MetadataRequest{}
 message MetadataResponse{
     repeated Metadata data = 1;

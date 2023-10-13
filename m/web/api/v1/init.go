@@ -18,6 +18,8 @@ func (h Helper) Register(cc *grpc.ClientConn, router *gin.RouterGroup) {
 
 	ms := []web.IHelper{
 		&System{},
+		Firewall{},
+		&Strategy{},
 	}
 	for _, m := range ms {
 		m.Register(cc, r)

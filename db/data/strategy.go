@@ -23,7 +23,7 @@ type Strategy struct {
 	// * 4 略過區域網路和西朝鮮的代理
 	// * 5 直連優先 (僅對非西朝鮮公網使用代理)
 	// * 6 直接連接
-	ID uint32 `json:"value"`
+	ID uint32 `json:"id"`
 
 	// 靜態 ip 列表
 	// baidu.com 127.0.0.1
