@@ -149,7 +149,11 @@
 		"a": "Add",
 		"R": "Once the data is deleted, it cannot be recovered. Please confirm?",
 		"r": "Data deleted successfully",
-		"C": "Copied to clipboard"
+		"C": "Copied to clipboard",
+		"de": "Delete node",
+		"ce": "Clear node",
+		"sd": "Once data is deleted, it cannot be recovered. Please confirm you want to continue deleting?",
+		"dd": "Data deleted"
 	},
 	"_g": {
 		"u": "Speed ​​test URL",

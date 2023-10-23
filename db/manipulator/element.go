@@ -106,3 +106,46 @@ func (m Element) Update(sub uint64, strs []string) (items []*data.Element, e err
 	})
 	return
 }
+
+// 清空節點
+func (m Element) Clear(sub uint64) error {
+	return _db.Update(func(t *bolt.Tx) error {
+		bucket := t.Bucket([]byte(data.ElementBucket))
+		if bucket == nil {
+			return fmt.Errorf("bucket not exist : %s", data.ElementBucket)
+		}
+		var key [8]byte
+		binary.LittleEndian.PutUint64(key[:], sub)
+
+		// 刪除舊數據
+		e := bucket.DeleteBucket(key[:])
+		if e != nil {
+			return e
+		}
+		_, e = bucket.CreateBucket(key[:])
+		if e != nil {
+			return e
+		}
+		return nil
+	})
+}
+
+// 刪除節點
+func (m Element) Remove(sub, id uint64) error {
+	return _db.Update(func(t *bolt.Tx) error {
+		bucket := t.Bucket([]byte(data.ElementBucket))
+		if bucket == nil {
+			return fmt.Errorf("bucket not exist : %s", data.ElementBucket)
+		}
+		var key [8]byte
+		binary.LittleEndian.PutUint64(key[:], sub)
+
+		bucket = bucket.Bucket(key[:])
+		if bucket == nil {
+			return fmt.Errorf("bucket not exist : %s.%v", data.ElementBucket, sub)
+		}
+
+		binary.LittleEndian.PutUint64(key[:], id)
+		return bucket.Delete(key[:])
+	})
+}

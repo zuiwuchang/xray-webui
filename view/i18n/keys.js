@@ -61,6 +61,10 @@ exports.keys = {
         remove: make('R', "數據一旦刪除將無法恢復，請確認？"),
         removeSuccess: make('r', '數據刪除成功'),
         copied: make('C', '已拷貝到剪貼板'),
+        deleteElement: make('de', '刪除節點'),
+        clearElement: make('ce', '清空節點'),
+        sureDelete: make('sd', '數據一旦刪除，將無法恢復，請確認要繼續刪除?'),
+        deleted: make('dd', '數據已刪除')
     },
     general: {
         __id: '_g',

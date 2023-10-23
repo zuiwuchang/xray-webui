@@ -51,6 +51,8 @@ func (h *Settings) Register(router *gin.RouterGroup) {
 	r.GET(`element`, h.ListElement)
 	r.HEAD(`element`, h.ListElement)
 	r.POST(`element/:id`, h.UpdateElement)
+	r.DELETE(`elements/:id`, h.ClearElement)
+	r.DELETE(`element/:subscription/:id`, h.DeleteElement)
 }
 func (h *Settings) GetGeneral(c *gin.Context) {
 	h.SetHTTPCacheMaxAge(c, 0)
@@ -369,7 +371,7 @@ func (h *Settings) UpdateElement(c *gin.Context) {
 	c.JSON(http.StatusOK, items)
 	h.element.Store(time.Now())
 }
-func (h Settings) update(ctx context.Context, url string) (result []string, e error) {
+func (h *Settings) update(ctx context.Context, url string) (result []string, e error) {
 	req, e := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if e != nil {
 		return
@@ -406,4 +408,67 @@ func (h Settings) update(ctx context.Context, url string) (result []string, e er
 		result = append(result, s)
 	}
 	return
+}
+func (h *Settings) ClearElement(c *gin.Context) {
+	var id struct {
+		ID uint64 `uri:"id"`
+	}
+	e := h.BindURI(c, &id)
+	if e != nil {
+		return
+	} else if id.ID == 0 {
+		c.String(http.StatusBadRequest, `id invalid`)
+		return
+	}
+	var m manipulator.Element
+	e = m.Clear(id.ID)
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+		slog.Warn("settings clear element",
+			log.Error, e,
+			`id`, id.ID,
+		)
+		return
+	}
+	slog.Info("settings clear element",
+		`id`, id.ID,
+	)
+	now := time.Now()
+	h.subscription.Store(now)
+	h.element.Store(now)
+}
+func (h *Settings) DeleteElement(c *gin.Context) {
+	var id struct {
+		Subscription uint64 `uri:"subscription"`
+		ID           uint64 `uri:"id"`
+	}
+	e := h.BindURI(c, &id)
+	if e != nil {
+		return
+	} else if id.Subscription == 0 {
+		c.String(http.StatusBadRequest, `subscription invalid`)
+		return
+	} else if id.ID == 0 {
+		c.String(http.StatusBadRequest, `id invalid`)
+		return
+	}
+
+	var m manipulator.Element
+	e = m.Remove(id.Subscription, id.ID)
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+		slog.Warn("settings delete element",
+			log.Error, e,
+			`subscription`, id.Subscription,
+			`id`, id.ID,
+		)
+		return
+	}
+	slog.Info("settings delete element",
+		`subscription`, id.Subscription,
+		`id`, id.ID,
+	)
+	now := time.Now()
+	h.subscription.Store(now)
+	h.element.Store(now)
 }

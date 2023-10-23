@@ -10,7 +10,7 @@ import { Delay } from 'src/internal/ui';
 import { GeneralStep, General, ListGroup, ListStep, MetadataStep, Metadata, MetadataProvider, ListElement } from './steps';
 import { URL } from '@king011/easyts/lib/es6/net/url/url';
 import { LangService } from 'src/app/core/lang.service';
-import { MenuItem } from 'primeng/api';
+import { ConfirmationService, MenuItem } from 'primeng/api';
 import ClipboardJS from 'clipboard';
 import { DialogService } from 'primeng/dynamicdialog';
 import { QrComponent } from '../qr/qr.component';
@@ -19,7 +19,7 @@ import { QrComponent } from '../qr/qr.component';
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  providers: [DialogService],
+  providers: [DialogService, ConfirmationService],
 })
 export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
   i18n = i18n
@@ -29,6 +29,7 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     private readonly toastService: ToastService,
     private readonly langService: LangService,
     private readonly dialogService: DialogService,
+    private readonly confirmationService: ConfirmationService,
   ) {
     super()
     this.prepare_ = new Prepare([
@@ -167,13 +168,6 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       return
     }
     console.log('add', source)
-    this.disabled = true
-  }
-  onClickClear(source: Source) {
-    if (this.disabled) {
-      return
-    }
-    console.log('clear', source)
     this.disabled = true
   }
   onClickQR(source: Source) {
@@ -357,7 +351,7 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       {
         label: translateService.instant(i18n.delete),
         icon: 'pi pi-trash',
-        command: () => {
+        command: (evt) => {
           this.onClickDelete(source, ele)
         },
       },
@@ -386,7 +380,87 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     if (this.disabled || source.disabled || ele.disabled) {
       return
     }
-    console.log('trash', ele)
+    const translateService = this.translateService
+    this.confirmationService.confirm({
+      message: translateService.instant(i18n.action.sureDelete),
+      header: translateService.instant(i18n.action.deleteElement),
+      icon: 'pi pi-info-circle',
+      accept: () => {
+        if (this.isClosed) {
+          return
+        }
+
+        const delay = Delay.default()
+        this.disabled = true
+        source.disabled = true
+        this.httpClient.delete(`/api/v1/settings/element/${source.id}/${ele.id}`).pipe(this.takeUntil()).subscribe({
+          next: () => delay.do(() => {
+            if (this.isNotClosed) {
+              this.toastService.add({ severity: 'success', summary: translateService.instant(i18n.action.success), detail: translateService.instant(i18n.action.deleted) })
+              const data = source.data
+              for (let i = 0; i < data.length; i++) {
+                if (data[i].id == ele.id) {
+                  data.splice(i, 1)
+                  break
+                }
+              }
+              this.disabled = false
+              source.disabled = false
+            }
+          }),
+          error: (e) => delay.do(() => {
+            if (this.isNotClosed) {
+              this.toastService.add({ severity: 'error', summary: translateService.instant(i18n.action.error), detail: getErrorString(e) })
+
+              this.disabled = false
+              source.disabled = false
+            }
+          }),
+        })
+      },
+      dismissableMask: true,
+    })
+  }
+  onClickClear(source: Source) {
+    if (this.disabled || source.disabled) {
+      return
+    }
+    const translateService = this.translateService
+    this.confirmationService.confirm({
+      message: translateService.instant(i18n.action.sureDelete),
+      header: translateService.instant(i18n.action.clearElement),
+      icon: 'pi pi-info-circle',
+      accept: () => {
+        if (this.isClosed) {
+          return
+        }
+
+        const delay = Delay.default()
+        this.disabled = true
+        source.disabled = true
+        this.httpClient.delete(`/api/v1/settings/elements/${source.id}`).pipe(this.takeUntil()).subscribe({
+          next: () => delay.do(() => {
+            if (this.isNotClosed) {
+              this.toastService.add({ severity: 'success', summary: translateService.instant(i18n.action.success), detail: translateService.instant(i18n.action.deleted) })
+              source.data = []
+
+              this.disabled = false
+              source.disabled = false
+            }
+          }),
+          error: (e) => delay.do(() => {
+            if (this.isNotClosed) {
+              this.toastService.add({ severity: 'error', summary: translateService.instant(i18n.action.error), detail: getErrorString(e) })
+
+              this.disabled = false
+              source.disabled = false
+            }
+          }),
+        })
+
+      },
+      dismissableMask: true,
+    });
   }
 }
 class Source {

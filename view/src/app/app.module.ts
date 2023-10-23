@@ -27,6 +27,7 @@ import { RippleModule } from 'primeng/ripple';
 import { DataViewModule } from 'primeng/dataview';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
@@ -86,7 +87,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
     MessagesModule, MessageModule, MenuModule, ProgressSpinnerModule,
     AccordionModule, ToastModule, CardModule, ProgressBarModule,
     DropdownModule, RippleModule, DataViewModule, SplitButtonModule,
-    DynamicDialogModule,
+    DynamicDialogModule, ConfirmDialogModule,
     RouterModule, AppRoutingModule
   ],
   providers: [],

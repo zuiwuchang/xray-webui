@@ -376,6 +376,22 @@ export const i18n = {
 		* 已拷貝到剪貼板
 		*/
 		copied: "_a.C",
+		/**
+		* 刪除節點
+		*/
+		deleteElement: "_a.de",
+		/**
+		* 清空節點
+		*/
+		clearElement: "_a.ce",
+		/**
+		* 數據一旦刪除，將無法恢復，請確認要繼續刪除?
+		*/
+		sureDelete: "_a.sd",
+		/**
+		* 數據已刪除
+		*/
+		deleted: "_a.dd",
 	},
 	general: {
 		/**
