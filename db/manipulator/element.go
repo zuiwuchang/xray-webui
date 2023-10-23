@@ -61,3 +61,48 @@ func (m Element) List(sub uint64) (items []*data.Element, e error) {
 	})
 	return
 }
+
+// 將更新節點內容
+func (m Element) Update(sub uint64, strs []string) (items []*data.Element, e error) {
+	e = _db.Update(func(t *bolt.Tx) error {
+		bucket := t.Bucket([]byte(data.ElementBucket))
+		if bucket == nil {
+			return fmt.Errorf("bucket not exist : %s", data.ElementBucket)
+		}
+		var key [8]byte
+		binary.LittleEndian.PutUint64(key[:], sub)
+
+		// 刪除舊數據
+		e := bucket.DeleteBucket(key[:])
+		if e != nil {
+			return e
+		}
+		bucket, e = bucket.CreateBucket(key[:])
+		if e != nil {
+			return e
+		}
+		for _, s := range strs {
+			id, e := bucket.NextSequence()
+			if e != nil {
+				return e
+			}
+			node := &data.Element{
+				ID:  id,
+				URL: s,
+			}
+			b, e := node.Encoder()
+			if e != nil {
+				return e
+			}
+
+			binary.LittleEndian.PutUint64(key[:], id)
+			e = bucket.Put(key[:], b)
+			if e != nil {
+				return e
+			}
+			items = append(items, node)
+		}
+		return nil
+	})
+	return
+}

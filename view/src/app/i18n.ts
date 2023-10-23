@@ -218,6 +218,10 @@ export const i18n = {
 	* 關於內容文本1
 	*/
 	aboutText1: "AT1",
+	/**
+	* 菜單
+	*/
+	menu: "M",
 	menuSettings: {
 		/**
 		* 常規
@@ -228,7 +232,7 @@ export const i18n = {
 		*/
 		strategy: "_ms.s",
 		/**
-		* 防火牆
+		* 透明代理
 		*/
 		firewall: "_ms.f",
 	},
@@ -318,6 +322,14 @@ export const i18n = {
 		* 關閉
 		*/
 		close: "_b.c",
+		/**
+		* 開始
+		*/
+		start: "_b.sa",
+		/**
+		* 停止
+		*/
+		stop: "_b.so",
 	},
 	action: {
 		/**
@@ -371,7 +383,7 @@ export const i18n = {
 		*/
 		run: "_g.r",
 		/**
-		* 自動設置全局代理
+		* 自動設置透明代理
 		*/
 		firewall: "_g.f",
 		/**
@@ -446,5 +458,17 @@ export const i18n = {
 		* 更新訂閱
 		*/
 		update: "_p.u",
+		/**
+		* 預覽設定
+		*/
+		view: "_p.v",
+		/**
+		* 開啓透明代理
+		*/
+		firewall: "_p.f",
+		/**
+		* 關閉透明代理
+		*/
+		closeFirewall: "_p.cf",
 	},
 }

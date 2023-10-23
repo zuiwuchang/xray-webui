@@ -11,11 +11,12 @@ exports.keys = {
     settings: make('S', '設定'),
     aboutText: make('AT', '關於內容文本'),
     aboutText1: make('AT1', '關於內容文本1'),
+    menu: make('M', '菜單'),
     menuSettings: {
         __id: '_ms',
         general: make('g', '常規'),
         strategy: make('s', '策略'),
-        firewall: make('f', '防火牆'),
+        firewall: make('f', '透明代理'),
     },
     refresh: make('R', '刷新'),
     edit: make('E', '編輯'),
@@ -44,6 +45,8 @@ exports.keys = {
         __id: '_b',
         submit: make('s', '提交'),
         close: make('c', '關閉'),
+        start: make('sa', '開始'),
+        stop: make('so', '停止'),
     },
     action: {
         __id: '_a',
@@ -62,7 +65,7 @@ exports.keys = {
         __id: '_g',
         url: make('u', '速度測試網址'),
         run: make('r', '自動運行代理服務'),
-        firewall: make('f', '自動設置全局代理'),
+        firewall: make('f', '自動設置透明代理'),
         strategy: make('s', '策略'),
         custom: make('c', '自定義設定')
     },
@@ -87,5 +90,10 @@ exports.keys = {
         qr: make('q', '分享二維碼'),
         copy: make('c', '複製鏈接'),
         update: make('u', '更新訂閱'),
+
+        view: make('v', '預覽設定'),
+
+        firewall: make('f', '開啓透明代理'),
+        closeFirewall: make('cf', '關閉透明代理'),
     },
 }

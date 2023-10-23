@@ -1,6 +1,10 @@
 package v1
 
 import (
+	"context"
+	"encoding/base64"
+	"errors"
+	"io"
 	"log/slog"
 	"net/http"
 	"net/url"
@@ -46,6 +50,7 @@ func (h *Settings) Register(router *gin.RouterGroup) {
 
 	r.GET(`element`, h.ListElement)
 	r.HEAD(`element`, h.ListElement)
+	r.POST(`element/:id`, h.UpdateElement)
 }
 func (h *Settings) GetGeneral(c *gin.Context) {
 	h.SetHTTPCacheMaxAge(c, 0)
@@ -317,4 +322,88 @@ func (h *Settings) ListElement(c *gin.Context) {
 		resp = result
 		return
 	})
+}
+func (h *Settings) UpdateElement(c *gin.Context) {
+	var id struct {
+		ID uint64 `uri:"id"`
+	}
+	e := h.BindURI(c, &id)
+	if e != nil {
+		return
+	} else if id.ID == 0 {
+		c.String(http.StatusBadRequest, `id invalid`)
+		return
+	}
+	var mSubscription manipulator.Subscription
+	subscription, e := mSubscription.Get(id.ID)
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	} else if _, e = url.ParseRequestURI(subscription.URL); e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	ctx := c.Request.Context()
+	e = ctx.Err()
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	result, e := h.update(ctx, subscription.URL)
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+
+	e = ctx.Err()
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	var mElement manipulator.Element
+	items, e := mElement.Update(id.ID, result)
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	c.JSON(http.StatusOK, items)
+	h.element.Store(time.Now())
+}
+func (h Settings) update(ctx context.Context, url string) (result []string, e error) {
+	req, e := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if e != nil {
+		return
+	}
+	resp, e := http.DefaultClient.Do(req)
+	if e != nil {
+		return
+	} else if resp.Body == nil {
+		e = errors.New(`body nil`)
+		return
+	}
+	defer resp.Body.Close()
+	b, e := io.ReadAll(io.LimitReader(resp.Body, 1024*1024*10))
+	if e != nil {
+		return
+	}
+	enc := strings.TrimRight(strings.TrimSpace(string(b)), "=")
+
+	b, e = base64.RawStdEncoding.DecodeString(enc)
+	if e != nil {
+		b0, e0 := base64.RawURLEncoding.DecodeString(enc)
+		if e0 != nil {
+			return
+		}
+		b = b0
+	}
+	strs := strings.Split(string(b), "\n")
+	result = make([]string, 0, len(strs))
+	for _, s := range strs {
+		s = strings.TrimSpace(s)
+		if s == `` {
+			continue
+		}
+		result = append(result, s)
+	}
+	return
 }

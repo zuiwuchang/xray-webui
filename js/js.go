@@ -49,6 +49,7 @@ func (vm *Runtime) Check() (e error) {
 	}
 	names := []string{
 		`getFirewall`,
+		`metadata`,
 	}
 	for _, name := range names {
 		_, ok := goja.AssertFunction(self.ToObject(vm.Runtime).Get(name))
@@ -103,5 +104,31 @@ func (vm *Runtime) GetFirewall() (s string, e error) {
 		return
 	}
 	s = val.ToString().String()
+	return
+}
+func (vm *Runtime) Metadata() (s string, e error) {
+	self, f, destroy, e := vm.assertFunction(`metadata`)
+	if e != nil {
+		return
+	} else if destroy != nil {
+		defer destroy(self)
+	}
+	val, e := f(self)
+	if e != nil {
+		return
+	}
+
+	JSON := vm.Runtime.GlobalObject().Get(`JSON`)
+	stringify := JSON.(*goja.Object).Get(`stringify`)
+	callable, ok := goja.AssertFunction(stringify)
+	if !ok {
+		e = errors.New(`JSON.stringify not a function`)
+		return
+	}
+	val, e = callable(JSON, val)
+	if e != nil {
+		return
+	}
+	s = val.String()
 	return
 }

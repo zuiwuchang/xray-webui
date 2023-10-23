@@ -6,7 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/zuiwuchang/xray_webui/configure"
+	"github.com/zuiwuchang/xray_webui/js"
 	"github.com/zuiwuchang/xray_webui/m/web"
+	"github.com/zuiwuchang/xray_webui/utils"
 	"github.com/zuiwuchang/xray_webui/version"
 )
 
@@ -28,7 +30,8 @@ func (h *System) Register(router *gin.RouterGroup) {
 	r.HEAD(`version`, h.Version)
 	r.GET(`start_at`, h.StartAt)
 	r.HEAD(`start_at`, h.StartAt)
-
+	r.GET(`metadata`, h.Metadata)
+	r.HEAD(`metadata`, h.Metadata)
 }
 func (h *System) Title(c *gin.Context) {
 	h.SetHTTPCacheMaxAge(c, h.maxage)
@@ -56,5 +59,20 @@ func (h *System) StartAt(c *gin.Context) {
 		return map[string]any{
 			`result`: strconv.FormatInt(h.startAt.Unix(), 10),
 		}, nil
+	})
+}
+func (h *System) Metadata(c *gin.Context) {
+	h.SetHTTPCacheMaxAge(c, h.maxage)
+	c.Writer.Header().Set(`Content-Type`, `application/json; charset=utf-8`)
+	h.ServeLazy(c, ``, h.startAt, func() ([]byte, error) {
+		runtime, e := js.New(configure.Default().System.Script)
+		if e != nil {
+			return nil, e
+		}
+		s, e := runtime.Metadata()
+		if e != nil {
+			return nil, e
+		}
+		return utils.StringToBytes(s), nil
 	})
 }

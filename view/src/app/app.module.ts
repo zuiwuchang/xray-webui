@@ -24,6 +24,8 @@ import { CardModule } from 'primeng/card';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { DropdownModule } from 'primeng/dropdown';
 import { RippleModule } from 'primeng/ripple';
+import { DataViewModule } from 'primeng/dataview';
+import { SplitButtonModule } from 'primeng/splitbutton';
 
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
@@ -80,7 +82,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
     ToolbarModule, ButtonModule, TooltipModule, SidebarModule,
     MessagesModule, MessageModule, MenuModule, ProgressSpinnerModule,
     AccordionModule, ToastModule, CardModule, ProgressBarModule,
-    DropdownModule, RippleModule,
+    DropdownModule, RippleModule, DataViewModule, SplitButtonModule,
 
     RouterModule, AppRoutingModule
   ],

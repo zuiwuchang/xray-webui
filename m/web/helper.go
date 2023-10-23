@@ -63,6 +63,9 @@ func (h Helper) ServeLazyJSON(c *gin.Context, name string, modtime time.Time, f 
 	c.Writer.Header().Set(`Content-Type`, `application/json; charset=utf-8`)
 	http.ServeContent(c.Writer, c.Request, name, modtime, &lazyJSON{f: f})
 }
+func (h Helper) ServeLazy(c *gin.Context, name string, modtime time.Time, f func() (resp []byte, e error)) {
+	http.ServeContent(c.Writer, c.Request, name, modtime, &lazyBytes{f: f})
+}
 
 type lazyJSON struct {
 	f       func() (any, error)
@@ -96,6 +99,39 @@ func (l *lazyJSON) init() error {
 	if e != nil {
 		return e
 	}
+	l.content = bytes.NewReader(b)
+	return nil
+}
+
+type lazyBytes struct {
+	f       func() ([]byte, error)
+	content io.ReadSeeker
+}
+
+func (l *lazyBytes) Read(p []byte) (int, error) {
+	if l.content == nil {
+		e := l.init()
+		if e != nil {
+			return 0, e
+		}
+	}
+	return l.content.Read(p)
+}
+func (l *lazyBytes) Seek(offset int64, whence int) (int64, error) {
+	if l.content == nil {
+		e := l.init()
+		if e != nil {
+			return 0, e
+		}
+	}
+	return l.content.Seek(offset, whence)
+}
+func (l *lazyBytes) init() error {
+	b, e := l.f()
+	if e != nil {
+		return e
+	}
+
 	l.content = bytes.NewReader(b)
 	return nil
 }

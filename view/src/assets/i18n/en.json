@@ -106,10 +106,11 @@
 	"S": "Settings",
 	"AT": "Project X provides the people of West Korea with the core tools to break through the dictator's Internet blockade. However, its desktop software xray does not provide an easy-to-use and cross-platform UI, so it is very inconvenient to use. So I developed this desktop suite, which provides a simple and consistent desktop environment for xray.",
 	"AT1": "In addition, this program provides support for js scripts. You can customize the script to replace the underlying call to xray, and even the underlying layer may not be xray but other proxy software. Another advantage of this is that when xray supports a new protocol or better agent software appears, you can get the latest support without updating the program and only updating the script.",
+	"M": "Menu",
 	"_ms": {
 		"g": "General",
 		"s": "Strategy",
-		"f": "Firewall"
+		"f": "Transparent Proxy"
 	},
 	"R": "Refresh",
 	"E": "Edit",
@@ -133,7 +134,9 @@
 	},
 	"_b": {
 		"s": "Submit",
-		"c": "Close"
+		"c": "Close",
+		"sa": "Start",
+		"so": "Stop"
 	},
 	"_a": {
 		"S": "Success",
@@ -150,7 +153,7 @@
 	"_g": {
 		"u": "Speed ​​test URL",
 		"r": "Automatically run proxy services",
-		"f": "Automatically set global proxy",
+		"f": "Automatically turn on transparent proxy",
 		"s": "Strategy",
 		"c": "Custom settings"
 	},
@@ -171,6 +174,9 @@
 		"ca": "Clear node",
 		"q": "Share QR code",
 		"c": "Copy link",
-		"u": "Update subscription"
+		"u": "Update subscription",
+		"v": "Preview",
+		"f": "Turn on transparent proxy",
+		"cf": "Turn off transparent proxy"
 	}
 }

@@ -44,6 +44,7 @@
                             <span class="nowrap vertical-align-middle">{{item.name}} - {{item.data.length}}</span>
                         </ng-template>
                         <i class="primary-color pi pi-check ml-2 ml-2" *ngIf="item.run"></i>
+
                     </div>
                 </ng-template>
 
@@ -64,11 +65,57 @@
                             tooltipPosition="bottom" (click)="onClickCopy(item)"></i>
                         <i pRipple class="pi pi-sync text-2xl cursor-pointer" pTooltip="{{i18n.proxy.update|translate}}"
                             tooltipPosition="bottom" (click)="onClickUpdate(item)" *ngIf="i!=0"></i>
+
+                        <p-progressSpinner *ngIf="item.disabled" [style]="{width: '1.75rem', height: '1.75rem'}"
+                            strokeWidth="5" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
                     </div>
                     <br>
                     <p-dropdown class="w-full" [styleClass]="'w-full'" [options]="strategys" [(ngModel)]="strategy"
                         [disabled]="disabled" optionLabel="name" optionValue="value">
                     </p-dropdown>
+
+                    <p-dataView [value]="item.data" [rows]="item.data.length" [paginator]="false">
+                        <ng-template let-node pTemplate="listItem">
+                            <div [class]="disabledClass('col-12 border-round-md p-2')">
+                                <form #form="ngForm">
+                                    <div class="flex flex-row gap-3 align-items-center">
+                                        <i class="pi pi-tag text-2xl"></i>
+                                        <div class="flex-grow-1">
+                                            <div class="nowrap text-xl">
+                                                {{node.name}}
+                                            </div>
+                                            <div class="nowrap text-base">
+                                                {{getLabel(node.metadata?.label,node.url?.scheme)}} ->
+                                                {{node.describe}}
+                                            </div>
+                                        </div>
+
+                                        <p-progressSpinner *ngIf="node.disabled"
+                                            [style]="{width: '1.75rem', height: '1.75rem'}" strokeWidth="5"
+                                            fill="var(--surface-ground)" animationDuration=".5s">
+                                        </p-progressSpinner>
+                                        <ng-container *ngIf="isStarted(node); then startedView;else stopedView">
+                                        </ng-container>
+                                        <ng-template #stopedView>
+                                            <p-splitButton label="{{i18n.button.start|translate}}"
+                                                icon="pi pi-chevron-circle-right"
+                                                styleClass="p-button-raised p-button-text nowrap" appendTo="body"
+                                                [model]="createMenus(item,node)" (onClick)="onClickPlay(item,node)">
+                                            </p-splitButton>
+                                        </ng-template>
+                                        <ng-template #startedView>
+                                            <p-splitButton label="{{i18n.button.stop|translate}}"
+                                                icon="pi pi-stop-circle"
+                                                styleClass="p-button-raised p-button-text nowrap" appendTo="body"
+                                                [model]="createMenus(item,node)" (onClick)="onClickStop(item,node)">
+                                            </p-splitButton>
+                                        </ng-template>
+                                    </div>
+                                </form>
+                            </div>
+                        </ng-template>
+                    </p-dataView>
+
                 </ng-template>
             </p-accordionTab>
 

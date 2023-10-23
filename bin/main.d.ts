@@ -57,7 +57,7 @@ declare module 'xray/webui' {
      * 網頁上顯示的文本，會依據 i18n 查詢需要顯示的內容例如 
      * * label['zh-Hant'] 用於顯示正體中文
      * * label['zh-Hans'] 用於顯示簡體中文
-     * * label['en-US'] 用於顯示英文
+     * * label['en'] 用於顯示英文
      * * label['default'] 用戶顯示沒有匹配的語言文本
      */
     export type Text = Record<string, string>
@@ -66,15 +66,15 @@ declare module 'xray/webui' {
         /**
          * 數據來源自 url 中哪個部分
          */
-        from: 'username' | 'path' | 'fragment' | 'query'
+        from: 'username' | 'host' | 'port' | 'path' | 'fragment' | 'query' | 'json'
         /**
-         * 當來自 'query' 時指定 query 的 鍵值
+         * 當來自 'query' 時指定 query 的 鍵值，或者來自 'json' 時指定 json key
          */
         key?: string
         /**
          * 這部分要要如何加解碼
          */
-        enc?: 'base64' | 'raw-base64' | 'url64' | 'raw-url64' | 'escape'
+        enc?: 'base64' | 'escape'
     }
     export interface Filed {
         /**
@@ -106,7 +106,7 @@ declare module 'xray/webui' {
         /**
          * 爲 ui 添加的 樣式表 通常是 PrimeFlex 的 col-?
          */
-        class: string
+        class?: string
 
         /**
          * 來源
@@ -117,7 +117,7 @@ declare module 'xray/webui' {
         /**
          * 網頁上顯示代理協議名稱
          */
-        label: Text
+        label?: Text
         /**
          * * vmess
          * * vless
