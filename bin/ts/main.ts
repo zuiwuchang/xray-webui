@@ -35,7 +35,8 @@ ${s}
      */
     metadata(): Array<Metadata> {
         return [
-            vless, vmess, trojan,
+            vless, vmess,
+            trojan,
         ]
     }
 }

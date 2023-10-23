@@ -63,7 +63,8 @@ ${s}
      */
     metadata() {
         return [
-            vless_1.vless, vmess_1.vmess, trojan_1.trojan,
+            vless_1.vless, vmess_1.vmess,
+            trojan_1.trojan,
         ];
     }
 }

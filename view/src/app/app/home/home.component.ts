@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { ToastService } from 'src/app/core/toast.service';
 import { i18n } from 'src/app/i18n';
@@ -11,19 +11,24 @@ import { GeneralStep, General, ListGroup, ListStep, MetadataStep, Metadata, Meta
 import { URL } from '@king011/easyts/lib/es6/net/url/url';
 import { LangService } from 'src/app/core/lang.service';
 import { MenuItem } from 'primeng/api';
+import ClipboardJS from 'clipboard';
+import { DialogService } from 'primeng/dynamicdialog';
+import { QrComponent } from '../qr/qr.component';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss']
+  styleUrls: ['./home.component.scss'],
+  providers: [DialogService],
 })
-export class HomeComponent extends Closed {
+export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
   i18n = i18n
   private prepare_: Prepare
   constructor(private readonly httpClient: HttpClient,
     private readonly translateService: TranslateService,
     private readonly toastService: ToastService,
     private readonly langService: LangService,
+    private readonly dialogService: DialogService,
   ) {
     super()
     this.prepare_ = new Prepare([
@@ -75,6 +80,25 @@ export class HomeComponent extends Closed {
   ngOnInit(): void {
     this._updateStrategys()
     this.onClickRefresh()
+  }
+  private _clipboard?: ClipboardJS
+  @ViewChild("btnClipboard")
+  private _btnClipboard?: ElementRef
+  ngAfterViewInit(): void {
+    this._clipboard = new ClipboardJS(this._btnClipboard!.nativeElement).on('success', () => {
+      this.toastService.add({
+        severity: 'success',
+        summary: this.translateService.instant(i18n.action.success),
+        detail: this.translateService.instant(i18n.action.copied),
+      })
+    }).on('error', (evt) => {
+      console.error('Action:', evt.action)
+      console.error('Trigger:', evt.trigger)
+    })
+  }
+  override ngOnDestroy(): void {
+    this._clipboard?.destroy()
+    super.ngOnDestroy()
   }
   onClickRefresh() {
     if (this.state == State.run) {
@@ -156,15 +180,15 @@ export class HomeComponent extends Closed {
     if (this.disabled) {
       return
     }
-    console.log('qr', source)
-    this.disabled = true
+    const s = source.data.map((ele) => { return ele.rawURL }).join("\n")
+    this._showQR(s)
   }
   onClickCopy(source: Source) {
-    if (this.disabled) {
+    if (this.disabled || source.disabled) {
       return
     }
-    console.log('copy', source)
-    this.disabled = true
+    const s = source.data.map((ele) => { return ele.rawURL }).join("\n")
+    this._copyToClipboard(s)
   }
   onClickUpdate(source: Source) {
     if (this.disabled || source.disabled) {
@@ -277,7 +301,22 @@ export class HomeComponent extends Closed {
       return ele.menus_
     }
     const translateService = this.translateService
-    const menus: Array<MenuItem> = [
+    const qr: MenuItem = {
+      label: translateService.instant(i18n.proxy.qr),
+      icon: 'pi pi-qrcode',
+      command: () => {
+        this._showQR(ele.rawURL)
+      },
+    }
+    const copy: MenuItem = {
+      label: translateService.instant(i18n.proxy.copy),
+      icon: 'pi pi-copy',
+      command: () => {
+        this._copyToClipboard(ele.rawURL)
+      },
+    }
+
+    const menus: Array<MenuItem> = ele.url ? [
       {
         label: translateService.instant(i18n.proxy.test),
         icon: 'pi pi-bolt',
@@ -292,21 +331,7 @@ export class HomeComponent extends Closed {
           console.log('preview', ele)
         },
       },
-      {
-        label: translateService.instant(i18n.proxy.qr),
-        icon: 'pi pi-qrcode',
-        command: () => {
-          console.log('qr', ele)
-        },
-      },
-      {
-        label: translateService.instant(i18n.proxy.copy),
-        icon: 'pi pi-copy',
-        command: () => {
-          console.log('copy', ele)
-        },
-      },
-      { separator: true },
+      qr, copy, { separator: true },
       {
         label: translateService.instant(i18n.proxy.firewall),
         icon: 'pi pi-send',
@@ -333,13 +358,35 @@ export class HomeComponent extends Closed {
         label: translateService.instant(i18n.delete),
         icon: 'pi pi-trash',
         command: () => {
-          console.log('trash', ele)
+          this.onClickDelete(source, ele)
         },
       },
-    ]
+    ] : [qr, copy]
     ele.lang_ = lang
     ele.menus_ = menus
     return menus
+  }
+  private _copyToClipboard(s: string) {
+    try {
+      const btn = this._btnClipboard!.nativeElement
+      btn.setAttribute("data-clipboard-text", s)
+      btn.click()
+    } catch (e) {
+      console.warn(e)
+    }
+  }
+  private _showQR(s: string) {
+    this.dialogService.open(QrComponent, {
+      data: s,
+      showHeader: false,
+      dismissableMask: true,
+    })
+  }
+  onClickDelete(source: Source, ele: Element) {
+    if (this.disabled || source.disabled || ele.disabled) {
+      return
+    }
+    console.log('trash', ele)
   }
 }
 class Source {

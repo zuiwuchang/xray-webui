@@ -372,6 +372,10 @@ export const i18n = {
 		* 數據刪除成功
 		*/
 		removeSuccess: "_a.r",
+		/**
+		* 已拷貝到剪貼板
+		*/
+		copied: "_a.C",
 	},
 	general: {
 		/**

@@ -60,6 +60,7 @@ exports.keys = {
         add: make('a', '添加'),
         remove: make('R', "數據一旦刪除將無法恢復，請確認？"),
         removeSuccess: make('r', '數據刪除成功'),
+        copied: make('C', '已拷貝到剪貼板'),
     },
     general: {
         __id: '_g',

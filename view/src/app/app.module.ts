@@ -26,6 +26,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { RippleModule } from 'primeng/ripple';
 import { DataViewModule } from 'primeng/dataview';
 import { SplitButtonModule } from 'primeng/splitbutton';
+import { DynamicDialogModule } from 'primeng/dynamicdialog';
 
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
@@ -34,6 +35,7 @@ import { AppComponent } from './app.component';
 import { HomeComponent } from './app/home/home.component';
 import { NotfoundComponent } from './app/notfound/notfound.component';
 import { AboutComponent } from './app/about/about.component';
+import { QrComponent } from './app/qr/qr.component';
 
 
 // import defaultLanguage from '../assets/i18n/zh-Hant.json';
@@ -64,6 +66,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
     HomeComponent,
     NotfoundComponent,
     AboutComponent,
+    QrComponent,
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule,
@@ -83,7 +86,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
     MessagesModule, MessageModule, MenuModule, ProgressSpinnerModule,
     AccordionModule, ToastModule, CardModule, ProgressBarModule,
     DropdownModule, RippleModule, DataViewModule, SplitButtonModule,
-
+    DynamicDialogModule,
     RouterModule, AppRoutingModule
   ],
   providers: [],

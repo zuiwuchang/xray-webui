@@ -41,7 +41,7 @@ exports.vmess = {
             {
                 key: 'protocol',
                 label: i18n_1.i18n.protocol,
-                ui: 'select',
+                ui: 'select-editable',
                 value: [
                     'tcp', 'ws', 'quic', 'kcp', 'http',
                 ],
@@ -56,7 +56,7 @@ exports.vmess = {
             {
                 key: 'security',
                 label: i18n_1.i18n.security,
-                ui: 'select',
+                ui: 'select-editable',
                 value: [
                     'none', 'tls', 'xtls',
                 ],
