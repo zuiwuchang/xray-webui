@@ -1,12 +1,13 @@
 import * as core from "xray/core";
-import { Metadata } from "xray/webui";
+import { ConfigureOption, Metadata, Provider } from "xray/webui";
 import { vless } from "./metadata/vless";
 import { vmess } from "./metadata/vmess";
 import { trojan } from "./metadata/trojan";
+import { Xray } from "./xray/xray";
 export function create(): Provider {
-    return new Provider()
+    return new myProvider()
 }
-class Provider {
+class myProvider implements Provider {
     /**
      * 調用防火牆 查看 透明代理 設定
      */
@@ -38,5 +39,17 @@ ${s}
             vless, vmess,
             trojan,
         ]
+    }
+    /**
+     * 返回 xray 設定
+     */
+    configure(opts: ConfigureOption): string {
+        core.println(JSON.stringify(opts, undefined, '    '))
+        const o: Xray = {
+            log: {
+                loglevel: 'warning',
+            },
+        }
+        return JSON.stringify(o, undefined, '    ')
     }
 }

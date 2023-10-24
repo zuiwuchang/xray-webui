@@ -15,6 +15,7 @@ exports.vmess = {
                     from: 'json',
                     key: 'ps',
                 },
+                onlyUI: true,
             },
         ],
         [

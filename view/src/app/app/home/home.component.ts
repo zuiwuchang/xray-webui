@@ -14,6 +14,7 @@ import { ConfirmationService, MenuItem } from 'primeng/api';
 import ClipboardJS from 'clipboard';
 import { DialogService } from 'primeng/dynamicdialog';
 import { QrComponent } from '../qr/qr.component';
+import { PreviewComponent } from '../preview/preview.component';
 
 @Component({
   selector: 'app-home',
@@ -322,7 +323,7 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
         label: translateService.instant(i18n.proxy.view),
         icon: 'pi pi-sync',
         command: () => {
-          console.log('preview', ele)
+          this._preview(source, ele)
         },
       },
       qr, copy, { separator: true },
@@ -375,6 +376,46 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       showHeader: false,
       dismissableMask: true,
     })
+  }
+  private _preview(source: Source, ele: Element) {
+    if (this.disabled || source.disabled || ele.disabled) {
+      return
+    }
+    this.disabled = true
+    source.disabled = true
+    ele.disabled = true
+    const delay = Delay.default()
+    this.httpClient.post(`/api/v1/proxy/preview`, {
+      strategy: this.strategy,
+      url: ele.rawURL,
+    }, {
+      responseType: "text",
+    }).pipe(this.takeUntil()).subscribe({
+      next: (s) => delay.do(() => {
+        if (this.isNotClosed) {
+          this.disabled = false
+          source.disabled = false
+          ele.disabled = false
+          this.dialogService.open(PreviewComponent, {
+            header: this.translateService.instant(i18n.proxy.view),
+            data: s,
+            dismissableMask: true,
+            maximizable: true,
+            width: '80vw',
+          })
+        }
+      }),
+      error: (e) => delay.do(() => {
+        if (this.isNotClosed) {
+          this.disabled = false
+          source.disabled = false
+          ele.disabled = false
+
+          this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: getErrorString(e) })
+        }
+      }),
+    })
+
   }
   onClickDelete(source: Source, ele: Element) {
     if (this.disabled || source.disabled || ele.disabled) {

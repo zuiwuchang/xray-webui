@@ -15,6 +15,7 @@ exports.trojan = {
                     from: 'fragment',
                     enc: 'escape',
                 },
+                onlyUI: true,
             },
         ],
         [

@@ -37,6 +37,7 @@ import { HomeComponent } from './app/home/home.component';
 import { NotfoundComponent } from './app/notfound/notfound.component';
 import { AboutComponent } from './app/about/about.component';
 import { QrComponent } from './app/qr/qr.component';
+import { PreviewComponent } from './app/preview/preview.component';
 
 
 // import defaultLanguage from '../assets/i18n/zh-Hant.json';
@@ -68,6 +69,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
     NotfoundComponent,
     AboutComponent,
     QrComponent,
+    PreviewComponent,
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule,

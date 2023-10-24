@@ -20,6 +20,7 @@ func (h Helper) Register(router *gin.RouterGroup) {
 		Firewall{},
 		&Strategy{},
 		&Settings{},
+		Proxy{},
 	}
 	for _, m := range ms {
 		m.Register(r)

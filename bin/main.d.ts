@@ -112,6 +112,11 @@ declare module 'xray/webui' {
          * 來源
          */
         from: From
+
+        /**
+         * 如果爲 true 表示只在 ui 頁面中有效
+         */
+        onlyUI?: boolean
     }
     export interface Metadata {
         /**
@@ -132,12 +137,77 @@ declare module 'xray/webui' {
          */
         fields: Array<Array<Filed>>
     }
+    export interface Strategy {
+        /**
+         * 供腳本參考的 策略值 ，腳本應該依據此值生成 xray 的配置
+         * 
+         * * 1 默認的代理規則
+         * * 2 全域代理
+         * * 3 略過區域網路的代理(僅對公網ip使用代理)
+         * * 4 略過區域網路和西朝鮮的代理
+         * * 5 直連優先 (僅對非西朝鮮公網使用代理)
+         * * 6 直接連接
+         */
+        value: 1 | 2 | 3 | 4 | 5 | 6
+
+        /**
+         * 靜態 ip 列表
+         * 
+         * ```
+         * baidu.com 127.0.0.1
+         * dns.google 8.8.8.8 8.8.4.4
+         * ```
+         */
+        host: Array<Array<string>>
+
+        /**
+         * 這些 ip 使用代理
+         */
+        proxyIP: Array<string>
+        /**
+         * 這些 域名 使用代理
+         */
+        proxyDomain: Array<string>
+
+        /**
+         * 這些 ip 直接連接
+         */
+        directIP: Array<string>
+        /**
+         * 這些 域名 直接連接
+         */
+        directDomain: Array<string>
+
+        /**
+         * 這些 ip 禁止訪問
+         */
+        blockIP: Array<string>
+        /**
+         * 這些 域名 禁止訪問
+         */
+        blockDomain: Array<string>
+    }
+    export interface ConfigureOption {
+        /**
+         * 節點信息
+         */
+        fileds: Record<string/** Filed.key */, string | undefined>
+        /**
+         * 使用的策略
+         */
+        strategy: number
+        /**
+         * 自定義設定
+         */
+        userdata: any
+    }
+
     /**
      * 爲網頁 ui 提供了各種功能的具體實現
      */
     export interface Provider {
         /**
-         * 返回防火牆設定
+         * 返回透明代理設定
          */
         getFirewall(): string
         /**
@@ -149,5 +219,10 @@ declare module 'xray/webui' {
          * 返回支持的節點元信息
          */
         metadata(): Array<Metadata>
+
+        /**
+         * 返回配置
+         */
+        configure(opts: ConfigureOption): string
     }
 }

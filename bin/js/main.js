@@ -29,10 +29,10 @@ const vless_1 = require("./metadata/vless");
 const vmess_1 = require("./metadata/vmess");
 const trojan_1 = require("./metadata/trojan");
 function create() {
-    return new Provider();
+    return new myProvider();
 }
 exports.create = create;
-class Provider {
+class myProvider {
     /**
      * 調用防火牆 查看 透明代理 設定
      */
@@ -66,5 +66,17 @@ ${s}
             vless_1.vless, vmess_1.vmess,
             trojan_1.trojan,
         ];
+    }
+    /**
+     * 返回 xray 設定
+     */
+    configure(opts) {
+        core.println(JSON.stringify(opts, undefined, '    '));
+        const o = {
+            log: {
+                loglevel: 'warning',
+            },
+        };
+        return JSON.stringify(o, undefined, '    ');
     }
 }

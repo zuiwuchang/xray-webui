@@ -14,6 +14,7 @@ export const vmess: Metadata = {
                     from: 'json',
                     key: 'ps',
                 },
+                onlyUI: true,
             },
         ],
         [

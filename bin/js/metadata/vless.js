@@ -15,6 +15,7 @@ exports.vless = {
                     from: 'fragment',
                     enc: 'escape',
                 },
+                onlyUI: true,
             },
         ],
         [

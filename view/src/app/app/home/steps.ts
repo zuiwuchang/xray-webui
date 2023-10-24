@@ -196,12 +196,15 @@ export class MetadataProvider {
     get(url: URL, filed: Filed): string {
         const from = filed.from
         switch (from.from) {
+            // case `username`:
             case 'host':
                 return this.decode(from.enc, url.hostname())
             case 'port':
                 return this.decode(from.enc, url.port() ?? '')
             case 'query':
                 return this.decode(from.enc, url.query().get(from.key ?? ''))
+            // case `path`:
+            // case `query`:
             case 'fragment':
                 return this.decode(from.enc, url.fragment)
             case 'json':

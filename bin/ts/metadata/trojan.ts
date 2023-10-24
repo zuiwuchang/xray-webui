@@ -14,6 +14,7 @@ export const trojan: Metadata = {
                     from: 'fragment',
                     enc: 'escape',
                 },
+                onlyUI: true,
             },
         ],
         [

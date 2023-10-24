@@ -1,17 +1,29 @@
 package js
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
+	"github.com/google/go-jsonnet"
+	"github.com/zuiwuchang/xray_webui/db/manipulator"
+	"github.com/zuiwuchang/xray_webui/utils"
 )
 
 type Runtime struct {
 	Runtime       *goja.Runtime
 	RequireModule *require.RequireModule
 	create        goja.Callable
+
+	json      *goja.Object
+	stringify goja.Callable
+	parse     goja.Callable
 }
 
 func New(path string) (runtime *Runtime, e error) {
@@ -35,10 +47,29 @@ func New(path string) (runtime *Runtime, e error) {
 		return
 	}
 
+	JSON := vm.GlobalObject().Get(`JSON`)
+	json, ok := JSON.(*goja.Object)
+	if !ok {
+		e = errors.New(`JSON not found`)
+		return
+	}
+	stringify, ok := goja.AssertFunction(json.Get(`stringify`))
+	if !ok {
+		e = errors.New(`JSON.stringify not a function`)
+		return
+	}
+	parse, ok := goja.AssertFunction(json.Get(`parse`))
+	if !ok {
+		e = errors.New(`JSON.parse not a function`)
+		return
+	}
 	runtime = &Runtime{
 		Runtime:       vm,
 		RequireModule: requireModule,
 		create:        create,
+		json:          json,
+		stringify:     stringify,
+		parse:         parse,
 	}
 	return
 }
@@ -50,6 +81,7 @@ func (vm *Runtime) Check() (e error) {
 	names := []string{
 		`getFirewall`,
 		`metadata`,
+		`configure`,
 	}
 	for _, name := range names {
 		_, ok := goja.AssertFunction(self.ToObject(vm.Runtime).Get(name))
@@ -110,25 +142,169 @@ func (vm *Runtime) Metadata() (s string, e error) {
 	self, f, destroy, e := vm.assertFunction(`metadata`)
 	if e != nil {
 		return
-	} else if destroy != nil {
+	}
+	s, e = vm.metadata(self, f)
+	if destroy != nil {
 		defer destroy(self)
 	}
+	return
+}
+func (vm *Runtime) metadata(self goja.Value, f goja.Callable) (s string, e error) {
 	val, e := f(self)
 	if e != nil {
 		return
 	}
 
-	JSON := vm.Runtime.GlobalObject().Get(`JSON`)
-	stringify := JSON.(*goja.Object).Get(`stringify`)
-	callable, ok := goja.AssertFunction(stringify)
-	if !ok {
-		e = errors.New(`JSON.stringify not a function`)
-		return
-	}
-	val, e = callable(JSON, val)
+	val, e = vm.stringify(vm.json, val)
 	if e != nil {
 		return
 	}
 	s = val.String()
+	return
+}
+func (vm *Runtime) Preview(u *url.URL, strategy uint32) (s string, e error) {
+	self, f, destroy, e := vm.assertFunction(`metadata`)
+	if e != nil {
+		return
+	} else if destroy != nil {
+		defer destroy(self)
+	}
+	tmp, e := vm.metadata(self, f)
+	if e != nil {
+		return
+	}
+	var metadatas []Metadata
+	e = json.Unmarshal(utils.StringToBytes(tmp), &metadatas)
+	if e != nil {
+		return
+	}
+	for _, metadata := range metadatas {
+		if metadata.Protocol == u.Scheme {
+			s, e = vm.preview(u, self, metadata, strategy)
+			return
+		}
+	}
+	e = errors.New(`unknow scheme: ` + u.Scheme)
+	return
+}
+func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strategy uint32) (s string, e error) {
+	callable, ok := goja.AssertFunction(self.(*goja.Object).Get(`configure`))
+	if !ok {
+		e = errors.New(`script method configure not implemented`)
+		return
+	}
+
+	// userdata
+	var mSettings manipulator.Settings
+	general, e := mSettings.GetGeneral()
+	if e != nil {
+		return
+	}
+	userdata, e := jsonnet.MakeVM().EvaluateAnonymousSnippet(`userdata.jsonnet`, general.Userdata)
+	if e != nil {
+		return
+	}
+	// strategy
+	var mStrategy manipulator.Strategy
+	strategyValue, e := mStrategy.Value(strategy)
+	if e != nil {
+		return
+	}
+	fileds := make(map[string]string)
+	for _, ff := range metadata.Fields {
+		for _, f := range ff {
+			if f.OnlyUI {
+				continue
+			}
+			var val string
+			var o struct {
+				ok   bool
+				keys map[string]any
+			}
+			switch f.From.From {
+			// case `username`:
+			case `host`:
+				val, e = vm.decode(f.From.Enc, u.Hostname())
+				if e != nil {
+					return
+				}
+			case `port`:
+				val, e = vm.decode(f.From.Enc, u.Port())
+				if e != nil {
+					return
+				}
+			// case `path`:
+			case `query`:
+				val, e = vm.decode(f.From.Enc, u.Query().Get(f.From.Key))
+				if e != nil {
+					return
+				}
+			case `fragment`:
+				val, e = vm.decode(f.From.Enc, u.Fragment)
+				if e != nil {
+					return
+				}
+			case `json`:
+				if !o.ok {
+					var str string
+					str, e = vm.decode("base64", u.Host)
+					if e != nil {
+						return
+					}
+					e = json.Unmarshal(utils.StringToBytes(str), &o.keys)
+					if e != nil {
+						return
+					}
+					o.ok = true
+				}
+				val, e = vm.decode(f.From.Enc, fmt.Sprint(o.keys[f.From.Key]))
+				if e != nil {
+					return
+				}
+			default:
+				e = errors.New(`unknow filed from: ` + f.From.From)
+				return
+			}
+			fileds[f.Key] = val
+		}
+	}
+	jstr, e := json.Marshal(map[string]any{
+		`fileds`:   fileds,
+		`userdata`: userdata,
+		`strategy`: strategyValue,
+	})
+	if e != nil {
+		return
+	}
+	opts, e := vm.parse(vm.json, vm.Runtime.ToValue(utils.BytesToString(jstr)))
+	if e != nil {
+		return
+	}
+	val, e := callable(self, opts)
+	if e != nil {
+		return
+	}
+	s = val.String()
+	return
+}
+func (vm *Runtime) decode(enc, src string) (output string, e error) {
+	switch enc {
+	case `escape`:
+		output, e = url.QueryUnescape(src)
+	case `base64`:
+		src = strings.TrimRight(src, "=")
+		var b []byte
+		b, e = base64.RawStdEncoding.DecodeString(src)
+		if e != nil {
+			b0, e0 := base64.RawURLEncoding.DecodeString(src)
+			if e0 != nil {
+				return
+			}
+			b = b0
+		}
+		output = utils.BytesToString(b)
+	default:
+		output = src
+	}
 	return
 }

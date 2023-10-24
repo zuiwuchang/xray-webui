@@ -14,6 +14,7 @@ export const vless: Metadata = {
                     from: 'fragment',
                     enc: 'escape',
                 },
+                onlyUI: true,
             },
         ],
         [
