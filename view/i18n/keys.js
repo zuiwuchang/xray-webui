@@ -102,5 +102,8 @@ exports.keys = {
 
         firewall: make('f', '開啓透明代理'),
         closeFirewall: make('cf', '關閉透明代理'),
+
+        addOK: make('ao', '新增節點成功'),
+        setOK: make('so', '更新節點成功'),
     },
 }

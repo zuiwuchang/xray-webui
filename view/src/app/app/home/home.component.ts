@@ -35,6 +35,7 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     private readonly confirmationService: ConfirmationService,
   ) {
     super()
+    this.dialog = new DialogOfElement(httpClient, translateService, toastService)
     this.prepare_ = new Prepare([
       new MetadataStep(this, httpClient),
       new ListStep(this, httpClient),
@@ -504,10 +505,12 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       dismissableMask: true,
     });
   }
-  dialog = new DialogOfElement(this)
+  dialog: DialogOfElement
 }
 class DialogOfElement {
-  constructor(private readonly component: HomeComponent) { }
+  constructor(private readonly httpClient: HttpClient,
+    private readonly translateService: TranslateService,
+    private readonly toastService: ToastService,) { }
   visible = false
   disabled = false
   isAdd?: boolean
@@ -515,6 +518,10 @@ class DialogOfElement {
   metadata?: Metadata
   private source_?: Source
   private ele_?: Element
+  private old_?: {
+    metadata?: Metadata
+    values?: Map<string, string>
+  }
   add(source: Source) {
     if (this.visible || this.disabled || source.disabled) {
       return
@@ -522,6 +529,7 @@ class DialogOfElement {
 
     this.metadatas = source.provider.metadata
     this.metadata = undefined
+    this.old_ = {}
     this._initForm(source.provider)
     this.source_ = source
     this.ele_ = undefined
@@ -534,17 +542,37 @@ class DialogOfElement {
     }
     this.metadatas = source.provider.metadata
     this.metadata = ele.metadata
-    this._initForm(source.provider, ele)
+    const values = new Map<string, string>()
+    this.old_ = {
+      metadata: this.metadata,
+      values: values,
+    }
+    this._initForm(source.provider, ele, values)
     this.source_ = source
-    this.ele_ = undefined
+    this.ele_ = ele
     this.isAdd = false
     this.visible = true
   }
   get isNotChanged(): boolean {
-    return false
+    const metadata = this.metadata
+    const old = this.old_
+    if (metadata != old?.metadata) {
+      return false
+    }
+    const keys = this.keys
+    const values = old?.values
+    if (metadata && keys && values) {
+      for (const field of metadata.fields) {
+        if ((keys.get(field.key)?.value ?? '') != (values.get(field.key) ?? '')) {
+          return false
+        }
+      }
+    }
+    return true
   }
   keys?: Map<string, UIValue>
-  private _initForm(provider: MetadataProvider, ele?: Element) {
+
+  private _initForm(provider: MetadataProvider, ele?: Element, values?: Map<string, string>) {
     const keys = new Map<string, UIValue>()
     for (const metadata of this.metadatas) {
       for (const field of metadata.fields) {
@@ -555,6 +583,7 @@ class DialogOfElement {
       for (const field of ele.metadata.fields) {
         const value = provider.get(ele.url, field)
         keys.set(field.key, { value: value })
+        values!.set(field.key, value)
       }
     }
     this.keys = keys
@@ -566,10 +595,54 @@ class DialogOfElement {
     if (this.disabled || !this.metadata || !this.source_ || !this.keys) {
       return
     }
-    this.disabled = true
-    const u = this.source_.provider.getURL(this.metadata, this.keys)
-
+    const source = this.source_
+    const ele = this.ele_
+    const u = this.source_.provider.getURL(this.metadata, this.keys).toString()
     console.log(u)
+    const delay = Delay.default()
+    this.disabled = true
+    this.httpClient.post<{ id?: string }>(ele ? `/api/v1/settings/element_set/${source.id}/${ele.id}` : `/api/v1/settings/element_add/${source.id}`, {
+      url: u,
+    }).subscribe({
+      next: (resp) => delay.do(() => {
+        if (ele) {
+          try {
+            ele.reload(u)
+            this.toastService.add({ severity: 'success', summary: this.translateService.instant(i18n.action.success), detail: this.translateService.instant(i18n.proxy.setOK) })
+          } catch (e) {
+            console.warn(e)
+            this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: `${e}` })
+            this.disabled = false
+            return
+          }
+        } else {
+          try {
+            const newele = new Element(source.provider, resp.id!, u)
+            source.data.push(newele)
+            this.toastService.add({ severity: 'success', summary: this.translateService.instant(i18n.action.success), detail: this.translateService.instant(i18n.proxy.addOK) })
+          } catch (e) {
+            console.warn(e)
+            this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: `${e}` })
+            this.disabled = false
+            return
+          }
+        }
+        this.disabled = false
+        this.visible = false
+        this.source_ = undefined
+        this.ele_ = undefined
+        this.old_ = undefined
+        this.metadata = undefined
+        this.metadatas = []
+
+      }),
+      error: (e) => delay.do(() => {
+        console.warn(e)
+        this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: getErrorString(e) })
+        this.disabled = false
+      }),
+    })
+
   }
   onClickClose() {
     if (this.disabled) {
@@ -610,12 +683,12 @@ class Element {
   name?: string
   describe?: string
   disabled = false
-  constructor(readonly provider: MetadataProvider, readonly id: string, readonly rawURL: string) {
+  constructor(readonly provider: MetadataProvider, readonly id: string, public rawURL: string) {
     try {
       let fragment = ''
       let i = rawURL.lastIndexOf('#')
       if (i > 0) {
-        fragment = rawURL.substring(i + 1)
+        fragment = decodeURIComponent(rawURL.substring(i + 1))
       }
       const url = URL.parseRequestURI(i > 0 ? rawURL.substring(0, i) : rawURL)
       url.fragment = fragment
@@ -630,6 +703,18 @@ class Element {
     } catch (e) {
       console.warn(e)
     }
+  }
+  reload(rawURL: string) {
+    const o = new Element(this.provider, this.id, rawURL)
+
+    this.menus_ = undefined
+    this.lang_ = undefined
+
+    this.metadata = o.metadata
+    this.url = o.url
+
+    this.name = o.name
+    this.describe = o.describe
   }
   private _updateView(url: URL, md: Metadata) {
     const provider = this.provider

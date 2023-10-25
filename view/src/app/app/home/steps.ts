@@ -165,7 +165,7 @@ export interface Metadata {
 }
 
 export class MetadataProvider {
-    private keys_: Map<string, Metadata>
+    // private keys_: Map<string, Metadata>
     constructor(readonly metadata: Array<Metadata>) {
         const keys = new Map<string, Metadata>()
         for (const md of metadata) {
@@ -181,7 +181,7 @@ export class MetadataProvider {
                 keys.set(key, md)
             }
         }
-        this.keys_ = keys
+        // this.keys_ = keys
     }
     filed(md: Metadata, key: string): Filed | undefined {
         for (const field of md.fields) {

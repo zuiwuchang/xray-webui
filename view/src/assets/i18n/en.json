@@ -184,6 +184,8 @@
 		"e": "Edit node",
 		"v": "Preview",
 		"f": "Turn on transparent proxy",
-		"cf": "Turn off transparent proxy"
+		"cf": "Turn off transparent proxy",
+		"ao": "New node successfully",
+		"so": "Update node successfully"
 	}
 }

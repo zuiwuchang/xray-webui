@@ -8,7 +8,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -53,6 +52,8 @@ func (h *Settings) Register(router *gin.RouterGroup) {
 	r.POST(`element/:id`, h.UpdateElement)
 	r.DELETE(`elements/:id`, h.ClearElement)
 	r.DELETE(`element/:subscription/:id`, h.DeleteElement)
+	r.POST(`element_add/:subscription`, h.AddElement)
+	r.POST(`element_set/:subscription/:id`, h.SetElement)
 }
 func (h *Settings) GetGeneral(c *gin.Context) {
 	h.SetHTTPCacheMaxAge(c, 0)
@@ -170,7 +171,7 @@ func (h *Settings) AddSubscription(c *gin.Context) {
 	)
 	h.subscription.Store(time.Now())
 	c.JSON(http.StatusOK, map[string]any{
-		`id`: strconv.FormatUint(node.ID, 10),
+		`id`: node.ID,
 	})
 }
 func (h *Settings) PutSubscription(c *gin.Context) {
@@ -471,4 +472,79 @@ func (h *Settings) DeleteElement(c *gin.Context) {
 	now := time.Now()
 	h.subscription.Store(now)
 	h.element.Store(now)
+}
+func (h *Settings) AddElement(c *gin.Context) {
+	var id struct {
+		Subscription uint64 `uri:"subscription"`
+	}
+	e := h.BindURI(c, &id)
+	if e != nil {
+		return
+	}
+	var req struct {
+		URL string `json:"url"`
+	}
+	e = h.Bind(c, &req)
+	if e != nil {
+		return
+	}
+
+	var m manipulator.Element
+	newid, e := m.Add(id.Subscription, req.URL)
+	if e != nil {
+		slog.Warn(`add element fail`,
+			log.Error, e,
+			`subscription`, id.Subscription,
+			`url`, req.URL,
+		)
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	slog.Info(`add element success`,
+		`subscription`, id.Subscription,
+		`id`, newid,
+		`url`, req.URL,
+	)
+	c.JSON(http.StatusOK, map[string]any{
+		`id`: newid,
+	})
+}
+func (h *Settings) SetElement(c *gin.Context) {
+	var id struct {
+		Subscription uint64 `uri:"subscription"`
+		ID           uint64 `uri:"id"`
+	}
+	e := h.BindURI(c, &id)
+	if e != nil {
+		return
+	} else if id.ID == 0 {
+		c.String(http.StatusBadRequest, `id invalid`)
+		return
+	}
+	var req struct {
+		URL string `json:"url"`
+	}
+	e = h.Bind(c, &req)
+	if e != nil {
+		return
+	}
+
+	var m manipulator.Element
+	e = m.Set(id.Subscription, id.ID, req.URL)
+	if e != nil {
+		slog.Warn(`set element fail`,
+			log.Error, e,
+			`subscription`, id.Subscription,
+			`id`, id.ID,
+			`url`, req.URL,
+		)
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	slog.Info(`set element success`,
+		`subscription`, id.Subscription,
+		`id`, id.ID,
+		`url`, req.URL,
+	)
+	c.Status(http.StatusNoContent)
 }

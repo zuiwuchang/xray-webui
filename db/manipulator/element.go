@@ -149,3 +149,70 @@ func (m Element) Remove(sub, id uint64) error {
 		return bucket.Delete(key[:])
 	})
 }
+func (m Element) Add(sub uint64, url string) (id uint64, e error) {
+
+	e = _db.Update(func(t *bolt.Tx) error {
+		bucket := t.Bucket([]byte(data.ElementBucket))
+		if bucket == nil {
+			return fmt.Errorf("bucket not exist : %s", data.ElementBucket)
+		}
+		var key [8]byte
+		binary.LittleEndian.PutUint64(key[:], sub)
+
+		bucket = bucket.Bucket(key[:])
+		if bucket == nil {
+			return fmt.Errorf("bucket not exist : %s.%v", data.ElementBucket, sub)
+		}
+		newid, e := bucket.NextSequence()
+		if e != nil {
+			return e
+		}
+		binary.LittleEndian.PutUint64(key[:], newid)
+		tmp := data.Element{
+			ID:  newid,
+			URL: url,
+		}
+		b, e := tmp.Encoder()
+		if e != nil {
+			return e
+		}
+		e = bucket.Put(key[:], b)
+		if e != nil {
+			return e
+		}
+		id = newid
+		return nil
+	})
+	return
+}
+
+// 更新節點
+func (m Element) Set(sub, id uint64, url string) (e error) {
+	return _db.Update(func(t *bolt.Tx) error {
+		bucket := t.Bucket([]byte(data.ElementBucket))
+		if bucket == nil {
+			return fmt.Errorf("bucket not exist : %s", data.ElementBucket)
+		}
+		var key [8]byte
+		binary.LittleEndian.PutUint64(key[:], sub)
+
+		bucket = bucket.Bucket(key[:])
+		if bucket == nil {
+			return fmt.Errorf("bucket not exist : %s.%v", data.ElementBucket, sub)
+		}
+
+		binary.LittleEndian.PutUint64(key[:], id)
+		if bucket.Get(key[:]) == nil {
+			return fmt.Errorf(`element not exists: %s.%v.%v`, data.ElementBucket, sub, id)
+		}
+		tmp := data.Element{
+			ID:  id,
+			URL: url,
+		}
+		b, e := tmp.Encoder()
+		if e != nil {
+			return e
+		}
+		return bucket.Put(key[:], b)
+	})
+}

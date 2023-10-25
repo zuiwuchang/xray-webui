@@ -498,5 +498,13 @@ export const i18n = {
 		* 關閉透明代理
 		*/
 		closeFirewall: "_p.cf",
+		/**
+		* 新增節點成功
+		*/
+		addOK: "_p.ao",
+		/**
+		* 更新節點成功
+		*/
+		setOK: "_p.so",
 	},
 }
