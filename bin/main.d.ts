@@ -74,7 +74,7 @@ declare module 'xray/webui' {
         /**
          * 這部分要要如何加解碼
          */
-        enc?: 'base64' | 'escape'
+        enc?: 'base64'
     }
     export interface Filed {
         /**
@@ -135,7 +135,7 @@ declare module 'xray/webui' {
         /**
          * 可供用戶設置的 代理屬性
          */
-        fields: Array<Array<Filed>>
+        fields: Array<Filed>
     }
     export interface Strategy {
         /**

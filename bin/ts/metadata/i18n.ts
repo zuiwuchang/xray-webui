@@ -19,9 +19,34 @@ export const i18n = {
         'zh-Hans': '连接协议',
         'default': 'Protocol',
     },
+    host: {
+        'zh-Hant': '連接主機名',
+        'zh-Hans': '連接主機名',
+        'default': 'Server Hostname',
+    },
+    path: {
+        'zh-Hant': '連接路徑',
+        'zh-Hans': '連接路徑',
+        'default': 'URL Path',
+    },
     security: {
         'zh-Hant': '安全',
         'zh-Hans': '安全',
         'default': 'Security',
+    },
+    userID: {
+        'zh-Hant': '用戶ID',
+        'zh-Hans': '用戶ID',
+        'default': 'User ID',
+    },
+    userLevel: {
+        'zh-Hant': '用戶等級',
+        'zh-Hans': '用戶等級',
+        'default': 'User Level',
+    },
+    flow: {
+        'zh-Hant': '流控',
+        'zh-Hans': '流控',
+        'default': 'Flow Control',
     },
 }

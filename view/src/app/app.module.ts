@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BrowserModule } from '@angular/platform-browser';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 // import ngx-translate and the http loader
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
@@ -28,6 +28,8 @@ import { DataViewModule } from 'primeng/dataview';
 import { SplitButtonModule } from 'primeng/splitbutton';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
 
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
@@ -38,6 +40,7 @@ import { NotfoundComponent } from './app/notfound/notfound.component';
 import { AboutComponent } from './app/about/about.component';
 import { QrComponent } from './app/qr/qr.component';
 import { PreviewComponent } from './app/preview/preview.component';
+import { UiFieldComponent } from './app/ui-field/ui-field.component';
 
 
 // import defaultLanguage from '../assets/i18n/zh-Hant.json';
@@ -70,10 +73,11 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
     AboutComponent,
     QrComponent,
     PreviewComponent,
+    UiFieldComponent,
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule,
-    FormsModule,
+    FormsModule, ReactiveFormsModule,
     // ngx-translate and the loader module
     HttpClientModule,
     TranslateModule.forRoot({
@@ -89,7 +93,8 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
     MessagesModule, MessageModule, MenuModule, ProgressSpinnerModule,
     AccordionModule, ToastModule, CardModule, ProgressBarModule,
     DropdownModule, RippleModule, DataViewModule, SplitButtonModule,
-    DynamicDialogModule, ConfirmDialogModule,
+    DynamicDialogModule, ConfirmDialogModule, DialogModule,
+    InputTextModule,
     RouterModule, AppRoutingModule
   ],
   providers: [],

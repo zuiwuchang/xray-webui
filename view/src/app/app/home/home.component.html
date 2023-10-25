@@ -70,9 +70,23 @@
                             strokeWidth="5" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
                     </div>
                     <br>
-                    <p-dropdown class="w-full" [styleClass]="'w-full'" [options]="strategys" [(ngModel)]="strategy"
-                        [disabled]="disabled" optionLabel="name" optionValue="value">
-                    </p-dropdown>
+                    <div class="formgrid grid">
+                        <p class="field col-12 p-float-label">
+                            <p-dropdown class="w-full" [styleClass]="'w-full'" [options]="strategys"
+                                [(ngModel)]="strategy" [disabled]="disabled" optionLabel="name" optionValue="value"
+                                appendTo="body">
+                            </p-dropdown>
+                            <label>{{i18n.general.strategy| translate}}</label>
+                        </p>
+                    </div>
+                    <!-- <div class="grid">
+                        <p class="field col-12 md:col-4 p-float-label">
+                            <p-dropdown class="w-full" [styleClass]="'w-full'" [options]="strategys"
+                                [(ngModel)]="strategy" [disabled]="disabled" optionLabel="name" optionValue="value">
+                            </p-dropdown>
+                            <label>{{i18n.general.strategy| translate}}</label>
+                        </p>
+                    </div> -->
 
                     <p-dataView [value]="item.data" [rows]="item.data.length" [paginator]="false">
                         <ng-template let-node pTemplate="listItem">
@@ -144,4 +158,35 @@
 </p>
 
 <button #btnClipboard class="hide" data-clipboard-text="">copy</button>
-<p-confirmDialog [style]="{width: '80vw'}" appendTo="body"></p-confirmDialog>
+<p-confirmDialog #cd [style]="{width: '80vw'}" appendTo="body">
+    <ng-template pTemplate="footer">
+        <button type="button" pButton icon="pi pi-check" label="{{i18n.action.sure|translate}}"
+            (click)="cd.accept()"></button>
+        <button type="button" pButton icon="pi pi-times" label="{{i18n.action.cancel|translate}}"
+            (click)="cd.reject()"></button>
+    </ng-template>
+</p-confirmDialog>
+
+<p-dialog header="{{(dialog.isAdd?i18n.proxy.add:i18n.proxy.edit)|translate}}" [(visible)]="dialog.visible"
+    [style]="{width: '80vw'}" [maximizable]="true" [modal]="true" [closable]="true" appendTo="body">
+    <div *ngIf="dialog.visible" class="flex flex-wrap dialog-view">
+        <p-dropdown class="col-12" [styleClass]="'col-12'" [options]="dialog.metadatas" [(ngModel)]="dialog.metadata"
+            [disabled]="dialog.disabled" optionLabel="protocol" appendTo="body">
+        </p-dropdown>
+
+        <app-ui-field *ngFor="let field of dialog?.metadata?.fields??[]" [class]="field.class" [field]="field"
+            [value]="dialog.value(field.key)!" [disabled]="dialog.disabled">
+        </app-ui-field>
+    </div>
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-end">
+            <p-progressSpinner *ngIf="dialog.disabled" styleClass="w-3rem h-3rem mr-2" strokeWidth="5"
+                fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
+            <p-button label="{{i18n.button.submit|translate}}" (onClick)="dialog.onClickSubmit()"
+                [disabled]="dialog.disabled || dialog.isNotChanged"></p-button>
+            <p-button label="{{i18n.button.close|translate}}" (onClick)="dialog.onClickClose()"
+                [disabled]="dialog.disabled">
+            </p-button>
+        </div>
+    </ng-template>
+</p-dialog>

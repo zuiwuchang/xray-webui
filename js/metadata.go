@@ -9,7 +9,7 @@ type Metadata struct {
 	// * ...
 	Protocol string `json:"protocol"`
 
-	Fields [][]Filed `json:"fields"`
+	Fields []Filed `json:"fields"`
 }
 type Filed struct {
 	// 存儲的鍵名稱，應該保證同一代理的多個 key 唯一

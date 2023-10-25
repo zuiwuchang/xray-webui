@@ -211,62 +211,61 @@ func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strat
 		return
 	}
 	fileds := make(map[string]string)
-	for _, ff := range metadata.Fields {
-		for _, f := range ff {
-			if f.OnlyUI {
-				continue
-			}
-			var val string
-			var o struct {
-				ok   bool
-				keys map[string]any
-			}
-			switch f.From.From {
-			// case `username`:
-			case `host`:
-				val, e = vm.decode(f.From.Enc, u.Hostname())
-				if e != nil {
-					return
-				}
-			case `port`:
-				val, e = vm.decode(f.From.Enc, u.Port())
-				if e != nil {
-					return
-				}
-			// case `path`:
-			case `query`:
-				val, e = vm.decode(f.From.Enc, u.Query().Get(f.From.Key))
-				if e != nil {
-					return
-				}
-			case `fragment`:
-				val, e = vm.decode(f.From.Enc, u.Fragment)
-				if e != nil {
-					return
-				}
-			case `json`:
-				if !o.ok {
-					var str string
-					str, e = vm.decode("base64", u.Host)
-					if e != nil {
-						return
-					}
-					e = json.Unmarshal(utils.StringToBytes(str), &o.keys)
-					if e != nil {
-						return
-					}
-					o.ok = true
-				}
-				val, e = vm.decode(f.From.Enc, fmt.Sprint(o.keys[f.From.Key]))
-				if e != nil {
-					return
-				}
-			default:
-				e = errors.New(`unknow filed from: ` + f.From.From)
+	for _, f := range metadata.Fields {
+		if f.OnlyUI {
+			continue
+		}
+		var val string
+		var o struct {
+			ok   bool
+			keys map[string]any
+		}
+		switch f.From.From {
+		// case `username`:
+		case `host`:
+			val, e = vm.decode(f.From.Enc, u.Hostname())
+			if e != nil {
 				return
 			}
-			fileds[f.Key] = val
+		case `port`:
+			val, e = vm.decode(f.From.Enc, u.Port())
+			if e != nil {
+				return
+			}
+		// case `path`:
+		case `query`:
+			val, e = vm.decode(f.From.Enc, u.Query().Get(f.From.Key))
+			if e != nil {
+				return
+			}
+		case `fragment`:
+			val, e = vm.decode(f.From.Enc, u.Fragment)
+			if e != nil {
+				return
+			}
+		case `json`:
+			if !o.ok {
+				var str string
+				str, e = vm.decode("base64", u.Host)
+				if e != nil {
+					return
+				}
+				e = json.Unmarshal(utils.StringToBytes(str), &o.keys)
+				if e != nil {
+					return
+				}
+				o.ok = true
+			}
+			val, e = vm.decode(f.From.Enc, fmt.Sprint(o.keys[f.From.Key]))
+			if e != nil {
+				return
+			}
+		default:
+			e = errors.New(`unknow filed from: ` + f.From.From)
+			return
 		}
+		fileds[f.Key] = val
+
 	}
 	jstr, e := json.Marshal(map[string]any{
 		`fileds`:   fileds,

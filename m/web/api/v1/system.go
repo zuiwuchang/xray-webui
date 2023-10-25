@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"net/http"
 	"strconv"
 	"time"
 
@@ -62,17 +63,27 @@ func (h *System) StartAt(c *gin.Context) {
 	})
 }
 func (h *System) Metadata(c *gin.Context) {
-	h.SetHTTPCacheMaxAge(c, h.maxage)
 	c.Writer.Header().Set(`Content-Type`, `application/json; charset=utf-8`)
-	h.ServeLazy(c, ``, h.startAt, func() ([]byte, error) {
-		runtime, e := js.New(configure.Default().System.Script)
-		if e != nil {
-			return nil, e
+	if gin.Mode() == gin.DebugMode {
+		b, e := metadata()
+		if e == nil {
+			c.String(http.StatusOK, utils.BytesToString(b))
+		} else {
+			c.String(http.StatusInternalServerError, e.Error())
 		}
-		s, e := runtime.Metadata()
-		if e != nil {
-			return nil, e
-		}
-		return utils.StringToBytes(s), nil
-	})
+	} else {
+		h.SetHTTPCacheMaxAge(c, h.maxage)
+		h.ServeLazy(c, ``, h.startAt, metadata)
+	}
+}
+func metadata() ([]byte, error) {
+	runtime, e := js.New(configure.Default().System.Script)
+	if e != nil {
+		return nil, e
+	}
+	s, e := runtime.Metadata()
+	if e != nil {
+		return nil, e
+	}
+	return utils.StringToBytes(s), nil
 }

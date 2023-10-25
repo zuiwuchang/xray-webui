@@ -1,0 +1,30 @@
+<ng-container [ngSwitch]="field?.ui">
+    <ng-template [ngSwitchCase]="'text'">
+        <div class="field p-float-label">
+            <input type="text" pInputText [disabled]="disabled" class="w-full" [(ngModel)]="value.value" />
+            <label>{{getLabel(field?.label)}}</label>
+        </div>
+    </ng-template>
+    <ng-template [ngSwitchCase]="'number'">
+        <div class="field p-float-label">
+            <input type="number" pInputText [disabled]="disabled" class="w-full" [(ngModel)]="value.value" />
+            <label>{{getLabel(field?.label)}}</label>
+        </div>
+    </ng-template>
+    <ng-template [ngSwitchCase]="'select'">
+        <div class="field p-float-label">
+            <p-dropdown class="w-full" [styleClass]="'w-full'" [options]="field?.value" [(ngModel)]="value.value"
+                [placeholder]="getLabel(field?.placeholder)" [disabled]="disabled" appendTo="body">
+            </p-dropdown>
+            <label>{{getLabel(field?.label)}}</label>
+        </div>
+    </ng-template>
+    <ng-template [ngSwitchCase]="'select-editable'">
+        <div class="field p-float-label">
+            <p-dropdown class="w-full" [styleClass]="'w-full'" [options]="field?.value" [(ngModel)]="value.value"
+                [editable]="true" [placeholder]="getLabel(field?.placeholder)" [disabled]="disabled" appendTo="body">
+            </p-dropdown>
+            <label>{{getLabel(field?.label)}}</label>
+        </div>
+    </ng-template>
+</ng-container>

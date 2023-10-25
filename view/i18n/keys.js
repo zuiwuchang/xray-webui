@@ -64,7 +64,8 @@ exports.keys = {
         deleteElement: make('de', '刪除節點'),
         clearElement: make('ce', '清空節點'),
         sureDelete: make('sd', '數據一旦刪除，將無法恢復，請確認要繼續刪除?'),
-        deleted: make('dd', '數據已刪除')
+        deleted: make('dd', '數據已刪除'),
+        sure: make('se', '確認'),
     },
     general: {
         __id: '_g',
@@ -95,6 +96,7 @@ exports.keys = {
         qr: make('q', '分享二維碼'),
         copy: make('c', '複製鏈接'),
         update: make('u', '更新訂閱'),
+        edit: make('e', '編輯節點'),
 
         view: make('v', '預覽設定'),
 

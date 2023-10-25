@@ -153,7 +153,8 @@
 		"de": "Delete node",
 		"ce": "Clear node",
 		"sd": "Once data is deleted, it cannot be recovered. Please confirm you want to continue deleting?",
-		"dd": "Data deleted"
+		"dd": "Data deleted",
+		"se": "Sure"
 	},
 	"_g": {
 		"u": "Speed ​​test URL",
@@ -180,6 +181,7 @@
 		"q": "Share QR code",
 		"c": "Copy link",
 		"u": "Update subscription",
+		"e": "Edit node",
 		"v": "Preview",
 		"f": "Turn on transparent proxy",
 		"cf": "Turn off transparent proxy"

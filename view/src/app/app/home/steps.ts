@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { URL } from "@king011/easyts/lib/es6/net/url/url";
+import { URL, Userinfo, Values } from "@king011/easyts/lib/es6/net/url/url";
 import { firstValueFrom } from "rxjs";
 import { Closed } from "src/internal/closed";
 import { Step } from "src/internal/prepare";
@@ -66,7 +66,7 @@ export class GeneralStep implements Step<General> {
         ))
     }
 }
-export interface Metadata { }
+
 export class MetadataStep implements Step<Metadata> {
     constructor(private readonly closed: Closed,
         private readonly httpClient: HttpClient,
@@ -105,7 +105,7 @@ export interface From {
     /**
      * 這部分要要如何加解碼
      */
-    enc?: 'base64' | 'escape'
+    enc?: 'base64'
 }
 export interface Filed {
     /**
@@ -161,7 +161,7 @@ export interface Metadata {
     /**
      * 可供用戶設置的 代理屬性
      */
-    fields: Array<Array<Filed>>
+    fields: Array<Filed>
 }
 
 export class MetadataProvider {
@@ -184,11 +184,9 @@ export class MetadataProvider {
         this.keys_ = keys
     }
     filed(md: Metadata, key: string): Filed | undefined {
-        for (const fields of md.fields) {
-            for (const field of fields) {
-                if (field.key == key) {
-                    return field
-                }
+        for (const field of md.fields) {
+            if (field.key == key) {
+                return field
             }
         }
         return undefined
@@ -196,37 +194,101 @@ export class MetadataProvider {
     get(url: URL, filed: Filed): string {
         const from = filed.from
         switch (from.from) {
-            // case `username`:
+            case `username`:
+                return this.decode(from.enc, url.user?.username ?? '')
             case 'host':
                 return this.decode(from.enc, url.hostname())
             case 'port':
                 return this.decode(from.enc, url.port() ?? '')
             case 'query':
                 return this.decode(from.enc, url.query().get(from.key ?? ''))
-            // case `path`:
-            // case `query`:
+            case `path`:
+                return this.decode(from.enc, url.path)
             case 'fragment':
                 return this.decode(from.enc, url.fragment)
             case 'json':
                 const o: Record<string, string> = JSON.parse(this.decode('base64', url.host))
-                return o[from.key!] ?? ''
+                return o[from.key ?? ''] ?? ''
         }
         return ''
     }
+    getURL(md: Metadata, keys: Map<string, { value?: any }>): string {
+        const u = new URL()
+        u.scheme = md.protocol
+        let json: undefined | Record<string, string>
+        const query = new Values()
+        let username = ''
+        let userpassword: string | undefined
+        let host = ''
+        let port = ''
+        let fragment = ''
+        for (const field of md.fields) {
+            const from = field.from
+            const found = keys.get(field.key)
+            if (!found) {
+                continue
+            }
+            let value = found.value
+            if (value === null || value === undefined) {
+                continue
+            }
+            value = `${value}`
 
-    decode(enc: 'base64' | 'escape' | undefined, s: string): string {
+            switch (from.from) {
+                case `username`:
+                    username = this.encode(from.enc, value)
+                    break
+                case 'host':
+                    host = this.encode(from.enc, value)
+                    break
+                case 'port':
+                    port = this.encode(from.enc, value)
+                    break
+                case 'query':
+                    query.set(from.key ?? '', this.encode(from.enc, value))
+                    break
+                case `path`:
+                    u.path = this.encode(from.enc, value)
+                    break
+                case 'fragment':
+                    fragment = this.encode(from.enc, value)
+                    break
+                case 'json':
+                    if (!json) {
+                        json = {}
+                    }
+                    json[from.key ?? ''] = value
+                    break
+            }
+        }
+        u.host = port == '' ? host : `${host}:${port}`
+        if (username != '' || userpassword) {
+            u.user = new Userinfo(username, userpassword)
+        }
+        if (query.length != 0) {
+            u.rawQuery = query.encode()
+        }
+        if (fragment != '') {
+            u.fragment = fragment
+        }
+        if (json) {
+            u.host = this.encode('base64', JSON.stringify(json))
+        }
+        return u.toString()
+    }
+
+    decode(enc: 'base64' | undefined, s: string): string {
         switch (enc) {
-            case 'escape':
-                return decodeURIComponent(s)
             case 'base64':
                 return Base64.decode(s)
         }
         return s
     }
-    encode(enc: 'base64' | 'escape' | undefined, s: string): string {
+    encode(enc: 'base64' | undefined, s: string): string {
+        if (s === '') {
+            return s
+        }
         switch (enc) {
-            case 'escape':
-                return encodeURIComponent(s)
             case 'base64':
                 return Base64.encode(s)
         }

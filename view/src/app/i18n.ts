@@ -392,6 +392,10 @@ export const i18n = {
 		* 數據已刪除
 		*/
 		deleted: "_a.dd",
+		/**
+		* 確認
+		*/
+		sure: "_a.se",
 	},
 	general: {
 		/**
@@ -478,6 +482,10 @@ export const i18n = {
 		* 更新訂閱
 		*/
 		update: "_p.u",
+		/**
+		* 編輯節點
+		*/
+		edit: "_p.e",
 		/**
 		* 預覽設定
 		*/

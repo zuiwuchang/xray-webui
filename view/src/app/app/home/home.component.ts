@@ -15,6 +15,8 @@ import ClipboardJS from 'clipboard';
 import { DialogService } from 'primeng/dynamicdialog';
 import { QrComponent } from '../qr/qr.component';
 import { PreviewComponent } from '../preview/preview.component';
+import { FormControl, FormGroup } from '@angular/forms';
+import { UIValue } from '../ui-field/ui-field.component';
 
 @Component({
   selector: 'app-home',
@@ -168,8 +170,7 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     if (this.disabled) {
       return
     }
-    console.log('add', source)
-    this.disabled = true
+    this.dialog.add(source)
   }
   onClickQR(source: Source) {
     if (this.disabled) {
@@ -346,7 +347,7 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
         label: translateService.instant(i18n.edit),
         icon: 'pi pi-file-edit',
         command: () => {
-          console.log('edit', ele)
+          this.dialog.edit(source, ele)
         },
       },
       {
@@ -502,6 +503,79 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       },
       dismissableMask: true,
     });
+  }
+  dialog = new DialogOfElement(this)
+}
+class DialogOfElement {
+  constructor(private readonly component: HomeComponent) { }
+  visible = false
+  disabled = false
+  isAdd?: boolean
+  metadatas: Array<Metadata> = []
+  metadata?: Metadata
+  private source_?: Source
+  private ele_?: Element
+  add(source: Source) {
+    if (this.visible || this.disabled || source.disabled) {
+      return
+    }
+
+    this.metadatas = source.provider.metadata
+    this.metadata = undefined
+    this._initForm(source.provider)
+    this.source_ = source
+    this.ele_ = undefined
+    this.isAdd = true
+    this.visible = true
+  }
+  edit(source: Source, ele: Element) {
+    if (this.visible || this.disabled || source.disabled || ele.disabled) {
+      return
+    }
+    this.metadatas = source.provider.metadata
+    this.metadata = ele.metadata
+    this._initForm(source.provider, ele)
+    this.source_ = source
+    this.ele_ = undefined
+    this.isAdd = false
+    this.visible = true
+  }
+  get isNotChanged(): boolean {
+    return false
+  }
+  keys?: Map<string, UIValue>
+  private _initForm(provider: MetadataProvider, ele?: Element) {
+    const keys = new Map<string, UIValue>()
+    for (const metadata of this.metadatas) {
+      for (const field of metadata.fields) {
+        keys.set(field.key, {})
+      }
+    }
+    if (ele && ele.url && ele.metadata) {
+      for (const field of ele.metadata.fields) {
+        const value = provider.get(ele.url, field)
+        keys.set(field.key, { value: value })
+      }
+    }
+    this.keys = keys
+  }
+  value(key?: string): UIValue | undefined {
+    return key ? this.keys?.get(key) : undefined
+  }
+  onClickSubmit() {
+    if (this.disabled || !this.metadata || !this.source_ || !this.keys) {
+      return
+    }
+    this.disabled = true
+    const u = this.source_.provider.getURL(this.metadata, this.keys)
+
+    console.log(u)
+  }
+  onClickClose() {
+    if (this.disabled) {
+      return
+    }
+    this.visible = false
   }
 }
 class Source {
