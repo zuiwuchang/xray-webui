@@ -54,6 +54,7 @@ func (h *Settings) Register(router *gin.RouterGroup) {
 	r.DELETE(`element/:subscription/:id`, h.DeleteElement)
 	r.POST(`element_add/:subscription`, h.AddElement)
 	r.POST(`element_set/:subscription/:id`, h.SetElement)
+	r.POST(`element_import/:subscription`, h.ImportElement)
 }
 func (h *Settings) GetGeneral(c *gin.Context) {
 	h.SetHTTPCacheMaxAge(c, 0)
@@ -417,9 +418,6 @@ func (h *Settings) ClearElement(c *gin.Context) {
 	e := h.BindURI(c, &id)
 	if e != nil {
 		return
-	} else if id.ID == 0 {
-		c.String(http.StatusBadRequest, `id invalid`)
-		return
 	}
 	var m manipulator.Element
 	e = m.Clear(id.ID)
@@ -445,9 +443,6 @@ func (h *Settings) DeleteElement(c *gin.Context) {
 	}
 	e := h.BindURI(c, &id)
 	if e != nil {
-		return
-	} else if id.Subscription == 0 {
-		c.String(http.StatusBadRequest, `subscription invalid`)
 		return
 	} else if id.ID == 0 {
 		c.String(http.StatusBadRequest, `id invalid`)
@@ -508,6 +503,9 @@ func (h *Settings) AddElement(c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]any{
 		`id`: newid,
 	})
+	now := time.Now()
+	h.subscription.Store(now)
+	h.element.Store(now)
 }
 func (h *Settings) SetElement(c *gin.Context) {
 	var id struct {
@@ -547,4 +545,48 @@ func (h *Settings) SetElement(c *gin.Context) {
 		`url`, req.URL,
 	)
 	c.Status(http.StatusNoContent)
+
+	now := time.Now()
+	h.subscription.Store(now)
+	h.element.Store(now)
+}
+func (h *Settings) ImportElement(c *gin.Context) {
+	var id struct {
+		Subscription uint64 `uri:"subscription"`
+	}
+	e := h.BindURI(c, &id)
+	if e != nil {
+		return
+	}
+	var req struct {
+		URL []string `json:"urls"`
+	}
+	e = h.Bind(c, &req)
+	if e != nil {
+		return
+	}
+
+	var m manipulator.Element
+	ids, e := m.Import(id.Subscription, req.URL)
+	if e != nil {
+		slog.Warn(`import element fail`,
+			log.Error, e,
+			`subscription`, id.Subscription,
+			`urls`, req.URL,
+		)
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	slog.Info(`import element success`,
+		`subscription`, id.Subscription,
+		`ids`, ids,
+		`urls`, req.URL,
+	)
+	c.JSON(http.StatusOK, map[string]any{
+		`ids`: ids,
+	})
+
+	now := time.Now()
+	h.subscription.Store(now)
+	h.element.Store(now)
 }

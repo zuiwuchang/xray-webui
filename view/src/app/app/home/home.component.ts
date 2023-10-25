@@ -36,6 +36,7 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
   ) {
     super()
     this.dialog = new DialogOfElement(httpClient, translateService, toastService)
+    this.dialogImport = new DialogOfImport(httpClient, translateService, toastService)
     this.prepare_ = new Prepare([
       new MetadataStep(this, httpClient),
       new ListStep(this, httpClient),
@@ -172,6 +173,12 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       return
     }
     this.dialog.add(source)
+  }
+  onClickImport(source: Source) {
+    if (this.disabled || source.disabled) {
+      return
+    }
+    this.dialogImport.show(source)
   }
   onClickQR(source: Source) {
     if (this.disabled) {
@@ -506,11 +513,99 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     });
   }
   dialog: DialogOfElement
+  dialogImport: DialogOfImport
+}
+class DialogOfImport {
+  constructor(private readonly httpClient: HttpClient,
+    private readonly translateService: TranslateService,
+    private readonly toastService: ToastService,) { }
+  source?: Source
+  value = ''
+  visible = false
+  disabled = false
+  show(source: Source) {
+    if (this.disabled || this.visible || source.disabled) {
+      return
+    }
+    this.source = source
+    this.visible = true
+  }
+  _close() {
+    this.visible = false
+    this.source = undefined
+    this.value = ''
+    this.disabled = false
+  }
+  get isNotChanged(): boolean {
+    const strs = this.value.trim().split('\n')
+    let num = 0
+    for (let s of strs) {
+      s = s.trim()
+      if (s == '') {
+        continue
+      }
+      try {
+        URL.parseRequestURI(s)
+        num++
+      } catch (_) { }
+    }
+    return num == 0
+  }
+  onClickSubmit() {
+    if (this.disabled || !this.source) {
+      return
+    }
+    const source = this.source
+    const rawURL = new Array<string>()
+    const strs = this.value.trim().split('\n')
+    for (let s of strs) {
+      s = s.trim()
+      if (s == '') {
+        continue
+      }
+      try {
+        URL.parseRequestURI(s)
+        rawURL.push(s)
+      } catch (e) {
+        this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: `${e}` })
+        return
+      }
+    }
+    this.disabled = true
+    const delay = Delay.default()
+    this.httpClient.post<{ ids: Array<string> }>(`/api/v1/settings/element_import/${source.id}`, {
+      urls: rawURL,
+    }).subscribe({
+      next: (resp) => delay.do(() => {
+        const items = new Array<Element>()
+        for (let i = 0; i < rawURL.length; i++) {
+          items.push(new Element(source.provider, resp.ids[i], rawURL[i]))
+        }
+        source.data.push(...items)
+
+        this.toastService.add({ severity: 'success', summary: this.translateService.instant(i18n.action.success), detail: this.translateService.instant(i18n.proxy.importSuccess) })
+        this.disabled = false
+        this._close()
+      }),
+      error: (e) => delay.do(() => {
+        this.disabled = false
+        this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: getErrorString(e) })
+      }),
+    })
+
+  }
+  onClickClose() {
+    if (this.disabled) {
+      return
+    }
+    this._close()
+  }
 }
 class DialogOfElement {
   constructor(private readonly httpClient: HttpClient,
     private readonly translateService: TranslateService,
     private readonly toastService: ToastService,) { }
+  importStr = ''
   visible = false
   disabled = false
   isAdd?: boolean
@@ -628,12 +723,7 @@ class DialogOfElement {
           }
         }
         this.disabled = false
-        this.visible = false
-        this.source_ = undefined
-        this.ele_ = undefined
-        this.old_ = undefined
-        this.metadata = undefined
-        this.metadatas = []
+        this._close()
 
       }),
       error: (e) => delay.do(() => {
@@ -648,7 +738,63 @@ class DialogOfElement {
     if (this.disabled) {
       return
     }
+    this._close()
+  }
+  private _close() {
     this.visible = false
+    this.source_ = undefined
+    this.ele_ = undefined
+    this.old_ = undefined
+    this.metadata = undefined
+    this.metadatas = []
+    this.keys = undefined
+    this.importStr = ''
+  }
+  onClickImport() {
+    if (this.disabled || !this.source_) {
+      return
+    }
+    this.disabled = true
+    try {
+      const rawURL = this.importStr.trim()
+      let fragment = ''
+      let i = rawURL.lastIndexOf('#')
+      if (i > 0) {
+        fragment = decodeURIComponent(rawURL.substring(i + 1))
+      }
+      const url = URL.parseRequestURI(i > 0 ? rawURL.substring(0, i) : rawURL)
+      url.fragment = fragment
+
+      const provider = this.source_.provider
+      let metadata: undefined | Metadata
+      for (const md of provider.metadata) {
+        if (md.protocol != url.scheme) {
+          continue
+        }
+        metadata = md
+        break
+      }
+      if (!metadata) {
+        throw new Error(`unknow scheme: ${url.scheme}`)
+      }
+
+      const keys = new Map<string, UIValue>()
+      for (const metadata of this.metadatas) {
+        for (const field of metadata.fields) {
+          keys.set(field.key, {})
+        }
+      }
+      const fields = provider.fileds(metadata, url)
+      for (const [key, value] of fields) {
+        keys.set(key, { value: value })
+      }
+      this.keys = keys
+      this.metadata = metadata
+    } catch (e) {
+      this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: `${e}` })
+    } finally {
+      this.disabled = false
+    }
   }
 }
 class Source {
@@ -718,41 +864,30 @@ class Element {
   }
   private _updateView(url: URL, md: Metadata) {
     const provider = this.provider
-    let field = provider.filed(md, 'name')
-    this.name = field ? provider.get(url, field) : ''
+    const fields = provider.fileds(md, url)
+    this.name = fields.get('name') ?? ''
 
     const describe: Array<string> = []
-    field = provider.filed(md, 'protocol')
-    if (field) {
-      const s = provider.get(url, field)
-      if (s != '') {
-        describe.push(s)
-      }
+    let s = fields.get('protocol') ?? ''
+    if (s != '') {
+      describe.push(s)
     }
-    field = provider.filed(md, 'security')
-    if (field) {
-      const s = provider.get(url, field)
-      if (s != '') {
-        describe.push(s)
+    s = fields.get('security') ?? ''
+    if (s != '') {
+      describe.push(s)
+    }
+
+
+    let host = fields.get('address') ?? ''
+    const port = fields.get('port') ?? ''
+    if (port !== '') {
+      if (host == '') {
+        host = port
+      } else {
+        host += `:${port}`
       }
     }
 
-    let host = ''
-    field = provider.filed(md, 'address')
-    if (field) {
-      host = provider.get(url, field)
-    }
-    field = provider.filed(md, 'port')
-    if (field) {
-      const port = provider.get(url, field)
-      if (port !== '') {
-        if (host == '') {
-          host = provider.get(url, field)
-        } else {
-          host += `:${provider.get(url, field)}`
-        }
-      }
-    }
     if (host != '') {
       describe.push(host)
     }

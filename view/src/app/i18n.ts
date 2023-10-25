@@ -237,6 +237,10 @@ export const i18n = {
 		firewall: "_ms.f",
 	},
 	/**
+	* 導入
+	*/
+	import: "I",
+	/**
 	* 刷新
 	*/
 	refresh: "R",
@@ -467,6 +471,14 @@ export const i18n = {
 		*/
 		add: "_p.a",
 		/**
+		* 導入節點
+		*/
+		importNode: "_p.im",
+		/**
+		* 節點導入成功
+		*/
+		importSuccess: "_p.is",
+		/**
 		* 清空節點
 		*/
 		clear: "_p.ca",
@@ -506,5 +518,9 @@ export const i18n = {
 		* 更新節點成功
 		*/
 		setOK: "_p.so",
+		/**
+		* 請輸入節點 URL
+		*/
+		placeholderURL: "_p.pU",
 	},
 }

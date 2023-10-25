@@ -18,6 +18,7 @@ exports.keys = {
         strategy: make('s', '策略'),
         firewall: make('f', '透明代理'),
     },
+    import: make('I', '導入'),
     refresh: make('R', '刷新'),
     edit: make('E', '編輯'),
     delete: make('D', '刪除'),
@@ -92,6 +93,8 @@ exports.keys = {
         sort: make('s', '速度排序'),
         test: make('t', '測試速度'),
         add: make('a', '添加節點'),
+        importNode: make('im', '導入節點'),
+        importSuccess: make('is', '節點導入成功'),
         clear: make('ca', '清空節點'),
         qr: make('q', '分享二維碼'),
         copy: make('c', '複製鏈接'),
@@ -105,5 +108,7 @@ exports.keys = {
 
         addOK: make('ao', '新增節點成功'),
         setOK: make('so', '更新節點成功'),
+
+        placeholderURL: make('pU', '請輸入節點 URL'),
     },
 }

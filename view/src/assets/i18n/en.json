@@ -112,6 +112,7 @@
 		"s": "Strategy",
 		"f": "Transparent Proxy"
 	},
+	"I": "Import",
 	"R": "Refresh",
 	"E": "Edit",
 	"D": "Delete",
@@ -177,6 +178,8 @@
 		"s": "Speed ​​sorting",
 		"t": "Test speed",
 		"a": "Add node",
+		"im": "Import node",
+		"is": "Node imported successfully",
 		"ca": "Clear node",
 		"q": "Share QR code",
 		"c": "Copy link",
@@ -186,6 +189,7 @@
 		"f": "Turn on transparent proxy",
 		"cf": "Turn off transparent proxy",
 		"ao": "New node successfully",
-		"so": "Update node successfully"
+		"so": "Update node successfully",
+		"pU": "Please enter node URL"
 	}
 }

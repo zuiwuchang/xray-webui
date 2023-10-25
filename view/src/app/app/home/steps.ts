@@ -276,6 +276,56 @@ export class MetadataProvider {
         }
         return u.toString()
     }
+    fileds(md: Metadata, url: URL, ...fileds: Array<string>): Map<string, string> {
+        const m = new Map<string, string>()
+        let values: undefined | Values
+        let json: undefined | Record<string, string>
+        let set: undefined | Set<string>
+        if (fileds.length > 0) {
+            set = new Set<string>()
+            for (const filed of fileds) {
+                set.add(filed)
+            }
+        }
+        for (const filed of md.fields) {
+            const from = filed.from
+            if (set && !set.has(from.key ?? '')) {
+                continue
+            }
+            let value = ''
+            switch (from.from) {
+                case `username`:
+                    value = this.decode(from.enc, url.user?.username ?? '')
+                    break
+                case 'host':
+                    value = this.decode(from.enc, url.hostname())
+                    break
+                case 'port':
+                    value = this.decode(from.enc, url.port() ?? '')
+                    break
+                case 'query':
+                    if (!values) {
+                        values = url.query()
+                    }
+                    value = this.decode(from.enc, values.get(from.key ?? ''))
+                    break
+                case `path`:
+                    value = this.decode(from.enc, url.path)
+                    break
+                case 'fragment':
+                    value = this.decode(from.enc, url.fragment)
+                    break
+                case 'json':
+                    if (!json) {
+                        json = JSON.parse(this.decode('base64', url.host))
+                    }
+                    value = json![from.key ?? ''] ?? ''
+                    break
+            }
+            m.set(filed.key, value)
+        }
+        return m
+    }
 
     decode(enc: 'base64' | undefined, s: string): string {
         switch (enc) {

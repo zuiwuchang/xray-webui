@@ -185,6 +185,44 @@ func (m Element) Add(sub uint64, url string) (id uint64, e error) {
 	})
 	return
 }
+func (m Element) Import(sub uint64, urls []string) (ids []uint64, e error) {
+	e = _db.Update(func(t *bolt.Tx) error {
+		bucket := t.Bucket([]byte(data.ElementBucket))
+		if bucket == nil {
+			return fmt.Errorf("bucket not exist : %s", data.ElementBucket)
+		}
+		var key [8]byte
+		binary.LittleEndian.PutUint64(key[:], sub)
+
+		bucket = bucket.Bucket(key[:])
+		if bucket == nil {
+			return fmt.Errorf("bucket not exist : %s.%v", data.ElementBucket, sub)
+		}
+
+		for _, url := range urls {
+			newid, e := bucket.NextSequence()
+			if e != nil {
+				return e
+			}
+			binary.LittleEndian.PutUint64(key[:], newid)
+			tmp := data.Element{
+				ID:  newid,
+				URL: url,
+			}
+			b, e := tmp.Encoder()
+			if e != nil {
+				return e
+			}
+			e = bucket.Put(key[:], b)
+			if e != nil {
+				return e
+			}
+			ids = append(ids, newid)
+		}
+		return nil
+	})
+	return
+}
 
 // 更新節點
 func (m Element) Set(sub, id uint64, url string) (e error) {

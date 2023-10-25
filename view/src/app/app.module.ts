@@ -30,6 +30,7 @@ import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputTextareaModule } from 'primeng/inputtextarea';
 
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
@@ -94,7 +95,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
     AccordionModule, ToastModule, CardModule, ProgressBarModule,
     DropdownModule, RippleModule, DataViewModule, SplitButtonModule,
     DynamicDialogModule, ConfirmDialogModule, DialogModule,
-    InputTextModule,
+    InputTextModule, InputTextareaModule,
     RouterModule, AppRoutingModule
   ],
   providers: [],
