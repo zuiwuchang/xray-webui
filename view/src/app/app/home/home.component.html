@@ -82,14 +82,6 @@
                             <label>{{i18n.general.strategy| translate}}</label>
                         </p>
                     </div>
-                    <!-- <div class="grid">
-                        <p class="field col-12 md:col-4 p-float-label">
-                            <p-dropdown class="w-full" [styleClass]="'w-full'" [options]="strategys"
-                                [(ngModel)]="strategy" [disabled]="disabled" optionLabel="name" optionValue="value">
-                            </p-dropdown>
-                            <label>{{i18n.general.strategy| translate}}</label>
-                        </p>
-                    </div> -->
 
                     <p-dataView [value]="item.data" [rows]="item.data.length" [paginator]="false">
                         <ng-template let-node pTemplate="listItem">
@@ -102,10 +94,10 @@
 
                                         <ng-template #metadataView>
                                             <div class="flex-grow-1">
-                                                <div class="nowrap text-xl">
+                                                <div class="text-xl">
                                                     {{node.name}}
                                                 </div>
-                                                <div class="nowrap text-base">
+                                                <div class="text-base">
                                                     {{getLabel(node.metadata?.label,node.url?.scheme)}} ->
                                                     {{node.describe}}
                                                 </div>

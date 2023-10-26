@@ -1,8 +1,11 @@
+import { Outbounds } from "./outbounds/outbounds"
+
 /**
  * xray json 設定格式
  */
 export interface Xray {
-    log: Log
+    log?: Log
+    outbounds?: Array<Outbounds>
 }
 
 export interface Log {

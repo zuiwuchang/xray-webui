@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { URL, Userinfo, Values } from "@king011/easyts/lib/es6/net/url/url";
+import { URL, Userinfo, Values } from "@king011/easyts/es/es2020/net/url/url"
 import { firstValueFrom } from "rxjs";
 import { Closed } from "src/internal/closed";
 import { Step } from "src/internal/prepare";

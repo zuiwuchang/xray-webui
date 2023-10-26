@@ -8,14 +8,13 @@ import { getErrorString } from 'src/internal/error';
 import { Prepare } from 'src/internal/prepare';
 import { Delay } from 'src/internal/ui';
 import { GeneralStep, General, ListGroup, ListStep, MetadataStep, Metadata, MetadataProvider, ListElement } from './steps';
-import { URL } from '@king011/easyts/lib/es6/net/url/url';
+import { URL } from "@king011/easyts/es/es2020/net/url/url"
 import { LangService } from 'src/app/core/lang.service';
 import { ConfirmationService, MenuItem } from 'primeng/api';
 import ClipboardJS from 'clipboard';
 import { DialogService } from 'primeng/dynamicdialog';
 import { QrComponent } from '../qr/qr.component';
 import { PreviewComponent } from '../preview/preview.component';
-import { FormControl, FormGroup } from '@angular/forms';
 import { UIValue } from '../ui-field/ui-field.component';
 
 @Component({
@@ -853,6 +852,7 @@ class Element {
   reload(rawURL: string) {
     const o = new Element(this.provider, this.id, rawURL)
 
+    this.rawURL = rawURL
     this.menus_ = undefined
     this.lang_ = undefined
 

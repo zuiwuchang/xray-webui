@@ -49,4 +49,20 @@ export const i18n = {
         'zh-Hans': '流控',
         'default': 'Flow Control',
     },
+    alpn: {
+        'default': 'alpn'
+    },
+    alterID: {
+        'default': 'alterID'
+    },
+    fingerprint: {
+        'zh-Hant': '指紋',
+        'zh-Hans': '指纹',
+        'default': 'Fingerprint',
+    },
+    encryption: {
+        'zh-Hant': '加密方式',
+        'zh-Hans': '加密方式',
+        'default': 'Encryption Method',
+    },
 }

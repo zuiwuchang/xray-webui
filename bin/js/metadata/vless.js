@@ -81,7 +81,7 @@ exports.vless = {
             label: i18n_1.i18n.security,
             ui: 'select-editable',
             value: [
-                'none', 'tls', 'xtls',
+                'tls', 'reality',
             ],
             class: 'col-12 md:col-4',
             from: {
@@ -118,14 +118,34 @@ exports.vless = {
             ui: 'select-editable',
             class: 'col-12 md:col-4',
             value: [
-                'xtls-rprx-vision', 'xtls-rprx-vision-udp443',
-                'xtls-rprx-origin', 'xtls-rprx-origin-udp443',
-                'xtls-rprx-direct', 'xtls-rprx-direct-udp443',
-                'xtls-rprx-splice', 'xtls-rprx-splice-udp443',
+                'none', 'xtls-rprx-vision', 'xtls-rprx-vision-udp443'
             ],
             from: {
                 from: 'query',
                 key: 'flow',
+            },
+        },
+        // row
+        {
+            key: 'alpn',
+            label: i18n_1.i18n.alpn,
+            ui: 'select-editable',
+            value: ['', 'h2', 'http/1.1', 'h2,http/1.1'],
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'alpn',
+            },
+        },
+        {
+            key: 'fingerprint',
+            label: i18n_1.i18n.fingerprint,
+            ui: 'select-editable',
+            value: ['', 'chrome', 'firefox', 'safari', 'ios', 'android', 'edge', '360', 'qq', 'random', 'randomized'],
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'fp',
             },
         },
     ],
