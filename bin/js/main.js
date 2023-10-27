@@ -28,6 +28,8 @@ const core = __importStar(require("xray/core"));
 const vless_1 = require("./metadata/vless");
 const vmess_1 = require("./metadata/vmess");
 const trojan_1 = require("./metadata/trojan");
+const shadowsocks_1 = require("./metadata/shadowsocks");
+const socks_1 = require("./metadata/socks");
 function create() {
     return new myProvider();
 }
@@ -65,6 +67,8 @@ ${s}
         return [
             vless_1.vless, vmess_1.vmess,
             trojan_1.trojan,
+            shadowsocks_1.shadowsocks,
+            socks_1.socks,
         ];
     }
     /**

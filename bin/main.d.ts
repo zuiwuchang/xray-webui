@@ -66,7 +66,7 @@ declare module 'xray/webui' {
         /**
          * 數據來源自 url 中哪個部分
          */
-        from: 'username' | 'host' | 'port' | 'path' | 'fragment' | 'query' | 'json'
+        from: 'username' | 'password' | 'host' | 'port' | 'path' | 'fragment' | 'query' | 'json' | 'base64-username' | 'base64-password'
         /**
          * 當來自 'query' 時指定 query 的 鍵值，或者來自 'json' 時指定 json key
          */

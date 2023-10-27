@@ -609,6 +609,21 @@ class DialogOfElement {
   disabled = false
   isAdd?: boolean
   metadatas: Array<Metadata> = []
+  private lang_ = ''
+  getMetadata(): Array<Metadata> {
+    const lang = this.translateService.currentLang
+    if (lang != this.lang_) {
+      for (const md of this.metadatas) {
+        if (md.label) {
+          md.name = md.label[lang] ?? md.label['default'] ?? md.protocol
+        } else {
+          md.name = md.protocol
+        }
+      }
+      this.lang_ = lang
+    }
+    return this.metadatas
+  }
   metadata?: Metadata
   private source_?: Source
   private ele_?: Element
@@ -674,10 +689,10 @@ class DialogOfElement {
       }
     }
     if (ele && ele.url && ele.metadata) {
-      for (const field of ele.metadata.fields) {
-        const value = provider.get(ele.url, field)
-        keys.set(field.key, { value: value })
-        values!.set(field.key, value)
+      const m = provider.fileds(ele.metadata, ele.url)
+      for (const [key, value] of m) {
+        keys.set(key, { value: value })
+        values!.set(key, value)
       }
     }
     this.keys = keys

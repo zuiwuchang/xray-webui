@@ -44,6 +44,16 @@ export const i18n = {
         'zh-Hans': '用戶等級',
         'default': 'User Level',
     },
+    username: {
+        'zh-Hant': '用戶名',
+        'zh-Hans': '用户名',
+        'default': 'Username',
+    },
+    password: {
+        'zh-Hant': '密碼',
+        'zh-Hans': '密码',
+        'default': 'Password',
+    },
     flow: {
         'zh-Hant': '流控',
         'zh-Hans': '流控',

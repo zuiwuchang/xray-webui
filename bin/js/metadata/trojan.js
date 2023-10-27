@@ -3,8 +3,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.trojan = void 0;
 const i18n_1 = require("./i18n");
 exports.trojan = {
+    label: {
+        default: 'Trojan',
+    },
     protocol: 'trojan',
     fields: [
+        // row
         {
             key: 'name',
             label: i18n_1.i18n.name,
@@ -15,11 +19,12 @@ exports.trojan = {
             },
             onlyUI: true,
         },
+        // row
         {
             key: 'address',
             label: i18n_1.i18n.addr,
             ui: 'text',
-            class: '',
+            class: 'col-12 md:col-4',
             from: {
                 from: 'host',
             },
@@ -28,22 +33,97 @@ exports.trojan = {
             key: 'port',
             label: i18n_1.i18n.port,
             ui: 'number',
-            class: '',
+            class: 'col-12 md:col-4',
             from: {
                 from: 'port',
             },
         },
         {
+            // 傳輸協議
+            key: 'protocol',
+            label: i18n_1.i18n.protocol,
+            ui: 'select-editable',
+            value: [
+                'tcp', 'grpc',
+            ],
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'type',
+            },
+        },
+        // row
+        {
+            // 主機名稱
+            key: 'host',
+            label: i18n_1.i18n.host,
+            ui: 'text',
+            class: 'col-12 md:col-6',
+            from: {
+                from: 'query',
+                key: 'host',
+            },
+        },
+        {
+            // 傳輸層加密
             key: 'security',
             label: i18n_1.i18n.security,
-            ui: 'select',
+            ui: 'select-editable',
             value: [
-                'none', 'tls', 'xtls',
+                'tls', 'xtls',
             ],
-            class: '',
+            class: 'col-12 md:col-6',
             from: {
                 from: 'query',
                 key: 'security',
+            },
+        },
+        // row
+        {
+            // 用戶 uuid
+            key: 'userID',
+            label: i18n_1.i18n.userID,
+            ui: 'text',
+            class: 'col-12 md:col-6',
+            from: {
+                from: 'username',
+            },
+        },
+        {
+            // 流控
+            key: 'flow',
+            label: i18n_1.i18n.flow,
+            ui: 'select-editable',
+            class: 'col-12 md:col-6',
+            value: [
+                'none', 'xtls-rprx-vision', 'xtls-rprx-vision-udp443'
+            ],
+            from: {
+                from: 'query',
+                key: 'flow',
+            },
+        },
+        // row
+        {
+            key: 'alpn',
+            label: i18n_1.i18n.alpn,
+            ui: 'select-editable',
+            value: ['', 'h2', 'http/1.1', 'h2,http/1.1'],
+            class: 'col-12 md:col-6',
+            from: {
+                from: 'query',
+                key: 'alpn',
+            },
+        },
+        {
+            key: 'fingerprint',
+            label: i18n_1.i18n.fingerprint,
+            ui: 'select-editable',
+            value: ['', 'chrome', 'firefox', 'safari', 'ios', 'android', 'edge', '360', 'qq', 'random', 'randomized'],
+            class: 'col-12 md:col-6',
+            from: {
+                from: 'query',
+                key: 'fp',
             },
         },
     ],

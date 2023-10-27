@@ -4,6 +4,8 @@ import { vless } from "./metadata/vless";
 import { vmess } from "./metadata/vmess";
 import { trojan } from "./metadata/trojan";
 import { Xray } from "./xray/xray";
+import { shadowsocks } from "./metadata/shadowsocks";
+import { socks } from "./metadata/socks";
 export function create(): Provider {
     return new myProvider()
 }
@@ -38,6 +40,8 @@ ${s}
         return [
             vless, vmess,
             trojan,
+            shadowsocks,
+            socks,
         ]
     }
     /**

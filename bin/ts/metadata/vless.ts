@@ -2,6 +2,9 @@ import { Metadata } from "xray/webui";
 import { i18n } from "./i18n";
 
 export const vless: Metadata = {
+    label: {
+        default: 'VLESS',
+    },
     protocol: 'vless',
     fields: [
         // row
@@ -80,7 +83,7 @@ export const vless: Metadata = {
             label: i18n.security,
             ui: 'select-editable',
             value: [
-                'tls', 'reality',
+                '', 'tls', 'reality',
             ],
             class: 'col-12 md:col-4',
             from: {

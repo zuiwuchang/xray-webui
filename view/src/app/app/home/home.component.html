@@ -174,8 +174,8 @@
                     [disabled]="dialog.disabled"></button>
             </div>
         </div>
-        <p-dropdown class="col-12" [styleClass]="'col-12'" [options]="dialog.metadatas" [(ngModel)]="dialog.metadata"
-            [disabled]="dialog.disabled" optionLabel="protocol" appendTo="body">
+        <p-dropdown class="col-12" [styleClass]="'col-12'" [options]="dialog.getMetadata()"
+            [(ngModel)]="dialog.metadata" [disabled]="dialog.disabled" optionLabel="name" appendTo="body">
         </p-dropdown>
 
         <app-ui-field *ngFor="let field of dialog?.metadata?.fields??[]" [class]="field.class" [field]="field"

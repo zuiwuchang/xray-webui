@@ -3,6 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.vmess = void 0;
 const i18n_1 = require("./i18n");
 exports.vmess = {
+    label: {
+        default: 'VMess',
+    },
     protocol: 'vmess',
     fields: [
         // row
@@ -80,9 +83,9 @@ exports.vmess = {
             label: i18n_1.i18n.security,
             ui: 'select-editable',
             value: [
-                'tls', 'reality',
+                '', 'tls', 'reality',
             ],
-            class: '',
+            class: 'col-12 md:col-4',
             from: {
                 from: 'json',
                 key: 'tls',

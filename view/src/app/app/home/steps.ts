@@ -97,7 +97,7 @@ export interface From {
     /**
      * 數據來源自 url 中哪個部分
      */
-    from: 'username' | 'host' | 'port' | 'path' | 'fragment' | 'query' | 'json'
+    from: 'username' | 'password' | 'host' | 'port' | 'path' | 'fragment' | 'query' | 'json' | 'base64-username' | 'base64-password'
     /**
      * 當來自 'query' 時指定 query 的 鍵值
      */
@@ -162,6 +162,11 @@ export interface Metadata {
      * 可供用戶設置的 代理屬性
      */
     fields: Array<Filed>
+
+    /**
+     * 網頁上用於顯示的名稱，由前端設置，後端不會返回
+     */
+    name?: string
 }
 
 export class MetadataProvider {
@@ -196,6 +201,20 @@ export class MetadataProvider {
         switch (from.from) {
             case `username`:
                 return this.decode(from.enc, url.user?.username ?? '')
+            case `password`:
+                return this.decode(from.enc, url.user?.password ?? '')
+            case 'base64-username':
+                {
+                    const s = Base64.decode(url.user?.password ?? '')
+                    const i = s.lastIndexOf(":")
+                    return i >= 0 ? s.substring(0, i) : s
+                }
+            case 'base64-password':
+                {
+                    const s = Base64.decode(url.user?.password ?? '')
+                    const i = s.lastIndexOf(":")
+                    return i >= 0 ? s.substring(i + 1) : ''
+                }
             case 'host':
                 return this.decode(from.enc, url.hostname())
             case 'port':
@@ -218,7 +237,9 @@ export class MetadataProvider {
         let json: undefined | Record<string, string>
         const query = new Values()
         let username = ''
-        let userpassword: string | undefined
+        let userpassword = ''
+        let base64name = ''
+        let base64password = ''
         let host = ''
         let port = ''
         let fragment = ''
@@ -235,8 +256,17 @@ export class MetadataProvider {
             value = `${value}`
 
             switch (from.from) {
-                case `username`:
+                case 'username':
                     username = this.encode(from.enc, value)
+                    break
+                case 'password':
+                    userpassword = this.encode(from.enc, value)
+                    break
+                case 'base64-username':
+                    base64name = this.encode(from.enc, value)
+                    break
+                case 'base64-password':
+                    base64password = this.encode(from.enc, value)
                     break
                 case 'host':
                     host = this.encode(from.enc, value)
@@ -262,8 +292,11 @@ export class MetadataProvider {
             }
         }
         u.host = port == '' ? host : `${host}:${port}`
-        if (username != '' || userpassword) {
+        if (username != '' || userpassword != '') {
             u.user = new Userinfo(username, userpassword)
+        }
+        if (base64name != '' || base64password != '') {
+            u.user = new Userinfo(Base64.encode(`${base64name}:${base64password}`))
         }
         if (query.length != 0) {
             u.rawQuery = query.encode()
@@ -281,21 +314,41 @@ export class MetadataProvider {
         let values: undefined | Values
         let json: undefined | Record<string, string>
         let set: undefined | Set<string>
+        let base64 = ''
+        let base64i = -1
         if (fileds.length > 0) {
             set = new Set<string>()
             for (const filed of fileds) {
                 set.add(filed)
             }
+            console.log(set)
         }
         for (const filed of md.fields) {
             const from = filed.from
-            if (set && !set.has(from.key ?? '')) {
+            if (set && !set.has(filed.key ?? '')) {
                 continue
             }
             let value = ''
             switch (from.from) {
-                case `username`:
+                case 'username':
                     value = this.decode(from.enc, url.user?.username ?? '')
+                    break
+                case 'password':
+                    value = this.decode(from.enc, url.user?.password ?? '')
+                    break
+                case 'base64-username':
+                    if (base64 == '') {
+                        base64 = this.decode('base64', url.user?.username ?? '')
+                        base64i = base64.lastIndexOf(':')
+                    }
+                    value = base64i >= 0 ? base64.substring(0, base64i) : base64
+                    break
+                case 'base64-password':
+                    if (base64 == '') {
+                        base64 = this.decode('base64', url.user?.username ?? '')
+                        base64i = base64.lastIndexOf(':')
+                    }
+                    value = base64i >= 0 ? base64.substring(base64i + 1) : ''
                     break
                 case 'host':
                     value = this.decode(from.enc, url.hostname())
@@ -328,6 +381,9 @@ export class MetadataProvider {
     }
 
     decode(enc: 'base64' | undefined, s: string): string {
+        if (s === '') {
+            return s
+        }
         switch (enc) {
             case 'base64':
                 return Base64.decode(s)

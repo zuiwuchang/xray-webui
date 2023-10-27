@@ -2,6 +2,9 @@ import { Metadata } from "xray/webui";
 import { i18n } from "./i18n";
 
 export const vmess: Metadata = {
+    label: {
+        default: 'VMess',
+    },
     protocol: 'vmess',
     fields: [
         // row
@@ -79,9 +82,9 @@ export const vmess: Metadata = {
             label: i18n.security,
             ui: 'select-editable',
             value: [
-                'tls', 'reality',
+                '', 'tls', 'reality',
             ],
-            class: '',
+            class: 'col-12 md:col-4',
             from: {
                 from: 'json',
                 key: 'tls',
