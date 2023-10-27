@@ -1,11 +1,13 @@
 import * as core from "xray/core";
-import { ConfigureOption, Metadata, Provider } from "xray/webui";
+import { ConfigureOption, ConfigureResult, Metadata, Provider, ServeResult } from "xray/webui";
 import { vless } from "./metadata/vless";
 import { vmess } from "./metadata/vmess";
 import { trojan } from "./metadata/trojan";
 import { Xray } from "./xray/xray";
 import { shadowsocks } from "./metadata/shadowsocks";
 import { socks } from "./metadata/socks";
+import { generateDNS } from "./xray/dns";
+import { generateLog } from "./xray/log";
 export function create(): Provider {
     return new myProvider()
 }
@@ -47,13 +49,29 @@ ${s}
     /**
      * 返回 xray 設定
      */
-    configure(opts: ConfigureOption): string {
+    configure(opts: ConfigureOption): ConfigureResult {
         core.println(JSON.stringify(opts, undefined, '    '))
         const o: Xray = {
-            log: {
-                loglevel: 'warning',
-            },
+            log: generateLog(opts),
+            dns: generateDNS(opts),
         }
-        return JSON.stringify(o, undefined, '    ')
+        return {
+            content: JSON.stringify(o, undefined, '    '),
+            extension: '.json'
+        }
+    }
+    /**
+     * 返回 啓用 xray 的命令
+     */
+    serve(dir: string, cnf: string): ServeResult {
+        const isWindows = core.os == "windows"
+        const separator = isWindows ? '\\' : '/'
+        const cwd = `${dir}${separator}xray`
+        const name = isWindows ? `${cwd}${separator}xray.exe` : `${cwd}${separator}xray`
+        return {
+            dir: cwd,
+            name: name,
+            args: ['run', '-c', cnf],
+        }
     }
 }

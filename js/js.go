@@ -82,6 +82,7 @@ func (vm *Runtime) Check() (e error) {
 		`getFirewall`,
 		`metadata`,
 		`configure`,
+		`serve`,
 	}
 	for _, name := range names {
 		_, ok := goja.AssertFunction(self.ToObject(vm.Runtime).Get(name))
@@ -162,7 +163,7 @@ func (vm *Runtime) metadata(self goja.Value, f goja.Callable) (s string, e error
 	s = val.String()
 	return
 }
-func (vm *Runtime) Preview(u *url.URL, strategy uint32) (s string, e error) {
+func (vm *Runtime) Preview(u *url.URL, strategy uint32, env *Environment) (s, ext string, e error) {
 	self, f, destroy, e := vm.assertFunction(`metadata`)
 	if e != nil {
 		return
@@ -180,14 +181,14 @@ func (vm *Runtime) Preview(u *url.URL, strategy uint32) (s string, e error) {
 	}
 	for _, metadata := range metadatas {
 		if metadata.Protocol == u.Scheme {
-			s, e = vm.preview(u, self, metadata, strategy)
+			s, ext, e = vm.preview(u, self, metadata, strategy, env)
 			return
 		}
 	}
 	e = errors.New(`unknow scheme: ` + u.Scheme)
 	return
 }
-func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strategy uint32) (s string, e error) {
+func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strategy uint32, env *Environment) (s, ext string, e error) {
 	callable, ok := goja.AssertFunction(self.(*goja.Object).Get(`configure`))
 	if !ok {
 		e = errors.New(`script method configure not implemented`)
@@ -200,10 +201,16 @@ func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strat
 	if e != nil {
 		return
 	}
-	userdata, e := jsonnet.MakeVM().EvaluateAnonymousSnippet(`userdata.jsonnet`, general.Userdata)
+	userdataJSON, e := jsonnet.MakeVM().EvaluateAnonymousSnippet(`userdata.jsonnet`, general.Userdata)
 	if e != nil {
 		return
 	}
+	var userdata map[string]any
+	e = json.Unmarshal(utils.StringToBytes(userdataJSON), &userdata)
+	if e != nil {
+		return
+	}
+
 	// strategy
 	var mStrategy manipulator.Strategy
 	strategyValue, e := mStrategy.Value(strategy)
@@ -211,17 +218,78 @@ func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strat
 		return
 	}
 	fileds := make(map[string]string)
+	var (
+		o struct {
+			ok   bool
+			keys map[string]any
+		}
+		base64 struct {
+			ok       bool
+			name     string
+			password string
+		}
+		values url.Values
+	)
 	for _, f := range metadata.Fields {
 		if f.OnlyUI {
 			continue
 		}
 		var val string
-		var o struct {
-			ok   bool
-			keys map[string]any
-		}
+
 		switch f.From.From {
-		// case `username`:
+		case `username`:
+			if u.User != nil {
+				val, e = vm.decode(f.From.Enc, u.User.Username())
+				if e != nil {
+					return
+				}
+			}
+		case `password`:
+			if u.User != nil {
+				password, _ := u.User.Password()
+				val, e = vm.decode(f.From.Enc, password)
+				if e != nil {
+					return
+				}
+			}
+		case `base64-username`:
+			if !base64.ok {
+				base64.ok = true
+				if u.User != nil {
+					str, err := vm.decode(`base64`, u.User.Username())
+					if err != nil {
+						e = err
+						return
+					}
+					found := strings.LastIndex(str, `:`)
+					if found < 0 {
+						base64.name = str
+					} else {
+						base64.name = str[:found]
+						base64.password = str[found+1:]
+					}
+				}
+			}
+			val = base64.name
+		case `base64-password`:
+			if !base64.ok {
+				base64.ok = true
+				if u.User != nil {
+					str, err := vm.decode(`base64`, u.User.Username())
+					if err != nil {
+						e = err
+						return
+					}
+					found := strings.LastIndex(str, `:`)
+					if found < 0 {
+						base64.name = str
+					} else {
+						base64.name = str[:found]
+						base64.password = str[found+1:]
+					}
+				}
+			}
+			val = base64.password
 		case `host`:
 			val, e = vm.decode(f.From.Enc, u.Hostname())
 			if e != nil {
@@ -232,9 +300,16 @@ func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strat
 			if e != nil {
 				return
 			}
-		// case `path`:
+		case `path`:
+			val, e = vm.decode(f.From.Enc, u.Path)
+			if e != nil {
+				return
+			}
 		case `query`:
-			val, e = vm.decode(f.From.Enc, u.Query().Get(f.From.Key))
+			if values == nil {
+				values = u.Query()
+			}
+			val, e = vm.decode(f.From.Enc, values.Get(f.From.Key))
 			if e != nil {
 				return
 			}
@@ -260,17 +335,18 @@ func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strat
 			if e != nil {
 				return
 			}
-		default:
-			e = errors.New(`unknow filed from: ` + f.From.From)
-			return
+			// default:
+			// 	e = errors.New(`unknow filed from: ` + f.From.From)
+			// 	return
 		}
 		fileds[f.Key] = val
 
 	}
 	jstr, e := json.Marshal(map[string]any{
-		`fileds`:   fileds,
-		`userdata`: userdata,
-		`strategy`: strategyValue,
+		`environment`: env,
+		`fileds`:      fileds,
+		`userdata`:    userdata,
+		`strategy`:    strategyValue,
 	})
 	if e != nil {
 		return
@@ -283,13 +359,20 @@ func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strat
 	if e != nil {
 		return
 	}
-	s = val.String()
+	if o, ok := val.(*goja.Object); ok {
+		s = o.Get(`content`).String()
+		ext = o.Get(`extension`).String()
+	} else {
+		e = errors.New(`unknow provider.configure() result`)
+	}
 	return
 }
 func (vm *Runtime) decode(enc, src string) (output string, e error) {
+	if src == `` {
+		output = src
+		return
+	}
 	switch enc {
-	case `escape`:
-		output, e = url.QueryUnescape(src)
 	case `base64`:
 		src = strings.TrimRight(src, "=")
 		var b []byte

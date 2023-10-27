@@ -187,7 +187,22 @@ declare module 'xray/webui' {
          */
         blockDomain: Array<string>
     }
+    export interface Environment {
+        /**
+         * 如果設置了此值，應該使用此值作爲 socks5 的監聽端口，並且此 socks5 代理無需驗證
+         * 
+         * @remarks
+         * 在測試代理速度時，服務器會查找一個空閒的 tcp 端口並傳入此處，後續會使用生成的配置啓動程序並且測試代理速度
+         * 
+         * 因爲後續會用作速度測試，所以配置也應該策略設定所有請求都以代理訪問
+         */
+        port?: number
+    }
     export interface ConfigureOption {
+        /**
+         * 設定環境
+         */
+        environment: Environment
         /**
          * 節點信息
          */
@@ -195,13 +210,37 @@ declare module 'xray/webui' {
         /**
          * 使用的策略
          */
-        strategy: number
+        strategy: Strategy
         /**
          * 自定義設定
          */
-        userdata: any
+        userdata: Record<string, any>
     }
+    export interface ConfigureResult {
+        /**
+         * 生成的設定內容
+         */
+        content: string
+        /**
+         * 設定檔應該使用的擴展名 例如 .json
+         */
+        extension: string
+    }
+    export interface ServeResult {
+        /**
+         * 啓動進程的工作路徑
+         */
+        dir?: string
 
+        /**
+        * 要執行的進程
+        */
+        name: string
+        /**
+         * 傳遞給進程的啓動參數
+         */
+        args?: Array<any>
+    }
     /**
      * 爲網頁 ui 提供了各種功能的具體實現
      */
@@ -223,6 +262,13 @@ declare module 'xray/webui' {
         /**
          * 返回配置
          */
-        configure(opts: ConfigureOption): string
+        configure(opts: ConfigureOption): ConfigureResult
+
+        /**
+         * 返回啓動代理的命令
+         * @param dir 程式根路徑
+         * @param cnf 設定檔案路徑
+         */
+        serve(dir: string, cnf: string): ServeResult
     }
 }

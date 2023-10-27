@@ -30,6 +30,8 @@ const vmess_1 = require("./metadata/vmess");
 const trojan_1 = require("./metadata/trojan");
 const shadowsocks_1 = require("./metadata/shadowsocks");
 const socks_1 = require("./metadata/socks");
+const dns_1 = require("./xray/dns");
+const log_1 = require("./xray/log");
 function create() {
     return new myProvider();
 }
@@ -77,10 +79,26 @@ ${s}
     configure(opts) {
         core.println(JSON.stringify(opts, undefined, '    '));
         const o = {
-            log: {
-                loglevel: 'warning',
-            },
+            log: (0, log_1.generateLog)(opts),
+            dns: (0, dns_1.generateDNS)(opts),
         };
-        return JSON.stringify(o, undefined, '    ');
+        return {
+            content: JSON.stringify(o, undefined, '    '),
+            extension: '.json'
+        };
+    }
+    /**
+     * 返回 啓用 xray 的命令
+     */
+    serve(dir, cnf) {
+        const isWindows = core.os == "windows";
+        const separator = isWindows ? '\\' : '/';
+        const cwd = `${dir}${separator}xray`;
+        const name = isWindows ? `${cwd}${separator}xray.exe` : `${cwd}${separator}xray`;
+        return {
+            dir: cwd,
+            name: name,
+            args: ['run', '-c', cnf],
+        };
     }
 }

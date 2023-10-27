@@ -356,14 +356,14 @@ export class MetadataProvider {
                 case 'port':
                     value = this.decode(from.enc, url.port() ?? '')
                     break
+                case 'path':
+                    value = this.decode(from.enc, url.path)
+                    break
                 case 'query':
                     if (!values) {
                         values = url.query()
                     }
                     value = this.decode(from.enc, values.get(from.key ?? ''))
-                    break
-                case `path`:
-                    value = this.decode(from.enc, url.path)
                     break
                 case 'fragment':
                     value = this.decode(from.enc, url.fragment)

@@ -30,7 +30,7 @@ func (h *Strategy) Register(router *gin.RouterGroup) {
 
 	r.POST(`:id`, h.Set)
 }
-func (h Strategy) List(c *gin.Context) {
+func (h *Strategy) List(c *gin.Context) {
 	h.SetHTTPCacheMaxAge(c, h.maxage)
 	h.ServeLazyJSON(c, ``, h.modtime.Load().(time.Time), func() (any, error) {
 		var m manipulator.Strategy
@@ -44,7 +44,7 @@ func (h Strategy) List(c *gin.Context) {
 		return items, nil
 	})
 }
-func (h Strategy) Set(c *gin.Context) {
+func (h *Strategy) Set(c *gin.Context) {
 	var id struct {
 		ID uint32 `uri:"id"`
 	}

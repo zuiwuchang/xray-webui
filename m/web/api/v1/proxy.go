@@ -42,7 +42,7 @@ func (h Proxy) Preview(c *gin.Context) {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
-	s, e := vm.Preview(u, o.Strategy)
+	s, _, e := vm.Preview(u, o.Strategy, &js.Environment{})
 	if e != nil {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
