@@ -3,15 +3,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateOutbounds = void 0;
 const utils_1 = require("./utils");
 function generateOutbounds(opts) {
-    var _a, _b, _c, _d, _e, _f, _g;
+    var _a, _b, _c, _d, _e, _f;
     const isport = (0, utils_1.isPort)((_a = opts.environment.port) !== null && _a !== void 0 ? _a : 0);
-    const isTProxy = ((_c = (_b = opts.userdata) === null || _b === void 0 ? void 0 : _b.proxy) === null || _c === void 0 ? void 0 : _c.tproxy) && (0, utils_1.isLinux)();
     if (isport) {
         return [generateOutbound(opts)];
     }
     const outbound = generateOutbound(opts);
-    const sockopt = ((_e = (_d = opts.userdata) === null || _d === void 0 ? void 0 : _d.proxy) === null || _e === void 0 ? void 0 : _e.tproxy) && (0, utils_1.isLinux)() ? {
-        mark: (_g = (_f = opts.userdata) === null || _f === void 0 ? void 0 : _f.proxy.mark) !== null && _g !== void 0 ? _g : 99,
+    const isTProxy = ((_c = (_b = opts.userdata) === null || _b === void 0 ? void 0 : _b.proxy) === null || _c === void 0 ? void 0 : _c.tproxy) && (0, utils_1.isLinux)();
+    const sockopt = isTProxy ? {
+        mark: (_f = (_e = (_d = opts.userdata) === null || _d === void 0 ? void 0 : _d.proxy) === null || _e === void 0 ? void 0 : _e.mark) !== null && _f !== void 0 ? _f : 99,
     } : undefined;
     const freedom = {
         tag: 'out-freedom',

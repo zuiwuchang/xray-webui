@@ -11,6 +11,7 @@ import { generateLog } from "./xray/log";
 import { generateInbounds } from "./xray/inbounds";
 import { Userdata } from "./xray/userdata";
 import { generateOutbounds } from "./xray/outbounds";
+import { generateRouting } from "./xray/routing";
 export function create(): Provider {
     return new myProvider()
 }
@@ -58,6 +59,7 @@ ${s}
             dns: generateDNS(opts),
             inbounds: generateInbounds(opts),
             outbounds: generateOutbounds(opts),
+            routing: generateRouting(opts),
         }
         return {
             content: JSON.stringify(o, undefined, '    '),

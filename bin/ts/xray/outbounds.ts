@@ -24,14 +24,14 @@ import { DNS } from "./outbounds/dns";
 
 export function generateOutbounds(opts: ConfigureOption<Userdata>): Array<Outbounds> {
     const isport = isPort(opts.environment.port ?? 0)
-    const isTProxy = opts.userdata?.proxy?.tproxy && isLinux()
     if (isport) {
         return [generateOutbound(opts)]
     }
-
     const outbound = generateOutbound(opts)
-    const sockopt = opts.userdata?.proxy?.tproxy && isLinux() ? {
-        mark: opts.userdata?.proxy.mark ?? 99,
+
+    const isTProxy = opts.userdata?.proxy?.tproxy && isLinux()
+    const sockopt = isTProxy ? {
+        mark: opts.userdata?.proxy?.mark ?? 99,
     } : undefined
     const freedom: Freedom = {
         tag: 'out-freedom',

@@ -38,11 +38,11 @@ export interface Account {
     /**
      * 用戶名
      */
-    user: string
+    user?: string
     /**
      * 密碼
      */
-    password: string
+    password?: string
 }
 export interface Proxy {
     /**
@@ -63,13 +63,50 @@ export interface Userdata {
     /**
      * socks 代理設定
      */
-    socks: Socks
+    socks?: Socks
     /**
      * http 代理設定
      */
-    http: HTTP
+    http?: HTTP
     /**
      * 透明代理設定
      */
-    proxy: Proxy
+    proxy?: Proxy
+    /**
+     * 路由規則
+     */
+    routing?: Routing
+}
+export interface Routing {
+    /**
+     *  爲 bt 設置出棧 tag
+     */
+    bittorrent?: 'out-freedom' | 'out-blackhole' | 'out-proxy'
+
+    /**
+     * 這些 ip 使用代理
+     */
+    proxyIP?: Array<string>
+    /**
+     * 這些 域名 使用代理
+     */
+    proxyDomain?: Array<string>
+
+    /**
+     * 這些 ip 直接連接
+     */
+    directIP?: Array<string>
+    /**
+     * 這些 域名 直接連接
+     */
+    directDomain?: Array<string>
+
+    /**
+     * 這些 ip 禁止訪問
+     */
+    blockIP?: Array<string>
+    /**
+     * 這些 域名 禁止訪問
+     */
+    blockDomain?: Array<string>
 }

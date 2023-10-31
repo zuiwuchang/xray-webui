@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateDNS = void 0;
 const rule_1 = require("./strategy/rule");
 function generateDNS(opts) {
+    var _a;
     if (opts.environment.port) {
         return undefined;
     }
@@ -26,10 +27,8 @@ function generateDNS(opts) {
         case 1:
         case 2: // 全部代理
         case 3: // 代理公有 ip
-            proxy = new rule_1.Rule().pushDomain(strategy.proxyDomain)
-                .pushIP(strategy.proxyIP);
-            direct = new rule_1.Rule().pushDomain(strategy.directDomain)
-                .pushIP(strategy.directIP);
+            proxy = new rule_1.Rule().pushDomain(strategy.proxyDomain);
+            direct = new rule_1.Rule().pushDomain(strategy.directDomain);
             break;
         case 5: // 直連優先
             usual = true;
@@ -37,43 +36,43 @@ function generateDNS(opts) {
             // 添加默認 代理
             proxy = new rule_1.Rule()
                 .pushDomain([
-                "geosite:apple",
-                "geosite:google",
-                "geosite:microsoft",
-                "geosite:facebook",
-                "geosite:twitter",
-                "geosite:telegram",
-                "geosite:geolocation-!cn",
-                "tld-!cn",
+                'geosite:apple',
+                'geosite:google',
+                'geosite:microsoft',
+                'geosite:facebook',
+                'geosite:twitter',
+                'geosite:telegram',
+                'geosite:geolocation-!cn',
+                'tld-!cn',
             ])
-                .pushDomain(strategy.proxyDomain)
-                .pushIP(strategy.proxyIP);
+                .pushDomain(strategy.proxyDomain);
             direct = new rule_1.Rule()
                 .pushDomain([
-                "geosite:cn",
+                'geosite:cn',
             ])
-                .pushIP([
-                "geoip:cn",
-            ])
-                .pushDomain(strategy.directDomain)
-                .pushIP(strategy.directIP);
+                .pushDomain(strategy.directDomain);
             break;
+    }
+    const routing = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.routing;
+    if (routing) {
+        proxy.pushDomain(routing.proxyDomain);
+        proxy.pushIP(routing.proxyIP);
+        direct.pushDomain(routing.directDomain);
+        direct.pushIP(routing.directIP);
     }
     if (usual) { // 優先直接連接
         // 解析 西朝 域名
         if (direct.isValid()) {
             servers.push(...[
                 {
-                    address: "119.29.29.29",
+                    address: '119.29.29.29',
                     port: 53,
                     domains: direct.domain,
-                    expectIPs: direct.ip,
                 },
                 {
-                    address: "223.5.5.5",
+                    address: '223.5.5.5',
                     port: 53,
                     domains: direct.domain,
-                    expectIPs: direct.ip,
                 },
             ]);
         }
@@ -81,24 +80,22 @@ function generateDNS(opts) {
         if (proxy.isValid()) {
             servers.push(...[
                 {
-                    address: "8.8.8.8",
+                    address: '8.8.8.8',
                     port: 53,
                     domains: proxy.domain,
-                    expectIPs: proxy.ip,
                 },
                 {
-                    address: "1.1.1.1",
+                    address: '1.1.1.1',
                     port: 53,
                     domains: proxy.domain,
-                    expectIPs: proxy.ip,
                 },
             ]);
         }
         // 未匹配的 使用西朝 dns
         servers.push(...[
-            "119.29.29.29",
-            "223.5.5.5",
-            "localhost",
+            '119.29.29.29',
+            '223.5.5.5',
+            'localhost',
         ]);
     }
     else {
@@ -106,16 +103,14 @@ function generateDNS(opts) {
         if (proxy.isValid()) {
             servers.push(...[
                 {
-                    address: "8.8.8.8",
+                    address: '8.8.8.8',
                     port: 53,
                     domains: proxy.domain,
-                    expectIPs: proxy.ip,
                 },
                 {
-                    address: "1.1.1.1",
+                    address: '1.1.1.1',
                     port: 53,
                     domains: proxy.domain,
-                    expectIPs: proxy.ip,
                 },
             ]);
         }
@@ -123,24 +118,22 @@ function generateDNS(opts) {
         if (direct.isValid()) {
             servers.push(...[
                 {
-                    address: "119.29.29.29",
+                    address: '119.29.29.29',
                     port: 53,
                     domains: direct.domain,
-                    expectIPs: direct.ip,
                 },
                 {
-                    address: "223.5.5.5",
+                    address: '223.5.5.5',
                     port: 53,
                     domains: direct.domain,
-                    expectIPs: direct.ip,
                 },
             ]);
         }
         // 未匹配的 使用非西朝 dns
         servers.push(...[
-            "8.8.8.8",
-            "1.1.1.1",
-            "https+local://doh.dns.sb/dns-query"
+            '8.8.8.8',
+            '1.1.1.1',
+            'https+local://doh.dns.sb/dns-query'
         ]);
     }
     return {

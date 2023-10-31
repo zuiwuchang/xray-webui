@@ -1,5 +1,6 @@
 import { ConfigureOption } from "xray/webui"
 import { Rule } from "./strategy/rule"
+import { Userdata } from "./userdata"
 
 /**
  * {@link https://xtls.github.io/config/dns.html}
@@ -81,7 +82,7 @@ export interface Server {
     clientIp?: string
 }
 
-export function generateDNS(opts: ConfigureOption<any>): DNS | undefined {
+export function generateDNS(opts: ConfigureOption<Userdata>): DNS | undefined {
     if (opts.environment.port) {
         return undefined
     }
@@ -106,9 +107,7 @@ export function generateDNS(opts: ConfigureOption<any>): DNS | undefined {
         case 2: // 全部代理
         case 3: // 代理公有 ip
             proxy = new Rule().pushDomain(strategy.proxyDomain)
-                .pushIP(strategy.proxyIP)
             direct = new Rule().pushDomain(strategy.directDomain)
-                .pushIP(strategy.directIP)
             break
         case 5: // 直連優先
             usual = true
@@ -116,43 +115,44 @@ export function generateDNS(opts: ConfigureOption<any>): DNS | undefined {
             // 添加默認 代理
             proxy = new Rule()
                 .pushDomain([
-                    "geosite:apple",
-                    "geosite:google",
-                    "geosite:microsoft",
-                    "geosite:facebook",
-                    "geosite:twitter",
-                    "geosite:telegram",
-                    "geosite:geolocation-!cn",
-                    "tld-!cn",
+                    'geosite:apple',
+                    'geosite:google',
+                    'geosite:microsoft',
+                    'geosite:facebook',
+                    'geosite:twitter',
+                    'geosite:telegram',
+                    'geosite:geolocation-!cn',
+                    'tld-!cn',
                 ])
                 .pushDomain(strategy.proxyDomain)
-                .pushIP(strategy.proxyIP)
             direct = new Rule()
                 .pushDomain([
-                    "geosite:cn",
-                ])
-                .pushIP([
-                    "geoip:cn",
+                    'geosite:cn',
                 ])
                 .pushDomain(strategy.directDomain)
-                .pushIP(strategy.directIP)
             break
     }
+    const routing = opts.userdata?.routing
+    if (routing) {
+        proxy.pushDomain(routing.proxyDomain!)
+        proxy.pushIP(routing.proxyIP!)
+        direct.pushDomain(routing.directDomain!)
+        direct.pushIP(routing.directIP!)
+    }
+
     if (usual) { // 優先直接連接
         // 解析 西朝 域名
         if (direct.isValid()) {
             servers.push(...[
                 {
-                    address: "119.29.29.29", // 騰訊
+                    address: '119.29.29.29', // 騰訊
                     port: 53,
                     domains: direct.domain,
-                    expectIPs: direct.ip,
                 },
                 {
-                    address: "223.5.5.5", // 阿里
+                    address: '223.5.5.5', // 阿里
                     port: 53,
                     domains: direct.domain,
-                    expectIPs: direct.ip,
                 },
             ])
         }
@@ -160,40 +160,36 @@ export function generateDNS(opts: ConfigureOption<any>): DNS | undefined {
         if (proxy.isValid()) {
             servers.push(...[
                 {
-                    address: "8.8.8.8", // google
+                    address: '8.8.8.8', // google
                     port: 53,
                     domains: proxy.domain,
-                    expectIPs: proxy.ip,
                 },
                 {
-                    address: "1.1.1.1", // cloudflare
+                    address: '1.1.1.1', // cloudflare
                     port: 53,
                     domains: proxy.domain,
-                    expectIPs: proxy.ip,
                 },
             ])
         }
         // 未匹配的 使用西朝 dns
         servers.push(...[
-            "119.29.29.29", // 騰訊
-            "223.5.5.5", // 阿里
-            "localhost",
+            '119.29.29.29', // 騰訊
+            '223.5.5.5', // 阿里
+            'localhost',
         ])
     } else {
         // 解析 非西朝 域名
         if (proxy.isValid()) {
             servers.push(...[
                 {
-                    address: "8.8.8.8", // google
+                    address: '8.8.8.8', // google
                     port: 53,
                     domains: proxy.domain,
-                    expectIPs: proxy.ip,
                 },
                 {
-                    address: "1.1.1.1", // cloudflare
+                    address: '1.1.1.1', // cloudflare
                     port: 53,
                     domains: proxy.domain,
-                    expectIPs: proxy.ip,
                 },
             ])
         }
@@ -201,24 +197,22 @@ export function generateDNS(opts: ConfigureOption<any>): DNS | undefined {
         if (direct.isValid()) {
             servers.push(...[
                 {
-                    address: "119.29.29.29", // 騰訊
+                    address: '119.29.29.29', // 騰訊
                     port: 53,
                     domains: direct.domain,
-                    expectIPs: direct.ip,
                 },
                 {
-                    address: "223.5.5.5", // 阿里
+                    address: '223.5.5.5', // 阿里
                     port: 53,
                     domains: direct.domain,
-                    expectIPs: direct.ip,
                 },
             ])
         }
         // 未匹配的 使用非西朝 dns
         servers.push(...[
-            "8.8.8.8", // google
-            "1.1.1.1", // cloudflare
-            "https+local://doh.dns.sb/dns-query"
+            '8.8.8.8', // google
+            '1.1.1.1', // cloudflare
+            'https+local://doh.dns.sb/dns-query'
         ])
     }
     return {
