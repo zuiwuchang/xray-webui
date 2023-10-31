@@ -8,6 +8,9 @@ import { shadowsocks } from "./metadata/shadowsocks";
 import { socks } from "./metadata/socks";
 import { generateDNS } from "./xray/dns";
 import { generateLog } from "./xray/log";
+import { generateInbounds } from "./xray/inbounds";
+import { Userdata } from "./xray/userdata";
+import { generateOutbounds } from "./xray/outbounds";
 export function create(): Provider {
     return new myProvider()
 }
@@ -49,11 +52,12 @@ ${s}
     /**
      * 返回 xray 設定
      */
-    configure(opts: ConfigureOption): ConfigureResult {
-        core.println(JSON.stringify(opts, undefined, '    '))
+    configure(opts: ConfigureOption<Userdata>): ConfigureResult {
         const o: Xray = {
             log: generateLog(opts),
             dns: generateDNS(opts),
+            inbounds: generateInbounds(opts),
+            outbounds: generateOutbounds(opts),
         }
         return {
             content: JSON.stringify(o, undefined, '    '),

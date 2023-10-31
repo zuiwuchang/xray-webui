@@ -70,7 +70,7 @@ exports.trojan = {
             label: i18n_1.i18n.security,
             ui: 'select-editable',
             value: [
-                'tls', 'xtls',
+                'xtls', 'tls', 'reality',
             ],
             class: 'col-12 md:col-6',
             from: {

@@ -151,5 +151,87 @@ export const vless: Metadata = {
                 key: 'fp',
             },
         },
+        {
+            ui: 'placeholder',
+            class: 'p-0 col-fixed md:col-4',
+        },
+        // row
+        {
+            key: 'publicKey',
+            label: i18n.publicKey,
+            ui: 'text',
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'pbk',
+            },
+        },
+        {
+            key: 'shortID',
+            label: i18n.shortID,
+            ui: 'text',
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'sid',
+            },
+        },
+        {
+            key: 'spiderX',
+            label: i18n.spiderX,
+            ui: 'text',
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'spx',
+            },
+        },
     ],
+}
+
+
+export interface VLessFileds {
+    /**
+     * 代理服務器地址
+     */
+    address?: string
+    /**
+     * 代理服務器端口
+     */
+    port?: string
+    /**
+     * 傳輸協議
+     */
+    protocol?: string
+    /**
+     * 主機名稱
+     */
+    host?: string
+    /**
+     * url path
+     */
+    path?: string
+    /**
+     * 傳輸層加密
+     */
+    security?: string
+    /**
+     * 用戶 uuid
+     */
+    userID?: string
+    /**
+     * 用戶等級
+     */
+    userLevel?: string
+    /**
+     * 流控制
+     */
+    flow?: string
+
+    alpn?: string
+    fingerprint?: string
+
+    publicKey?: string
+    shortID?: string
+    spiderX?: string
 }

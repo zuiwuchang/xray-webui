@@ -33,7 +33,11 @@ export interface Server {
      * * 'none', 'plain'
      * 
      */
-    method: string
+    method: '2022-blake3-aes-128-gcm' | '2022-blake3-aes-256-gcm' | '2022-blake3-chacha20-poly1305' |
+    'aes-256-gcm' | 'aes-128-gcm' |
+    'chacha20-poly1305' | 'chacha20-ietf-poly1305' |
+    'xchacha20-poly1305' | 'xchacha20-ietf-poly1305' |
+    'none' | 'plain'
     /**
      * 密碼
      */
@@ -45,7 +49,7 @@ export interface Server {
     /**
      * UDP over TCP 實現版本
      */
-    UoTVersion: 1 | 2
+    UoTVersion?: 1 | 2
     /**
      * 用戶等級，用於本地優先級策略
      * @default 0

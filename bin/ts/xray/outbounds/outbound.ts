@@ -1,9 +1,6 @@
-/**
- * {@link https://xtls.github.io/config/transport.html#streamsettingsobject}
- */
-export interface StreamSettings {
+import { Sockopt } from "../transport/socketopt"
+import { Stream } from "../transport/stream"
 
-}
 /**
  * {@link https://xtls.github.io/config/outbound.html#proxysettingsobject}
  */
@@ -59,7 +56,7 @@ export interface Outbound<T> {
     /**
      * 依據 protocol 的不同而不同
      */
-    settings: T
+    settings?: T
     /**
      * 一個自定義名稱，用於在其它設定中定位此連接，當不爲空白字符串時需要確保此值唯一
      */
@@ -68,7 +65,7 @@ export interface Outbound<T> {
      * 傳輸層相關設定
      * {@link StreamSettings}
      */
-    streamSettings?: StreamSettings
+    streamSettings?: Stream
     /**
      * 出棧代理，當此設置生效時 streamSettings 設定將被忽略
      * 

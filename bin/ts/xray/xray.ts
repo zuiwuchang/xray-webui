@@ -1,4 +1,5 @@
 import { DNS } from "./dns"
+import { Inbounds } from "./inbounds/inbounds"
 import { Log } from "./log"
 import { Outbounds } from "./outbounds/outbounds"
 
@@ -17,7 +18,7 @@ export interface Xray {
     /**
      * 入棧協議
      */
-    inbounds: Array<Inbounds>
+    inbounds?: Array<Inbounds>
     /**
      * 出棧協議
      */

@@ -75,4 +75,13 @@ export const i18n = {
         'zh-Hans': '加密方式',
         'default': 'Encryption Method',
     },
+    publicKey: {
+        default: 'publicKey',
+    },
+    shortID: {
+        default: 'shortID',
+    },
+    spiderX: {
+        default: 'spiderX',
+    },
 }

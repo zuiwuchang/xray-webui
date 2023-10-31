@@ -80,11 +80,11 @@ declare module 'xray/webui' {
         /**
          * 存儲的鍵名稱，應該保證同一代理的多個 key 唯一
          */
-        key: string
+        key?: string
         /**
          * 顯示在頁面上的屬性標題
          */
-        label: Text
+        label?: Text
         /**
          * 可選的佔位符說明
          */
@@ -97,12 +97,13 @@ declare module 'xray/webui' {
 
         /**
          * 網頁上供用戶輸入的 ui 模型
+         * * 'placeholder' 只是在網頁佈局上佔位
          * * 'text' 文本輸入框
          * * 'number' 數字輸入框，通常用來輸入端口號
          * * 'select' 選項列表
          * * 'select-editable' 選項列表，但也可以輸入文本
          */
-        ui: 'text' | 'number' | 'select' | 'select-editable'
+        ui: 'placeholder' | 'text' | 'number' | 'select' | 'select-editable'
         /**
          * 爲 ui 添加的 樣式表 通常是 PrimeFlex 的 col-?
          */
@@ -111,7 +112,7 @@ declare module 'xray/webui' {
         /**
          * 來源
          */
-        from: From
+        from?: From
 
         /**
          * 如果爲 true 表示只在 ui 頁面中有效
@@ -189,6 +190,10 @@ declare module 'xray/webui' {
     }
     export interface Environment {
         /**
+         * 出棧方案
+         */
+        scheme: 'vmess' | 'vless' | 'trojan' | 'socks' | 'ss'
+        /**
          * 如果設置了此值，應該使用此值作爲 socks5 的監聽端口，並且此 socks5 代理無需驗證
          * 
          * @remarks
@@ -198,7 +203,7 @@ declare module 'xray/webui' {
          */
         port?: number
     }
-    export interface ConfigureOption {
+    export interface ConfigureOption<T> {
         /**
          * 設定環境
          */
@@ -206,7 +211,7 @@ declare module 'xray/webui' {
         /**
          * 節點信息
          */
-        fileds: Record<string/** Filed.key */, string | undefined>
+        fileds: Record<string/** Filed.key */, string>
         /**
          * 使用的策略
          */
@@ -214,7 +219,7 @@ declare module 'xray/webui' {
         /**
          * 自定義設定
          */
-        userdata: Record<string, any>
+        userdata?: T
     }
     export interface ConfigureResult {
         /**

@@ -128,12 +128,13 @@ export interface Filed {
 
     /**
      * 網頁上供用戶輸入的 ui 模型
+     * * 'placeholder' 只是在網頁佈局上佔位
      * * 'text' 文本輸入框
      * * 'number' 數字輸入框，通常用來輸入端口號
      * * 'select' 選項列表
      * * 'select-editable' 選項列表，但也可以輸入文本
      */
-    ui: 'text' | 'number' | 'select' | 'select-editable'
+    ui: 'placeholder' | 'text' | 'number' | 'select' | 'select-editable'
     /**
      * 爲 ui 添加的 樣式表 通常是 PrimeFlex 的 col-?
      */
@@ -142,7 +143,7 @@ export interface Filed {
     /**
      * 來源
      */
-    from: From
+    from?: From
 }
 export interface Metadata {
     /**
@@ -198,6 +199,9 @@ export class MetadataProvider {
     }
     get(url: URL, filed: Filed): string {
         const from = filed.from
+        if (!from) {
+            return ''
+        }
         switch (from.from) {
             case `username`:
                 return this.decode(from.enc, url.user?.username ?? '')
@@ -245,6 +249,9 @@ export class MetadataProvider {
         let fragment = ''
         for (const field of md.fields) {
             const from = field.from
+            if (!from) {
+                continue
+            }
             const found = keys.get(field.key)
             if (!found) {
                 continue
@@ -325,6 +332,9 @@ export class MetadataProvider {
         }
         for (const filed of md.fields) {
             const from = filed.from
+            if (!from) {
+                continue
+            }
             if (set && !set.has(filed.key ?? '')) {
                 continue
             }

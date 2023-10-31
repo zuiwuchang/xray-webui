@@ -43,10 +43,11 @@ export interface User {
      * @default 0
      */
     level?: number
+
+    alterId?: number
 }
 /**
  * v2ray 研發的加密傳輸協議
- * 
  */
 export interface VMess extends Outbound<VMessSettings> {
     protocol: 'vmess'

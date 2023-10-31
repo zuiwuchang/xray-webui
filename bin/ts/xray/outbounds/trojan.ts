@@ -21,6 +21,7 @@ export interface Server {
      * 用戶密碼
      */
     password: string
+    flow?: string
     /**
      * 可選的用戶標識
      */

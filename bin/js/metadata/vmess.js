@@ -159,5 +159,36 @@ exports.vmess = {
                 key: 'aid',
             },
         },
+        // row
+        {
+            key: 'publicKey',
+            label: i18n_1.i18n.publicKey,
+            ui: 'text',
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'pbk',
+            },
+        },
+        {
+            key: 'shortID',
+            label: i18n_1.i18n.shortID,
+            ui: 'text',
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'sid',
+            },
+        },
+        {
+            key: 'spiderX',
+            label: i18n_1.i18n.spiderX,
+            ui: 'text',
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'spx',
+            },
+        },
     ],
 };

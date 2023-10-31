@@ -1,7 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateDNS = void 0;
+const rule_1 = require("./strategy/rule");
 function generateDNS(opts) {
+    if (opts.environment.port) {
+        return undefined;
+    }
     const strategy = opts.strategy;
     // 靜態 dns
     const hosts = {};
@@ -22,16 +26,16 @@ function generateDNS(opts) {
         case 1:
         case 2: // 全部代理
         case 3: // 代理公有 ip
-            proxy = new Rule().pushDomain(strategy.proxyDomain)
+            proxy = new rule_1.Rule().pushDomain(strategy.proxyDomain)
                 .pushIP(strategy.proxyIP);
-            direct = new Rule().pushDomain(strategy.directDomain)
+            direct = new rule_1.Rule().pushDomain(strategy.directDomain)
                 .pushIP(strategy.directIP);
             break;
         case 5: // 直連優先
             usual = true;
         case 4: // 代理優先
             // 添加默認 代理
-            proxy = new Rule()
+            proxy = new rule_1.Rule()
                 .pushDomain([
                 "geosite:apple",
                 "geosite:google",
@@ -44,7 +48,7 @@ function generateDNS(opts) {
             ])
                 .pushDomain(strategy.proxyDomain)
                 .pushIP(strategy.proxyIP);
-            direct = new Rule()
+            direct = new rule_1.Rule()
                 .pushDomain([
                 "geosite:cn",
             ])
@@ -145,43 +149,3 @@ function generateDNS(opts) {
     };
 }
 exports.generateDNS = generateDNS;
-class Rule {
-    constructor() {
-        this.domain = [];
-        this.ip = [];
-        this.domain_ = new Set();
-        this.ip_ = new Set();
-    }
-    pushDomain(a) {
-        this._push(a);
-        return this;
-    }
-    pushIP(a) {
-        this._push(a, true);
-        return this;
-    }
-    _push(a, ip) {
-        if (!Array.isArray(a) || a.length == 0) {
-            return;
-        }
-        const keys = ip ? this.ip_ : this.domain_;
-        const vals = ip ? this.ip : this.domain;
-        for (const s of a) {
-            if (typeof s !== "string") {
-                continue;
-            }
-            const val = s.trim();
-            if (keys.has(val)) {
-                continue;
-            }
-            keys.add(val);
-            vals.push(val);
-        }
-    }
-    /**
-     * 如果設定有效返回 true 否則返回 false
-     */
-    isValid() {
-        return this.domain.length != 0 || this.ip.length != 0;
-    }
-}

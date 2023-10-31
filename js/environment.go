@@ -2,6 +2,10 @@ package js
 
 type Environment struct {
 	/**
+	 * 出棧方案 url.Scheme
+	 */
+	Scheme string `json:"scheme,omitempty"`
+	/**
 	 * 如果設置了此值，應該使用此值作爲 socks5 的監聽端口，並且此 socks5 代理無需驗證
 	 *
 	 * @remarks

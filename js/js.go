@@ -231,7 +231,7 @@ func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strat
 		values url.Values
 	)
 	for _, f := range metadata.Fields {
-		if f.OnlyUI {
+		if f.OnlyUI || f.From.From == `` {
 			continue
 		}
 		var val string
@@ -331,17 +331,20 @@ func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strat
 				}
 				o.ok = true
 			}
-			val, e = vm.decode(f.From.Enc, fmt.Sprint(o.keys[f.From.Key]))
-			if e != nil {
-				return
+			found := o.keys[f.From.Key]
+			if found != nil {
+				val, e = vm.decode(f.From.Enc, fmt.Sprint(found))
+				if e != nil {
+					return
+				}
 			}
 			// default:
 			// 	e = errors.New(`unknow filed from: ` + f.From.From)
 			// 	return
 		}
 		fileds[f.Key] = val
-
 	}
+	env.Scheme = metadata.Protocol
 	jstr, e := json.Marshal(map[string]any{
 		`environment`: env,
 		`fileds`:      fileds,

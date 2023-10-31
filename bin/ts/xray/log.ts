@@ -32,7 +32,10 @@ export interface Log {
     dnsLog?: boolean
 }
 
-export function generateLog(opts: ConfigureOption): Log {
+export function generateLog(opts: ConfigureOption<any>): Log | undefined {
+    if (opts.environment.port) {
+        return undefined
+    }
     return {
         loglevel: 'warning',
     }

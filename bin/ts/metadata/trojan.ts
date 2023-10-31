@@ -69,7 +69,7 @@ export const trojan: Metadata = {
             label: i18n.security,
             ui: 'select-editable',
             value: [
-                'tls', 'xtls',
+                'xtls', 'tls', 'reality',
             ],
             class: 'col-12 md:col-6',
             from: {
@@ -128,4 +128,42 @@ export const trojan: Metadata = {
             },
         },
     ],
+}
+
+export interface TrojanFileds {
+    /**
+     * 代理服務器地址
+     */
+    address?: string
+    /**
+     * 代理服務器端口
+     */
+    port?: string
+    /**
+     * 傳輸協議
+     */
+    protocol?: string
+    /**
+     * 主機名稱
+     */
+    host?: string
+    /**
+     * 傳輸層加密
+     */
+    security?: string
+    /**
+     * 用戶 uuid
+     */
+    userID?: string
+    /**
+     * 流控制
+     */
+    flow?: string
+
+    alpn?: string
+    fingerprint?: string
+
+    publicKey?: string
+    shortID?: string
+    spiderX?: string
 }

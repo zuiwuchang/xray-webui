@@ -28,7 +28,7 @@ export interface User {
      */
     id: string
     /**
-     * 目前必須固定填寫爲 none
+     * 目前必須固定填寫爲 none，用以提示用戶 vless 本身是沒有加密的，它應該配合 tls 使用
      */
     encryption: 'none'
     /**
@@ -46,7 +46,7 @@ export interface User {
     level?: number
 }
 /**
- * vless 是 vmess 輕量化後重新設計的，它不依賴系統時間也沒有加密，依賴 tls 提供加密包含，同樣使用 uuid 進行認證
+ * vless 是 vmess 輕量化後重新設計的，它不依賴系統時間也沒有加密，依賴 tls 提供加密，同樣使用 uuid 進行認證
  * 
  */
 export interface VLess extends Outbound<VLessSettings> {

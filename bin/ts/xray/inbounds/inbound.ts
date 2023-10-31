@@ -1,4 +1,4 @@
-import { Stream } from "../transport/stream"
+import { Streams } from "../transport/streams"
 
 /**
  * {@link https://xtls.github.io/config/inbound.html}
@@ -22,11 +22,11 @@ export interface Inbound<T> {
     /**
      * 依據 protocol 的不同而不同
      */
-    settings: T
+    settings?: T
     /**
      * 底層傳輸方式
      */
-    streamSettings?: Stream
+    streamSettings?: Streams
     /**
      * 一個自定義名稱，用於在其它設定中定位此連接，當不爲空白字符串時需要確保此值唯一
      */
@@ -44,11 +44,34 @@ export interface Inbound<T> {
  * {@link https://xtls.github.io/config/inbound.html#sniffingobject}
  */
 export interface Sniffing {
-    // "enabled": true,
-    // "destOverride": ["http", "tls", "fakedns"],
-    // "metadataOnly": false,
-    // "domainsExcluded": [],
-    // "routeOnly": false
+    /**
+     * 是否開啓流量探測
+     * 
+     */
+    enabled?: boolean,
+    /**
+     * 當流量為指定類型時，請按其中包含的目標位址重設目前連線的目標
+     * @remarks
+     * ['fakedns+others'] 相當於 ['http, 'tls', 'quic', 'fakedns'] 當 IP 位址處於 FakeIP 區間內但沒有命中網域記錄時會使用 http、tls 和 quic 進行比對。 此項僅在 metadataOnly 為 false 時有效
+     */
+    destOverride?: Array<'http' | 'tls' | 'quic' | 'fakedns' | 'fakedns+others'>,
+    /**
+     * 啟用時，將僅使用連接的元資料嗅探目標位址。 此時，除 fakedns 以外的 sniffer 將無法啟動（包括 fakedns+others）。
+     * 
+     * @remarks
+     * 如果關閉僅使用元數據推斷目標位址，此時用戶端必須先傳送數據，代理伺服器才會實際建立連線。
+     * 此行為與需要伺服器先發起第一個訊息的協定不相容，如 SMTP 協定。
+     */
+    metadataOnly?: false
+    /**
+     * 一個網域列表，如果流量探測結果在這個列表中時，將 不會 重置目標位址
+     */
+    domainsExcluded?: Array<string>
+    /**
+     * 將嗅探得到的網域名稱僅用於路由，代理目標位址仍為 IP
+     * @default false
+     */
+    routeOnly?: boolean
 }
 /**
  * {@link https://xtls.github.io/config/inbound.html#allocateobject}

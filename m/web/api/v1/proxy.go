@@ -3,6 +3,7 @@ package v1
 import (
 	"net/http"
 	"net/url"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/zuiwuchang/xray_webui/configure"
@@ -27,11 +28,20 @@ func (h Proxy) Preview(c *gin.Context) {
 	if e != nil {
 		return
 	}
-	u, e := url.ParseRequestURI(o.URL)
+	rawURL := o.URL
+	fragment := ``
+	found := strings.LastIndex(rawURL, `#`)
+	if found > 0 {
+		fragment = url.QueryEscape(rawURL[found+1:])
+		rawURL = rawURL[:found]
+	}
+
+	u, e := url.ParseRequestURI(rawURL)
 	if e != nil {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
+	u.Fragment = fragment
 	if o.Strategy < 1 || o.Strategy > 6 {
 		c.String(http.StatusBadRequest, `strategy not support`)
 		return

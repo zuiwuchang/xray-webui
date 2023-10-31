@@ -81,7 +81,10 @@ export interface Server {
     clientIp?: string
 }
 
-export function generateDNS(opts: ConfigureOption): DNS {
+export function generateDNS(opts: ConfigureOption<any>): DNS | undefined {
+    if (opts.environment.port) {
+        return undefined
+    }
     const strategy = opts.strategy
     // 靜態 dns
     const hosts: Record<string, string | Array<string>> = {}

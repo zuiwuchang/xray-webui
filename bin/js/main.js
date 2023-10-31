@@ -32,6 +32,8 @@ const shadowsocks_1 = require("./metadata/shadowsocks");
 const socks_1 = require("./metadata/socks");
 const dns_1 = require("./xray/dns");
 const log_1 = require("./xray/log");
+const inbounds_1 = require("./xray/inbounds");
+const outbounds_1 = require("./xray/outbounds");
 function create() {
     return new myProvider();
 }
@@ -81,6 +83,8 @@ ${s}
         const o = {
             log: (0, log_1.generateLog)(opts),
             dns: (0, dns_1.generateDNS)(opts),
+            inbounds: (0, inbounds_1.generateInbounds)(opts),
+            outbounds: (0, outbounds_1.generateOutbounds)(opts),
         };
         return {
             content: JSON.stringify(o, undefined, '    '),
