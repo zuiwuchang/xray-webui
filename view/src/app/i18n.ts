@@ -245,6 +245,10 @@ export const i18n = {
 	*/
 	refresh: "R",
 	/**
+	* 重置
+	*/
+	reset: "rt",
+	/**
 	* 編輯
 	*/
 	edit: "E",

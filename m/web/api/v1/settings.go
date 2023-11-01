@@ -40,6 +40,8 @@ func (h *Settings) Register(router *gin.RouterGroup) {
 	r.GET(`general`, h.GetGeneral)
 	r.HEAD(`general`, h.GetGeneral)
 	r.POST(`general`, h.SetGeneral)
+	r.GET(`default`, h.GetDefault)
+	r.HEAD(`default`, h.GetDefault)
 
 	r.GET(`subscription`, h.ListSubscription)
 	r.HEAD(`subscription`, h.ListSubscription)
@@ -56,8 +58,16 @@ func (h *Settings) Register(router *gin.RouterGroup) {
 	r.POST(`element_set/:subscription/:id`, h.SetElement)
 	r.POST(`element_import/:subscription`, h.ImportElement)
 }
+func (h *Settings) GetDefault(c *gin.Context) {
+	h.SetHTTPCacheMaxAge(c, h.maxage)
+	h.ServeLazyJSON(c, ``, h.general.Load().(time.Time), func() (any, error) {
+		var resp data.General
+		resp.ResetDefault()
+		return resp, nil
+	})
+}
 func (h *Settings) GetGeneral(c *gin.Context) {
-	h.SetHTTPCacheMaxAge(c, 0)
+	h.SetHTTPCacheMaxAge(c, h.maxage)
 	h.ServeLazyJSON(c, ``, h.general.Load().(time.Time), func() (resp any, e error) {
 		var m manipulator.Settings
 		resp, e = m.GetGeneral()
@@ -70,6 +80,7 @@ func (h *Settings) GetGeneral(c *gin.Context) {
 		return
 	})
 }
+
 func (h *Settings) SetGeneral(c *gin.Context) {
 	var req data.General
 	e := h.Bind(c, &req)
@@ -262,7 +273,7 @@ func (h *Settings) RemoveSubscription(c *gin.Context) {
 	h.subscription.Store(time.Now())
 }
 func (h *Settings) ListElement(c *gin.Context) {
-	h.SetHTTPCacheMaxAge(c, 0)
+	h.SetHTTPCacheMaxAge(c, h.maxage)
 	modtime := h.subscription.Load().(time.Time)
 	modtime0 := h.element.Load().(time.Time)
 	if modtime.Before(modtime0) {

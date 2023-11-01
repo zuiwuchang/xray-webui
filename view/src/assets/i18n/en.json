@@ -114,6 +114,7 @@
 	},
 	"I": "Import",
 	"R": "Refresh",
+	"rt": "Reset",
 	"E": "Edit",
 	"D": "Delete",
 	"D0": "Domain",

@@ -4,7 +4,6 @@ import { Userdata } from "./userdata";
 import { getPort, getUint, isLinux, isPort } from "./utils";
 import { VLess } from "./outbounds/vless";
 import { VLessFileds } from "../metadata/vless";
-import { Streams } from "./transport/streams";
 import { Stream } from "./transport/stream";
 import { TCPStream } from "./transport/tcp";
 import { GRPCStream } from "./transport/grpc";

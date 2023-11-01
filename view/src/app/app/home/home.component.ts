@@ -86,11 +86,11 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     this._updateStrategys()
     this.onClickRefresh()
   }
-  private _clipboard?: ClipboardJS
+  private clipboard_?: ClipboardJS
   @ViewChild("btnClipboard")
   private _btnClipboard?: ElementRef
   ngAfterViewInit(): void {
-    this._clipboard = new ClipboardJS(this._btnClipboard!.nativeElement).on('success', () => {
+    this.clipboard_ = new ClipboardJS(this._btnClipboard!.nativeElement).on('success', () => {
       this.toastService.add({
         severity: 'success',
         summary: this.translateService.instant(i18n.action.success),
@@ -102,7 +102,12 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     })
   }
   override ngOnDestroy(): void {
-    this._clipboard?.destroy()
+    this.clipboard_?.destroy()
+    const ws = this.ws_
+    if (ws) {
+      this.ws_ = undefined
+      ws.close()
+    }
     super.ngOnDestroy()
   }
   onClickRefresh() {
@@ -150,22 +155,132 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     return data.id
   }
   disabled = false
-  disabledClass(css = ''): string {
-    return this.disabled ? (css == '' ? 'p-disabled' : css + ' p-disabled') : css
+  disabledClass(css = '', source?: Source): string {
+    return this.disabled || source?.disabled ? (css == '' ? 'p-disabled' : css + ' p-disabled') : css
   }
   onClickSort(source: Source) {
-    if (this.disabled) {
+    if (this.disabled || source.disabled) {
       return
     }
-    console.log('sort', source)
-    this.disabled = true
+
+    source.sort()
   }
+  private ws_?: WebSocket
   onClickTest(source: Source) {
-    if (this.disabled) {
+    if (this.disabled || source.disabled || source.data.length == 0) {
       return
     }
-    console.log('test', source)
-    this.disabled = true
+    source.disabled = true
+    const scheme = window.location.protocol == 'https:' ? 'wss' : 'ws'
+    const url = `${scheme}://${window.location.host}/api/v1/proxy/test`
+    try {
+      const ws = new WebSocket(url)
+      this.ws_ = ws
+      let timer: any = setInterval(() => {
+        ws.send('{"what":-1}')
+      }, 1000 * 40)
+      const onclose = () => {
+        if (timer) {
+          clearInterval(timer)
+          timer = undefined
+        }
+        ws.close()
+        if (ws != this.ws_) {
+          return
+        }
+        this.ws_ = undefined
+
+        for (const data of source.data) {
+          data.disabled = false
+        }
+        source.disabled = false
+        this.toastService.add({
+          severity: 'error',
+          summary: this.translateService.instant(i18n.action.error),
+          detail: `WebSocket EOF`,
+        })
+      }
+      ws.onclose = () => onclose()
+      ws.onerror = () => onclose()
+
+      ws.onopen = () => {
+        if (ws != this.ws_) {
+          ws.close()
+          return
+        }
+        let i = source.data.length
+        ws.onmessage = (data) => {
+          if (ws != this.ws_) {
+            ws.close()
+            return
+          }
+          if (typeof data.data != "string") {
+            return
+          }
+          const resp: { code: number, error?: string, id?: string, duration?: number } = JSON.parse(data.data)
+          if (resp.code == 200) {
+            const id = resp.id!
+            for (const data of source.data) {
+              if (data.id == id) {
+                data.disabled = false
+                const err = data.error
+                if (err) {
+                  data.error = err
+                } else {
+                  data.millisecond = resp.duration
+                }
+                break
+              }
+            }
+            if (i > 0) {
+              i--
+              if (!i) {
+                this.ws_ = undefined
+                for (const data of source.data) {
+                  data.disabled = false
+                }
+                source.disabled = false
+                ws.close()
+              }
+            }
+          } else {
+            if (this.isNotClosed) {
+              this.toastService.add({
+                severity: 'error',
+                summary: this.translateService.instant(i18n.action.error),
+                detail: resp.error!,
+              })
+            }
+            this.ws_ = undefined
+            for (const data of source.data) {
+              data.disabled = false
+            }
+            source.disabled = false
+            ws.close()
+          }
+        }
+        for (const data of source.data) {
+          data.disabled = true
+          data.error = undefined
+          data.millisecond = undefined
+        }
+        for (const data of source.data) {
+          ws.send(JSON.stringify({
+            what: 1,
+            id: `${data.id}`,
+            url: data.rawURL,
+          }))
+        }
+      }
+    } catch (e) {
+      this.disabled = false
+      source.disabled = false
+      this.toastService.add({
+        severity: 'error',
+        summary: this.translateService.instant(i18n.action.error),
+        detail: `${e}`,
+      })
+    }
   }
   onClickAdd(source: Source) {
     if (this.disabled) {
@@ -200,47 +315,49 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     this.disabled = true
     source.disabled = true
 
-    this.httpClient.post<Array<ListElement>>(`/api/v1/settings/element/${source.id}`, undefined).pipe(this.takeUntil()).subscribe({
-      next: (resp) => {
-        for (const item of this.items) {
-          if (item.id == source.id) {
-            try {
-              if (Array.isArray(resp) && resp.length > 0) {
-                source.data = resp.map((v) => {
-                  return new Element(this.provider!, v.id, v.url)
+    this.httpClient.post<Array<ListElement>>(`/api/v1/settings/element/${source.id}`, undefined)
+      .pipe(this.takeUntil())
+      .subscribe({
+        next: (resp) => {
+          for (const item of this.items) {
+            if (item.id == source.id) {
+              try {
+                if (Array.isArray(resp) && resp.length > 0) {
+                  source.data = resp.map((v) => {
+                    return new Element(this.provider!, v.id, v.url)
+                  })
+                } else {
+                  source.data = []
+                }
+              } catch (e) {
+                console.warn(e)
+                this.toastService.add({
+                  severity: 'error',
+                  summary: this.translateService.instant(i18n.action.error),
+                  detail: `${e}`,
                 })
-              } else {
-                source.data = []
               }
-            } catch (e) {
-              console.warn(e)
-              this.toastService.add({
-                severity: 'error',
-                summary: this.translateService.instant(i18n.action.error),
-                detail: `${e}`,
-              })
+              break
             }
-            break
           }
-        }
-        console.log(resp)
-        // if (Array.isArray(resp) && resp.length > 0) {
-        //   this.items = resp.map((val) => new Source(this.provider!, val))
-        // }
-        this.disabled = false
-        source.disabled = false
-      },
-      error: (e) => {
-        console.warn(e)
-        this.toastService.add({
-          severity: 'error',
-          summary: this.translateService.instant(i18n.action.error),
-          detail: getErrorString(e),
-        })
-        this.disabled = false
-        source.disabled = false
-      },
-    })
+          console.log(resp)
+          // if (Array.isArray(resp) && resp.length > 0) {
+          //   this.items = resp.map((val) => new Source(this.provider!, val))
+          // }
+          this.disabled = false
+          source.disabled = false
+        },
+        error: (e) => {
+          console.warn(e)
+          this.toastService.add({
+            severity: 'error',
+            summary: this.translateService.instant(i18n.action.error),
+            detail: getErrorString(e),
+          })
+          this.disabled = false
+          source.disabled = false
+        },
+      })
   }
   get canDeactivate(): boolean {
     return !this.disabled
@@ -268,14 +385,24 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     this.disabled = true
     source.disabled = true
     ele.disabled = true
-    console.log('play', ele)
     const dely = Delay.default()
-    dely.do(() => {
-      this.ele_ = ele
+    this.httpClient.post(`/api/v1/proxy/start/${source.id}/${ele.id}`, {
+      url: ele.rawURL,
+      strategy: this.strategy,
+    }).pipe(this.takeUntil()).subscribe({
+      next: () => dely.do(() => {
 
-      this.disabled = false
-      source.disabled = false
-      ele.disabled = false
+      }),
+      error: (e) => dely.do(() => {
+        this.toastService.add({
+          severity: 'error',
+          summary: this.translateService.instant(i18n.action.error),
+          detail: getErrorString(e),
+        })
+        this.disabled = false
+        source.disabled = false
+        ele.disabled = false
+      }),
     })
   }
   onClickStop(source: Source, ele: Element) {
@@ -295,7 +422,10 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       ele.disabled = false
     })
   }
-  isStarted(ele: Element) {
+  isRun(source: Source) {
+    return source.run
+  }
+  isStarted(source: Source, ele: Element) {
     return ele == this.ele_
   }
   createMenus(source: Source, ele: Element): Array<MenuItem> {
@@ -324,7 +454,7 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
         label: translateService.instant(i18n.proxy.test),
         icon: 'pi pi-bolt',
         command: () => {
-          console.log('test', ele)
+          this._testOnce(source, ele)
         },
       },
       {
@@ -360,7 +490,7 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       {
         label: translateService.instant(i18n.delete),
         icon: 'pi pi-trash',
-        command: (evt) => {
+        command: () => {
           this.onClickDelete(source, ele)
         },
       },
@@ -385,6 +515,33 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       dismissableMask: true,
     })
   }
+  private _testOnce(source: Source, ele: Element) {
+    if (this.disabled || source.disabled || ele.disabled) {
+      return
+    }
+    source.disabled = true
+    ele.disabled = true
+    ele.error = undefined
+    ele.millisecond = undefined
+    const delay = Delay.default(this)
+    this.httpClient.post<{ result: number }>(`/api/v1/proxy/test_once`, {
+      url: ele.rawURL,
+    }).pipe(this.takeUntil()).subscribe({
+      next: (resp) => delay.do(() => {
+        ele.millisecond = resp.result
+
+        source.disabled = false
+        ele.disabled = false
+      }),
+      error: (e) => delay.do(() => {
+        source.disabled = false
+        ele.disabled = false
+        const err = getErrorString(e)
+        this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: err })
+        ele.error = err
+      }),
+    })
+  }
   private _preview(source: Source, ele: Element) {
     if (this.disabled || source.disabled || ele.disabled) {
       return
@@ -392,7 +549,7 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     this.disabled = true
     source.disabled = true
     ele.disabled = true
-    const delay = Delay.default()
+    const delay = Delay.default(this)
     this.httpClient.post(`/api/v1/proxy/preview`, {
       strategy: this.strategy,
       url: ele.rawURL,
@@ -400,27 +557,23 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       responseType: "text",
     }).pipe(this.takeUntil()).subscribe({
       next: (s) => delay.do(() => {
-        if (this.isNotClosed) {
-          this.disabled = false
-          source.disabled = false
-          ele.disabled = false
-          this.dialogService.open(PreviewComponent, {
-            header: this.translateService.instant(i18n.proxy.view),
-            data: s,
-            dismissableMask: true,
-            maximizable: true,
-            width: '80vw',
-          })
-        }
+        this.disabled = false
+        source.disabled = false
+        ele.disabled = false
+        this.dialogService.open(PreviewComponent, {
+          header: this.translateService.instant(i18n.proxy.view),
+          data: s,
+          dismissableMask: true,
+          maximizable: true,
+          width: '80vw',
+        })
       }),
       error: (e) => delay.do(() => {
-        if (this.isNotClosed) {
-          this.disabled = false
-          source.disabled = false
-          ele.disabled = false
+        this.disabled = false
+        source.disabled = false
+        ele.disabled = false
 
-          this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: getErrorString(e) })
-        }
+        this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: getErrorString(e) })
       }),
     })
 
@@ -439,31 +592,27 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
           return
         }
 
-        const delay = Delay.default()
+        const delay = Delay.default(this)
         this.disabled = true
         source.disabled = true
         this.httpClient.delete(`/api/v1/settings/element/${source.id}/${ele.id}`).pipe(this.takeUntil()).subscribe({
           next: () => delay.do(() => {
-            if (this.isNotClosed) {
-              this.toastService.add({ severity: 'success', summary: translateService.instant(i18n.action.success), detail: translateService.instant(i18n.action.deleted) })
-              const data = source.data
-              for (let i = 0; i < data.length; i++) {
-                if (data[i].id == ele.id) {
-                  data.splice(i, 1)
-                  break
-                }
+            this.toastService.add({ severity: 'success', summary: translateService.instant(i18n.action.success), detail: translateService.instant(i18n.action.deleted) })
+            const data = source.data
+            for (let i = 0; i < data.length; i++) {
+              if (data[i].id == ele.id) {
+                data.splice(i, 1)
+                break
               }
-              this.disabled = false
-              source.disabled = false
             }
+            this.disabled = false
+            source.disabled = false
           }),
           error: (e) => delay.do(() => {
-            if (this.isNotClosed) {
-              this.toastService.add({ severity: 'error', summary: translateService.instant(i18n.action.error), detail: getErrorString(e) })
+            this.toastService.add({ severity: 'error', summary: translateService.instant(i18n.action.error), detail: getErrorString(e) })
 
-              this.disabled = false
-              source.disabled = false
-            }
+            this.disabled = false
+            source.disabled = false
           }),
         })
       },
@@ -484,26 +633,22 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
           return
         }
 
-        const delay = Delay.default()
+        const delay = Delay.default(this)
         this.disabled = true
         source.disabled = true
         this.httpClient.delete(`/api/v1/settings/elements/${source.id}`).pipe(this.takeUntil()).subscribe({
           next: () => delay.do(() => {
-            if (this.isNotClosed) {
-              this.toastService.add({ severity: 'success', summary: translateService.instant(i18n.action.success), detail: translateService.instant(i18n.action.deleted) })
-              source.data = []
+            this.toastService.add({ severity: 'success', summary: translateService.instant(i18n.action.success), detail: translateService.instant(i18n.action.deleted) })
+            source.data = []
 
-              this.disabled = false
-              source.disabled = false
-            }
+            this.disabled = false
+            source.disabled = false
           }),
           error: (e) => delay.do(() => {
-            if (this.isNotClosed) {
-              this.toastService.add({ severity: 'error', summary: translateService.instant(i18n.action.error), detail: getErrorString(e) })
+            this.toastService.add({ severity: 'error', summary: translateService.instant(i18n.action.error), detail: getErrorString(e) })
 
-              this.disabled = false
-              source.disabled = false
-            }
+            this.disabled = false
+            source.disabled = false
           }),
         })
 
@@ -832,6 +977,23 @@ class Source {
   get run(): boolean {
     return false
   }
+  sort() {
+    if (this.data.length > 1) {
+      this.data.sort((l, r) => {
+        const lv = l.millisecond
+        const rv = r.millisecond
+        if (lv === rv) {
+          return 0
+        } else if (lv === undefined) {
+          return 1
+        } else if (rv === undefined) {
+          return -1
+        }
+        return lv > rv ? 1 : -1
+      })
+      this.data = [...this.data]
+    }
+  }
 }
 class Element {
   menus_?: Array<MenuItem>
@@ -843,6 +1005,14 @@ class Element {
   name?: string
   describe?: string
   disabled = false
+  /**
+   * 測試速度
+   */
+  millisecond?: number
+  /**
+   * 錯誤
+   */
+  error?: any
   constructor(readonly provider: MetadataProvider, readonly id: string, public rawURL: string) {
     try {
       let fragment = ''
@@ -899,7 +1069,7 @@ class Element {
       if (host == '') {
         host = port
       } else {
-        host += `:${port}`
+        host += `: ${port}`
       }
     }
 

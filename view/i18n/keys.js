@@ -20,6 +20,7 @@ exports.keys = {
     },
     import: make('I', '導入'),
     refresh: make('R', '刷新'),
+    reset: make('rt', '重置'),
     edit: make('E', '編輯'),
     delete: make('D', '刪除'),
     domain: make('D0', '域名'),

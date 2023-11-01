@@ -21,7 +21,14 @@ type General struct {
 	Run bool `json:"run"`
 	// 因爲 Run 而自動啓動服務後 設置服務器規則
 	Firewall bool `json:"firewall"`
-	// 使用的策略，默認爲 1
+	// 使用的策略
+	//
+	//  * 1 默認的代理規則
+	//  * 2 全域代理
+	//  * 3 略過區域網路的代理(僅對公網ip使用代理)
+	//  * 4 代理優先(略過區域網路和西朝鮮的代理)
+	//  * 5 直連優先 (僅對非西朝鮮公網使用代理)
+	//  * 6 直接連接
 	Strategy uint32 `json:"strategy"`
 	// 自定義設定， jsonnet 字符串
 	Userdata string `json:"userdata"`
@@ -45,12 +52,98 @@ func (g *General) Encoder() (b []byte, e error) {
 
 // ResetDefault 重新 置爲默認值
 func (g *General) ResetDefault() {
-	g.Strategy = 1
+	g.Strategy = 5
 	g.Run = true
 	g.Firewall = false
 	g.URL = `https://www.youtube.com/`
-	g.Userdata = `{
-	// 如果爲 true，則在 linnux 下使用 tproxy 作爲全局代理，否則使用 redirect 作爲全局代理
-	tproxy: true,
-}`
+	g.Userdata = DefaultUserdata
 }
+
+const DefaultUserdata = `// 爲代理設置訪問用戶名密碼
+local accounts = [
+	{
+		// 用戶名
+		user: 'killer',
+		// 密碼
+		password: '19890604',
+	},
+];
+{
+	// socks 代理設定
+	socks: {
+		// 監聽地址，默認 '127.0.0.1'
+		// bind: '0.0.0.0',
+		// 監聽端口，如果 < 1 則不啓用 socks 代理
+		port: 1080,
+		// 如果爲 true 則允許代理 udp
+		udp: true,
+		// 用戶數組默認不需要認證
+		// accounts: accounts,
+	},
+	// http 代理設定
+	http: {
+		// 監聽地址，默認 '127.0.0.1'
+		// bind: '0.0.0.0',
+		// 監聽端口，如果 < 1 則不啓用 http 代理
+		// port: 8118,
+		// 用戶數組默認不需要認證
+		// accounts: accounts,
+	},
+	// 透明代理設定
+	proxy: {
+		// 監聽端口，如果 < 1 則不啓用 透明代理
+		port: 12345,
+		// 如果爲 true，則在 linnux 下使用 tproxy 作爲全局代理，否則使用 redirect 作爲全局代理
+		tproxy: true,
+		// tproxy mark
+		mark: 2,
+	},
+	routing: {
+		// 爲 bt 設置出棧 tag
+		bittorrent: 'out-freedom', // 不使用代理
+		// bittorrent: 'out-blackhole', // 阻止訪問
+		// bittorrent: 'out-proxy', // 使用代理
+
+		// 要代理訪問的 ip，忽略策略設定，這些 ip 將始終被代理訪問
+		/**
+		proxyIP: [
+			// '8.8.8.8',
+		],/**/
+		// 要代理訪問的 域名，忽略策略設定，這些 域名 將始終被代理訪問
+		/**
+		proxyDomain: [
+			'geosite:apple',
+			'geosite:google',
+			'geosite:microsoft',
+			'geosite:facebook',
+			'geosite:twitter',
+			'geosite:telegram',
+			'geosite:geolocation-!cn',
+			'tld-!cn',
+		],/**/
+
+		// 要直接訪問的 ip，忽略策略設定，這些 ip 將始終被直接訪問
+		/**
+		directIP: [
+			'geoip:private',
+			'geoip:cn',
+		],/**/
+		// 要直接訪問的 域名，忽略策略設定，這些 域名 將始終被直接訪問
+		/**
+		directDomain: [
+			'geosite:cn',
+		],/**/
+
+		// 要禁止訪問的 ip，忽略策略設定，這些 ip 將始終被禁止訪問
+		/**
+		blockIP: [
+			// 'geoip:cn',
+		],/**/
+		// 要禁止訪問的 域名，忽略策略設定，這些 域名 將始終被禁止訪問
+		/**/
+		blockDomain: [
+			'category-ads',
+			// 'category-ads-all',
+		],/**/
+	}
+}`

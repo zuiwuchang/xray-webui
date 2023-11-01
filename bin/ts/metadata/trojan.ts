@@ -162,8 +162,4 @@ export interface TrojanFileds {
 
     alpn?: string
     fingerprint?: string
-
-    publicKey?: string
-    shortID?: string
-    spiderX?: string
 }

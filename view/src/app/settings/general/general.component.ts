@@ -1,9 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { MessageService } from 'primeng/api';
+import { first, interval } from 'rxjs';
 import { Deactivate } from 'src/app/core/guard/save.guard';
-import { ToastPosition, ToastService } from 'src/app/core/toast.service';
+import { ToastService } from 'src/app/core/toast.service';
 import { i18n } from 'src/app/i18n';
 import { Closed, State } from 'src/internal/closed';
 import { getErrorString } from 'src/internal/error';
@@ -36,6 +36,7 @@ export class GeneralComponent extends Closed implements OnInit, Deactivate {
     strategy: 1,
     userdata: '',
   }
+  private default_?: General
   data: General = {
     url: '',
     run: false,
@@ -108,6 +109,53 @@ export class GeneralComponent extends Closed implements OnInit, Deactivate {
         })
         this.disabled = false
       }),
+    })
+  }
+  onClickReset() {
+    if (this.disabled) {
+      return
+    }
+    const val = this.default_
+    if (!val) {
+      return
+    }
+    const data = this.data
+    data.firewall = val.firewall
+    data.run = val.run
+    data.strategy = val.strategy
+    data.url = val.url
+    data.userdata = val.userdata
+  }
+  get canReset(): boolean {
+    if (this.disabled) {
+      return false
+    }
+    const val = this.default_
+    if (!val) {
+      this._default()
+      return false
+    }
+    const data = this.data
+    return val.run != data.run || val.firewall != data.firewall || val.strategy != data.strategy || val.url != data.url || val.userdata != data.userdata
+  }
+  private _getDefault = false
+  private _default() {
+    if (this._getDefault) {
+      return
+    }
+    this._getDefault = true
+    this.httpClient.get<General>('/api/v1/settings/default').pipe(this.takeUntil()).subscribe({
+      next: (v) => {
+        this.default_ = v
+        this._getDefault = false
+      },
+      error: (e) => {
+        console.warn(e)
+        interval(1000).pipe(this.takeUntil(), first()).subscribe(() => {
+          this._getDefault = false
+          this._default()
+        })
+      },
     })
   }
   get canDeactivate(): boolean {

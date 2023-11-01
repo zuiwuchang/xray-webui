@@ -1,12 +1,20 @@
 package js
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
+	"net/http"
 	"net/url"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dop251/goja"
 	"github.com/dop251/goja_nodejs/console"
@@ -14,6 +22,7 @@ import (
 	"github.com/google/go-jsonnet"
 	"github.com/zuiwuchang/xray_webui/db/manipulator"
 	"github.com/zuiwuchang/xray_webui/utils"
+	"golang.org/x/net/proxy"
 )
 
 type Runtime struct {
@@ -390,6 +399,149 @@ func (vm *Runtime) decode(enc, src string) (output string, e error) {
 		output = utils.BytesToString(b)
 	default:
 		output = src
+	}
+	return
+}
+
+// 查找空閒端口
+func GetPort(ctx context.Context, begin, end uint16) (uint16, error) {
+	for port := begin; port < end; port++ {
+		e := ctx.Err()
+		if e != nil {
+			return 0, e
+		}
+		l, err := net.Listen(`tcp`, `127.0.0.1:`+strconv.FormatUint(uint64(port), 10))
+		if err == nil {
+			l.Close()
+			return port, nil
+		}
+	}
+	return 0, errors.New(`no free port found`)
+}
+
+func (vm *Runtime) Test(ctx context.Context, u *url.URL, getURL string) (duration time.Duration, e error) {
+	// 查找空閒端口
+	port, e := GetPort(ctx, 30000, 40000)
+	if e != nil {
+		return
+	}
+	duration, e = vm.TestAtPort(ctx, u, port, getURL)
+	return
+}
+func (vm *Runtime) TestAtPort(ctx context.Context, u *url.URL, port uint16, getURL string) (duration time.Duration, e error) {
+	// 生成配置
+	s, ext, e := vm.Preview(u, 1, &Environment{
+		Port: port,
+	})
+	if e != nil {
+		return
+	}
+
+	// 寫入配置檔案
+	basePath := utils.BasePath()
+	dir := filepath.Join(basePath, `var`, `conf`)
+	e = os.MkdirAll(dir, 0775)
+	if e != nil {
+		return
+	}
+
+	file, e := os.CreateTemp(dir, `*`+ext)
+	if e != nil {
+		return
+	}
+	name := file.Name()
+	defer os.Remove(name)
+	_, e = file.WriteString(s)
+	if e != nil {
+		file.Close()
+		return
+	}
+	e = file.Close()
+	if e != nil {
+		return
+	}
+	// 獲取運行命令
+	self, f, destroy, e := vm.assertFunction(`serve`)
+	if e != nil {
+		return
+	} else if destroy != nil {
+		defer destroy(self)
+	}
+	ret, e := f(self, vm.Runtime.ToValue(basePath), vm.Runtime.ToValue(name))
+	if e != nil {
+		return
+	}
+	ret, e = vm.stringify(vm.json, ret)
+	if e != nil {
+		return
+	}
+	var obj struct {
+		Dir  string   `json:"dir"`
+		Name string   `json:"name"`
+		Args []string `json:"args"`
+	}
+	e = json.Unmarshal(utils.StringToBytes(ret.String()), &obj)
+	if e != nil {
+		return
+	}
+
+	// 運行進程
+	cmd := exec.Command(obj.Name, obj.Args...)
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
+	e = cmd.Start()
+	if e != nil {
+		return
+	}
+	done := make(chan error, 1)
+	at := time.Now()
+	// 發送代理請求測試
+	go func() {
+		// 等待進程就緒
+		timer := time.NewTimer(time.Second * 2)
+		select {
+		case <-timer.C:
+			done <- vm.getURL(ctx, port, getURL)
+		case <-ctx.Done():
+			if !timer.Stop() {
+				<-timer.C
+			}
+		}
+	}()
+	// 等待測試結束
+	select {
+	case <-ctx.Done():
+		e = ctx.Err()
+		cmd.Process.Kill()
+	case err := <-done:
+		if err == nil {
+			duration = time.Since(at)
+		} else {
+			e = err
+		}
+	}
+	return
+}
+func (vm *Runtime) getURL(ctx context.Context, port uint16, getURL string) (e error) {
+	req, e := http.NewRequestWithContext(ctx, http.MethodGet, getURL, nil)
+	if e != nil {
+		return
+	}
+	dialer, e := proxy.SOCKS5(`tcp`, `127.0.0.1:`+strconv.FormatUint(uint64(port), 10), nil, proxy.Direct)
+	if e != nil {
+		return
+	}
+	client := &http.Client{
+		Transport: &http.Transport{
+			Dial: dialer.Dial,
+		},
+	}
+	resp, e := client.Do(req)
+	if e != nil {
+		return
+	}
+	if resp.Body != nil {
+		resp.Body.Close()
 	}
 	return
 }

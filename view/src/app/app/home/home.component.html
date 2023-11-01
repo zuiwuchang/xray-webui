@@ -22,6 +22,7 @@
     </ng-template>
     <ng-template ngSwitchCase="ok">
         <p-accordion [activeIndex]="2">
+            <!-- <p-accordion [activeIndex]="0"> -->
             <p-accordionTab>
                 <ng-template pTemplate="header">
                     <div class="flex align-items-center">
@@ -43,13 +44,13 @@
                         <ng-template #autoView>
                             <span class="nowrap vertical-align-middle">{{item.name}} - {{item.data.length}}</span>
                         </ng-template>
-                        <i class="primary-color pi pi-check ml-2 ml-2" *ngIf="item.run"></i>
+                        <i class="primary-color pi pi-check ml-2 ml-2" *ngIf="isRun(item)"></i>
 
                     </div>
                 </ng-template>
 
                 <ng-template pTemplate="content">
-                    <div [class]="disabledClass('flex flex-wrap gap-2')">
+                    <div [class]="disabledClass('flex flex-wrap gap-2',item)">
                         <i pRipple class="pi pi-sort-amount-down-alt text-2xl cursor-pointer"
                             pTooltip="{{i18n.proxy.sort|translate}}" tooltipPosition="bottom"
                             (click)="onClickSort(item)"></i>
@@ -76,8 +77,8 @@
                     <div class="formgrid grid">
                         <p class="field col-12 p-float-label">
                             <p-dropdown class="w-full" [styleClass]="'w-full'" [options]="strategys"
-                                [(ngModel)]="strategy" [disabled]="disabled" optionLabel="name" optionValue="value"
-                                appendTo="body">
+                                [(ngModel)]="strategy" [disabled]="disabled||item.disabled" optionLabel="name"
+                                optionValue="value" appendTo="body">
                             </p-dropdown>
                             <label>{{i18n.general.strategy| translate}}</label>
                         </p>
@@ -85,7 +86,7 @@
 
                     <p-dataView [value]="item.data" [rows]="item.data.length" [paginator]="false">
                         <ng-template let-node pTemplate="listItem">
-                            <div [class]="disabledClass('col-12 border-round-md p-2')">
+                            <div [class]="disabledClass('col-12 border-round-md p-2',item)">
                                 <form #form="ngForm">
                                     <div class="flex flex-row gap-3 align-items-center">
                                         <i class="pi pi-tag text-2xl"></i>
@@ -101,13 +102,17 @@
                                                     {{getLabel(node.metadata?.label,node.url?.scheme)}} ->
                                                     {{node.describe}}
                                                 </div>
+                                                <div *ngIf="node.error" class="p-error">{{node.error}}</div>
+                                                <div *ngIf="node.millisecond!=undefined">{{node.millisecond}}
+                                                    millisecond</div>
                                             </div>
 
                                             <p-progressSpinner *ngIf="node.disabled"
                                                 [style]="{width: '1.75rem', height: '1.75rem'}" strokeWidth="5"
                                                 fill="var(--surface-ground)" animationDuration=".5s">
                                             </p-progressSpinner>
-                                            <ng-container *ngIf="isStarted(node); then startedView;else stopedView">
+                                            <ng-container
+                                                *ngIf="isStarted(item,node); then startedView;else stopedView">
                                             </ng-container>
                                             <ng-template #stopedView>
                                                 <p-splitButton label="{{i18n.button.start|translate}}"

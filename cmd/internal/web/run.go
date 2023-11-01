@@ -5,10 +5,12 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/zuiwuchang/xray_webui/configure"
 	"github.com/zuiwuchang/xray_webui/log"
 	"github.com/zuiwuchang/xray_webui/m/register"
+	"github.com/zuiwuchang/xray_webui/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -44,8 +46,11 @@ func Run(cnf *configure.HTTP, debug bool) {
 		}
 		mux.RouterGroup.Use(gin.BasicAuth(accounts))
 	}
-	// serve
+	// 註冊路由
 	register.HTTP(mux)
+	// 刪除 臨時配置檔案
+	os.RemoveAll(filepath.Join(utils.BasePath(), `var`, `conf`))
+	// serve
 	if h2 {
 		http.ServeTLS(l, mux, cnf.CertFile, cnf.KeyFile)
 	} else {

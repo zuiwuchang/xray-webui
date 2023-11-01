@@ -159,37 +159,6 @@ export const vmess: Metadata = {
             },
         },
 
-        // row
-        {
-            key: 'publicKey',
-            label: i18n.publicKey,
-            ui: 'text',
-            class: 'col-12 md:col-4',
-            from: {
-                from: 'query',
-                key: 'pbk',
-            },
-        },
-        {
-            key: 'shortID',
-            label: i18n.shortID,
-            ui: 'text',
-            class: 'col-12 md:col-4',
-            from: {
-                from: 'query',
-                key: 'sid',
-            },
-        },
-        {
-            key: 'spiderX',
-            label: i18n.spiderX,
-            ui: 'text',
-            class: 'col-12 md:col-4',
-            from: {
-                from: 'query',
-                key: 'spx',
-            },
-        },
     ],
 }
 export interface VMessFileds {
@@ -235,7 +204,4 @@ export interface VMessFileds {
 
     alterID?: number
 
-    publicKey?: string
-    shortID?: string
-    spiderX?: string
 }

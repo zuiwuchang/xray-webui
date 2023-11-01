@@ -53,11 +53,13 @@
             </div>
 
             <ng-template pTemplate="footer">
-                <div class="flex justify-content-end">
+                <div class="flex justify-content-end gap-2">
                     <p-progressSpinner *ngIf="disabled" styleClass="w-3rem h-3rem mr-2" strokeWidth="5"
                         fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>
                     <p-button label="{{i18n.button.submit|translate}}" (onClick)="onClickSubmit()"
                         [disabled]="disabled || isNotChanged">
+                    </p-button>
+                    <p-button label="{{i18n.reset|translate}}" (onClick)="onClickReset()" [disabled]="!canReset">
                     </p-button>
                 </div>
             </ng-template>
