@@ -21,14 +21,27 @@
         </p-card>
     </ng-template>
     <ng-template ngSwitchCase="ok">
-        <p-accordion [activeIndex]="2">
-            <!-- <p-accordion [activeIndex]="0"> -->
+        <p-accordion [activeIndex]="activeIndex" (activeIndexChange)="activeIndexChange($event)">
             <p-accordionTab>
                 <ng-template pTemplate="header">
-                    <div class="flex align-items-center">
-                        <i class="pi pi-slack mr-2"></i>
-                        <span class="nowrap vertical-align-middle">{{i18n.proxy.none|translate}}</span>
-                    </div>
+
+                    <ng-container *ngIf="last then startedView;else stoppedView;"></ng-container>
+                    <ng-template #startedView>
+                        <div class="flex align-items-center gap-2">
+                            <i class="pi pi-slack"></i>
+                            <span class="nowrap vertical-align-middle">{{i18n.proxy.started|translate}}</span>
+                            <span class="nowrap vertical-align-middle">{{last?.name}}</span>
+                        </div>
+                    </ng-template>
+                    <ng-template #stoppedView>
+                        <div class="flex align-items-center gap-2">
+                            <i class="pi pi-slack"></i>
+                            <span class="nowrap vertical-align-middle">{{i18n.proxy.none|translate}}</span>
+                        </div>
+                    </ng-template>
+                </ng-template>
+                <ng-template pTemplate="content">
+                    <app-terminal *ngIf="activeIndex==0"></app-terminal>
                 </ng-template>
             </p-accordionTab>
 

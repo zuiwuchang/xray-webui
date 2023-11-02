@@ -89,6 +89,7 @@ exports.keys = {
         element: make('E', '代理節點'),
         none: make('N', '服務尚未啓動'),
         started: make('S', '服務已經啓動'),
+        stopped: make('SD', '服務已關閉'),
         manual: make('M', '手動節點'),
 
         sort: make('s', '速度排序'),

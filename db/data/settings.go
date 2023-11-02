@@ -23,9 +23,9 @@ type Last struct {
 	// 使用的策略
 	Strategy uint32 `json:"strategy"`
 	// 所屬訂閱 id
-	Subscription uint64 `uri:"subscription"`
+	Subscription uint64 `uri:"subscription" json:"subscription"`
 	// 節點 id
-	ID uint64 `uri:"id"`
+	ID uint64 `uri:"id" json:"id"`
 }
 
 func (l *Last) Decode(b []byte) (e error) {

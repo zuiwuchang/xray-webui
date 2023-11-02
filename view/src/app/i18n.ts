@@ -459,6 +459,10 @@ export const i18n = {
 		*/
 		started: "_p.S",
 		/**
+		* 服務已關閉
+		*/
+		stopped: "_p.SD",
+		/**
 		* 手動節點
 		*/
 		manual: "_p.M",

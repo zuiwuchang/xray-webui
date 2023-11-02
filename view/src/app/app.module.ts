@@ -31,6 +31,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
+import { TerminalModule } from 'primeng/terminal';
 
 import { RouterModule } from '@angular/router';
 import { AppRoutingModule } from './app-routing.module';
@@ -42,6 +43,7 @@ import { AboutComponent } from './app/about/about.component';
 import { QrComponent } from './app/qr/qr.component';
 import { PreviewComponent } from './app/preview/preview.component';
 import { UiFieldComponent } from './app/ui-field/ui-field.component';
+import { TerminalComponent } from './app/terminal/terminal.component';
 
 
 // import defaultLanguage from '../assets/i18n/zh-Hant.json';
@@ -75,6 +77,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
     QrComponent,
     PreviewComponent,
     UiFieldComponent,
+    TerminalComponent,
   ],
   imports: [
     BrowserModule, BrowserAnimationsModule,
@@ -95,7 +98,7 @@ export function HttpLoaderFactory(http: HttpClient, locationStrategy: LocationSt
     AccordionModule, ToastModule, CardModule, ProgressBarModule,
     DropdownModule, RippleModule, DataViewModule, SplitButtonModule,
     DynamicDialogModule, ConfirmDialogModule, DialogModule,
-    InputTextModule, InputTextareaModule,
+    InputTextModule, InputTextareaModule, TerminalModule,
     RouterModule, AppRoutingModule
   ],
   providers: [],

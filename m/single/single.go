@@ -1,12 +1,15 @@
 package single
 
 import (
+	"container/list"
 	"context"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
 	"os/exec"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -23,11 +26,14 @@ func Start(ctx context.Context, info *data.Last) error {
 func Stop(ctx context.Context) error {
 	return defaultServer.Stop(ctx)
 }
+func Listen(closed chan struct{}) (*Listener, error) {
+	return defaultServer.Listen(closed)
+}
 
-var started int32
+var started int32 = 0
 
 func Run() {
-	if atomic.CompareAndSwapInt32(&started, 0, 1) {
+	if started == 0 && atomic.CompareAndSwapInt32(&started, 0, 1) {
 		go defaultServer.Run()
 
 		var m manipulator.Settings
@@ -40,6 +46,8 @@ func Run() {
 			last, e := m.GetLast()
 			if e != nil {
 				slog.Warn(`get last fail`, log.Error, e)
+				return
+			} else if last == nil {
 				return
 			}
 			e = defaultServer.Start(context.Background(), last)
@@ -55,8 +63,12 @@ var defaultServer = &_Server{
 	start:   make(chan startRequest),
 	stop:    make(chan stopRequest),
 	close:   make(chan closeSignal),
-	write:   make(chan commandWrite),
+	write:   make(chan []byte),
 	message: make(chan []byte, 1),
+
+	add:    make(chan *Listener),
+	delete: make(chan *Listener),
+	keys:   make(map[*Listener]bool),
 }
 
 type _Server struct {
@@ -64,8 +76,12 @@ type _Server struct {
 	stop    chan stopRequest
 	close   chan closeSignal
 	cmd     *_Command
-	write   chan commandWrite
+	write   chan []byte
 	message chan []byte
+
+	add    chan *Listener
+	delete chan *Listener
+	keys   map[*Listener]bool
 }
 
 type startRequest struct {
@@ -76,10 +92,6 @@ type startRequest struct {
 type stopRequest struct {
 	ctx context.Context
 	ch  chan error
-}
-type commandWrite struct {
-	b   []byte
-	cmd *_Command
 }
 
 func (s *_Server) Run() {
@@ -99,9 +111,7 @@ func (s *_Server) Run() {
 					`strategy`, info.Strategy,
 				)
 				// 廣播代理進程結束
-				s.send(map[string]any{
-					`what`: 2,
-				})
+				s.sendStop()
 				info = nil
 			}
 		case req := <-s.start:
@@ -115,16 +125,7 @@ func (s *_Server) Run() {
 				)
 				info = req.info
 				// 廣播新的廣播進程
-				s.send(map[string]any{
-					`what`: 1,
-					`data`: map[string]any{
-						`name`:         req.info.Name,
-						`url`:          req.info.URL,
-						`strategy`:     req.info.Strategy,
-						`subscription`: req.info.Subscription,
-						`id`:           req.info.ID,
-					},
-				})
+				s.sendStart(req.info)
 				// 記錄最後啓動進程
 				e = m.PutLast(req.info)
 				if e != nil {
@@ -168,15 +169,58 @@ func (s *_Server) send(o map[string]any) {
 		}
 	}
 }
+
 func (s *_Server) runWrite() {
+	var (
+		last  []byte
+		id    uint64 = 1
+		cache        = list.New()
+	)
 	for {
 		select {
-		case write := <-s.write:
-			os.Stdout.Write(write.b)
+		case b := <-s.write:
+			if binary.LittleEndian.Uint64(b) == 0 {
+				os.Stdout.Write(b[16:])
+			}
+			binary.LittleEndian.PutUint64(b, id)
+			id++
+			for l := range s.keys {
+				l.Write(b)
+			}
+			cache.PushBack(b)
+			if cache.Len() > 128 {
+				cache.Remove(cache.Front())
+			}
 		case message := <-s.message:
-			fmt.Println((string)(message))
+			for l := range s.keys {
+				l.WriteText(message)
+			}
+			last = message
+		case l := <-s.add:
+			if len(last) != 0 {
+				if !l.WriteText(last) {
+					return
+				}
+			}
+			for ele := cache.Front(); ele != nil; ele = ele.Next() {
+				if !l.Write(ele.Value.([]byte)) {
+					return
+				}
+			}
+			s.keys[l] = true
+		case l := <-s.delete:
+			delete(s.keys, l)
 		}
 	}
+}
+func (s *_Server) Listen(closed chan struct{}) (l *Listener, e error) {
+	l = newListener(s.delete)
+	select {
+	case s.add <- l:
+	case <-closed:
+		e = context.Canceled
+	}
+	return
 }
 func (s *_Server) doStart(req startRequest) (e error) {
 	vm, e := js.New(configure.Default().System.Script)
@@ -196,6 +240,8 @@ func (s *_Server) doStart(req startRequest) (e error) {
 		close: s.close,
 		write: s.write,
 		cmd:   cmd,
+		info:  req.info,
+		first: true,
 	}
 	// 劫持輸出
 	cmd.Stdout = command
@@ -222,14 +268,28 @@ func (s *_Server) doStart(req startRequest) (e error) {
 	s.cmd = command
 	return
 }
-
+func (s *_Server) sendStart(info *data.Last) {
+	s.send(map[string]any{
+		`what`: 1,
+		`data`: info,
+	})
+}
+func (s *_Server) sendStop() {
+	s.send(map[string]any{
+		`what`: 1,
+	})
+}
 func (s *_Server) doStop() (e error) {
 	cmd := s.cmd
 	if cmd == nil {
 		return
 	}
 	s.cmd = nil
-	s.cmd.cmd.Process.Kill()
+	cmd.cmd.Process.Kill()
+
+	// 廣播代理進程結束
+	s.sendStop()
+
 	var m manipulator.Settings
 	err := m.RemoveLast()
 	if err != nil {
@@ -282,9 +342,12 @@ type closeSignal struct {
 	e   error
 }
 type _Command struct {
-	close chan closeSignal
-	write chan commandWrite
-	cmd   *exec.Cmd
+	close  chan closeSignal
+	write  chan []byte
+	cmd    *exec.Cmd
+	first  bool
+	locker sync.Mutex
+	info   *data.Last
 }
 
 func (c *_Command) Serve() (e error) {
@@ -311,11 +374,39 @@ func (c *_Command) Write(b []byte) (int, error) {
 	if n == 0 {
 		return 0, nil
 	}
-	dst := make([]byte, n)
-	copy(dst, b)
-	c.write <- commandWrite{
-		b:   dst,
-		cmd: c,
+
+	c.locker.Lock()
+	defer c.locker.Unlock()
+	if c.first {
+		c.first = false
+
+		info := c.info
+		text := fmt.Sprintf(`
+
+----------------------------------------
+name=%v
+url=%v
+subscription=%v
+id=%v
+strategy=%v 
+----------------------------------------
+
+`,
+			info.Name, info.URL,
+			info.Subscription, info.ID, info.Strategy,
+		)
+		dst := make([]byte, len(text)+16)
+		binary.LittleEndian.PutUint64(dst, 1)
+		binary.LittleEndian.PutUint64(dst[8:], flag)
+		copy(dst[16:], text)
+		c.write <- dst
 	}
+
+	dst := make([]byte, 16+n)
+	copy(dst[16:], b)
+	binary.LittleEndian.PutUint64(dst[8:], flag)
+	c.write <- dst
 	return n, nil
 }
+
+var flag = uint64(time.Now().Unix())

@@ -175,6 +175,7 @@
 		"E": "Proxy Element",
 		"N": "Service has not been started",
 		"S": "Service has been started",
+		"SD": "Service has been stopped",
 		"M": "Manual",
 		"s": "Speed ​​sorting",
 		"t": "Test speed",

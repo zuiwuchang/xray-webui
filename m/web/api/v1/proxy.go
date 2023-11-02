@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"context"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
@@ -10,6 +12,7 @@ import (
 	"github.com/zuiwuchang/xray_webui/db/data"
 	"github.com/zuiwuchang/xray_webui/db/manipulator"
 	"github.com/zuiwuchang/xray_webui/js"
+	"github.com/zuiwuchang/xray_webui/log"
 	"github.com/zuiwuchang/xray_webui/m/single"
 	"github.com/zuiwuchang/xray_webui/m/web"
 	"github.com/zuiwuchang/xray_webui/utils"
@@ -25,6 +28,8 @@ func (h Proxy) Register(router *gin.RouterGroup) {
 	r.POST(`test_once`, h.TestOnce)
 	r.GET(`test`, h.CheckWebsocket, h.Test)
 	r.POST(`start/:subscription/:id`, h.Start)
+	r.DELETE(``, h.Stop)
+	r.GET(`listen`, h.CheckWebsocket, h.Listen)
 }
 func (h Proxy) Test(c *gin.Context) {
 	ws, e := h.Websocket(c, nil)
@@ -197,4 +202,52 @@ func (h Proxy) Start(c *gin.Context) {
 	if e != nil {
 		c.String(http.StatusBadRequest, e.Error())
 	}
+}
+func (h Proxy) Stop(c *gin.Context) {
+	e := single.Stop(c.Request.Context())
+	if e != nil {
+		c.String(http.StatusBadRequest, e.Error())
+	}
+}
+func (h Proxy) Listen(c *gin.Context) {
+	ws, e := h.Websocket(c, nil)
+	if e != nil {
+		return
+	}
+	defer ws.Close()
+	closed := make(chan struct{})
+	go func() {
+		for {
+			_, _, e := ws.ReadMessage()
+			if e != nil {
+				slog.Warn(`listener recv fail`, log.Error, e)
+				break
+			}
+		}
+		close(closed)
+	}()
+
+	l, e := single.Listen(closed)
+	if e != nil {
+		if e != context.Canceled {
+			slog.Warn(`listen fail`, log.Error, e)
+		}
+		return
+	}
+	defer l.Close()
+
+	ch := l.Chan()
+	for {
+		select {
+		case msg := <-ch:
+			e = ws.WriteMessage(msg.Type, msg.Data)
+			if e != nil {
+				slog.Warn(`listener send fail`, log.Error, e)
+				return
+			}
+		case <-closed:
+			return
+		}
+	}
+
 }

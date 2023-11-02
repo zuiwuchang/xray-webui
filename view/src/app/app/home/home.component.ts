@@ -16,6 +16,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { QrComponent } from '../qr/qr.component';
 import { PreviewComponent } from '../preview/preview.component';
 import { UIValue } from '../ui-field/ui-field.component';
+import { Last, ListenerService } from 'src/app/core/listener.service';
 
 @Component({
   selector: 'app-home',
@@ -26,12 +27,17 @@ import { UIValue } from '../ui-field/ui-field.component';
 export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
   i18n = i18n
   private prepare_: Prepare
+  activeIndex = 0
+  activeIndexChange(v: any) {
+    this.activeIndex = v
+  }
   constructor(private readonly httpClient: HttpClient,
     private readonly translateService: TranslateService,
     private readonly toastService: ToastService,
     private readonly langService: LangService,
     private readonly dialogService: DialogService,
     private readonly confirmationService: ConfirmationService,
+    private readonly listenerService: ListenerService,
   ) {
     super()
     this.dialog = new DialogOfElement(httpClient, translateService, toastService)
@@ -85,7 +91,13 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this._updateStrategys()
     this.onClickRefresh()
+    this.listenerService.last.pipe(this.takeUntil()).subscribe({
+      next: (last) => {
+        this.last = last
+      },
+    })
   }
+  last?: Last
   private clipboard_?: ClipboardJS
   @ViewChild("btnClipboard")
   private _btnClipboard?: ElementRef
@@ -420,21 +432,40 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     this.disabled = true
     source.disabled = true
     ele.disabled = true
-    console.log('stop', ele)
-    const dely = Delay.default()
-    dely.do(() => {
-      this.ele_ = undefined
+    const dely = Delay.default(this)
+    this.httpClient.delete('/api/v1/proxy').pipe(this.takeUntil()).subscribe({
+      next: () => dely.do(() => {
+        this.toastService.add({
+          severity: 'success',
+          summary: this.translateService.instant(i18n.action.success),
+          detail: this.translateService.instant(i18n.proxy.stopped),
+        })
+        this.disabled = false
+        source.disabled = false
+        ele.disabled = false
 
-      this.disabled = false
-      source.disabled = false
-      ele.disabled = false
+      }),
+      error: (e) => dely.do(() => {
+        this.toastService.add({
+          severity: 'error',
+          summary: this.translateService.instant(i18n.action.error),
+          detail: getErrorString(e),
+        })
+        this.disabled = false
+        source.disabled = false
+        ele.disabled = false
+      }),
     })
   }
   isRun(source: Source) {
-    return source.run
+    return source.id == this?.last?.subscription
   }
   isStarted(source: Source, ele: Element) {
-    return ele == this.ele_
+    const last = this.last
+    if (last) {
+      return source.id == last.subscription && ele.id == last.id && ele.rawURL == last.url
+    }
+    return false
   }
   createMenus(source: Source, ele: Element): Array<MenuItem> {
     const lang = this.langService.lang
@@ -981,9 +1012,6 @@ class Source {
     } else {
       this.data = []
     }
-  }
-  get run(): boolean {
-    return false
   }
   sort() {
     if (this.data.length > 1) {
