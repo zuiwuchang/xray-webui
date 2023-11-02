@@ -3,10 +3,10 @@ package js
 import (
 	"context"
 	"net/http"
-	"net/url"
 	"runtime"
-	"strings"
 	"time"
+
+	"github.com/zuiwuchang/xray_webui/utils"
 )
 
 type worker struct {
@@ -117,13 +117,8 @@ func (h *Helper) do(port uint16, id, rawURL string) {
 		})
 		return
 	}
-	fragment := ``
-	found := strings.LastIndex(rawURL, `#`)
-	if found > 0 {
-		fragment = url.QueryEscape(rawURL[found+1:])
-		rawURL = rawURL[:found]
-	}
-	u, e := url.ParseRequestURI(rawURL)
+
+	u, e := utils.ParseRequestURI(rawURL)
 	if e != nil {
 		h.send(map[string]any{
 			`code`:  http.StatusOK,
@@ -132,7 +127,6 @@ func (h *Helper) do(port uint16, id, rawURL string) {
 		})
 		return
 	}
-	u.Fragment = fragment
 
 	ctx, cancel := context.WithTimeout(h.ctx, time.Second*30)
 	defer cancel()

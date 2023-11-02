@@ -3,14 +3,16 @@ package v1
 import (
 	"net/http"
 	"net/url"
-	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/zuiwuchang/xray_webui/configure"
+	"github.com/zuiwuchang/xray_webui/db/data"
 	"github.com/zuiwuchang/xray_webui/db/manipulator"
 	"github.com/zuiwuchang/xray_webui/js"
+	"github.com/zuiwuchang/xray_webui/m/single"
 	"github.com/zuiwuchang/xray_webui/m/web"
+	"github.com/zuiwuchang/xray_webui/utils"
 )
 
 type Proxy struct {
@@ -22,6 +24,7 @@ func (h Proxy) Register(router *gin.RouterGroup) {
 	r.POST(`preview`, h.Preview)
 	r.POST(`test_once`, h.TestOnce)
 	r.GET(`test`, h.CheckWebsocket, h.Test)
+	r.POST(`start/:subscription/:id`, h.Start)
 }
 func (h Proxy) Test(c *gin.Context) {
 	ws, e := h.Websocket(c, nil)
@@ -39,7 +42,7 @@ func (h Proxy) Test(c *gin.Context) {
 		})
 		return
 	}
-	_, e = url.ParseRequestURI(general.URL)
+	_, e = utils.ParseRequestURI(general.URL)
 	if e != nil {
 		ws.WriteJSON(map[string]any{
 			`code`:  http.StatusInternalServerError,
@@ -94,20 +97,11 @@ func (h Proxy) TestOnce(c *gin.Context) {
 		return
 	}
 
-	rawURL := o.URL
-	fragment := ``
-	found := strings.LastIndex(rawURL, `#`)
-	if found > 0 {
-		fragment = url.QueryEscape(rawURL[found+1:])
-		rawURL = rawURL[:found]
-	}
-
-	u, e := url.ParseRequestURI(rawURL)
+	u, e := utils.ParseRequestURI(o.URL)
 	if e != nil {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
-	u.Fragment = fragment
 
 	var m manipulator.Settings
 	general, e := m.GetGeneral()
@@ -150,20 +144,11 @@ func (h Proxy) Preview(c *gin.Context) {
 	if e != nil {
 		return
 	}
-	rawURL := o.URL
-	fragment := ``
-	found := strings.LastIndex(rawURL, `#`)
-	if found > 0 {
-		fragment = url.QueryEscape(rawURL[found+1:])
-		rawURL = rawURL[:found]
-	}
-
-	u, e := url.ParseRequestURI(rawURL)
+	u, e := utils.ParseRequestURI(o.URL)
 	if e != nil {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
-	u.Fragment = fragment
 	if o.Strategy < 1 || o.Strategy > 6 {
 		c.String(http.StatusBadRequest, `strategy not support`)
 		return
@@ -180,4 +165,36 @@ func (h Proxy) Preview(c *gin.Context) {
 		return
 	}
 	c.String(http.StatusOK, s)
+}
+func (h Proxy) Start(c *gin.Context) {
+	var id struct {
+		Subscription uint64 `uri:"subscription"`
+		ID           uint64 `uri:"id"`
+	}
+	e := h.BindURI(c, &id)
+	if e != nil {
+		return
+	} else if id.ID == 0 {
+		c.String(http.StatusBadRequest, `id invalid`)
+		return
+	}
+	var req struct {
+		URL      string `json:"url"`
+		Strategy uint32 `json:"strategy"`
+		Name     string `json:"name"`
+	}
+	e = h.Bind(c, &req)
+	if e != nil {
+		return
+	}
+	e = single.Start(c.Request.Context(), &data.Last{
+		URL:          req.URL,
+		Strategy:     req.Strategy,
+		Name:         req.Name,
+		Subscription: id.Subscription,
+		ID:           id.ID,
+	})
+	if e != nil {
+		c.String(http.StatusBadRequest, e.Error())
+	}
 }

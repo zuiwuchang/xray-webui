@@ -20,6 +20,7 @@ import (
 	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
 	"github.com/google/go-jsonnet"
+	"github.com/zuiwuchang/xray_webui/db/data"
 	"github.com/zuiwuchang/xray_webui/db/manipulator"
 	"github.com/zuiwuchang/xray_webui/utils"
 	"golang.org/x/net/proxy"
@@ -543,5 +544,76 @@ func (vm *Runtime) getURL(ctx context.Context, port uint16, getURL string) (e er
 	if resp.Body != nil {
 		resp.Body.Close()
 	}
+	return
+}
+
+func (vm *Runtime) Start(ctx context.Context, info *data.Last) (cmd *exec.Cmd, e error) {
+	u, e := utils.ParseRequestURI(info.URL)
+	if e != nil {
+		return
+	}
+	// 生成配置
+	s, ext, e := vm.Preview(u, info.Strategy, &Environment{})
+	if e != nil {
+		return
+	}
+	e = ctx.Err()
+	if e != nil {
+		return
+	}
+
+	// 寫入配置檔案
+	basePath := utils.BasePath()
+	dir := filepath.Join(basePath, `var`, `conf`)
+	e = os.MkdirAll(dir, 0775)
+	if e != nil {
+		return
+	}
+
+	name := filepath.Join(dir, `default`+ext)
+	file, e := os.Create(name)
+	if e != nil {
+		return
+	}
+	_, e = file.WriteString(s)
+	if e != nil {
+		file.Close()
+		return
+	}
+	e = file.Close()
+	if e != nil {
+		return
+	}
+	e = ctx.Err()
+	if e != nil {
+		return
+	}
+	// 獲取運行命令
+	self, f, destroy, e := vm.assertFunction(`serve`)
+	if e != nil {
+		return
+	} else if destroy != nil {
+		defer destroy(self)
+	}
+	ret, e := f(self, vm.Runtime.ToValue(basePath), vm.Runtime.ToValue(name))
+	if e != nil {
+		return
+	}
+	ret, e = vm.stringify(vm.json, ret)
+	if e != nil {
+		return
+	}
+	var obj struct {
+		Dir  string   `json:"dir"`
+		Name string   `json:"name"`
+		Args []string `json:"args"`
+	}
+	e = json.Unmarshal(utils.StringToBytes(ret.String()), &obj)
+	if e != nil {
+		return
+	}
+
+	// 運行進程
+	cmd = exec.Command(obj.Name, obj.Args...)
 	return
 }

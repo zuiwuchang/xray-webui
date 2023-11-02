@@ -82,3 +82,51 @@ func (m Settings) PutGeneral(val *data.General) (e error) {
 	})
 	return
 }
+func (m Settings) PutLast(val *data.Last) (e error) {
+	b, e := val.Encoder()
+	if e != nil {
+		return
+	}
+	e = _db.Update(func(t *bolt.Tx) (e error) {
+		bucket := t.Bucket([]byte(data.SettingsBucket))
+		if bucket == nil {
+			e = fmt.Errorf("bucket not exist : %s", data.SettingsBucket)
+			return
+		}
+		e = bucket.Put([]byte(data.SettingsLast), b)
+		return
+	})
+	return
+}
+func (m Settings) RemoveLast() (e error) {
+	e = _db.Update(func(t *bolt.Tx) (e error) {
+		bucket := t.Bucket([]byte(data.SettingsBucket))
+		if bucket == nil {
+			e = fmt.Errorf("bucket not exist : %s", data.SettingsBucket)
+			return
+		}
+		e = bucket.Delete([]byte(data.SettingsLast))
+		return
+	})
+	return
+}
+func (m Settings) GetLast() (result *data.Last, e error) {
+	e = _db.View(func(t *bolt.Tx) (e error) {
+		bucket := t.Bucket([]byte(data.SettingsBucket))
+		if bucket == nil {
+			e = fmt.Errorf("bucket not exist : %s", data.SettingsBucket)
+			return
+		}
+		val := bucket.Get([]byte(data.SettingsLast))
+		var tmp data.Last
+		if val != nil {
+			e = tmp.Decode(val)
+			if e != nil {
+				return
+			}
+			result = &tmp
+		}
+		return
+	})
+	return
+}

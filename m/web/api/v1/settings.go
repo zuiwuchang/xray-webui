@@ -7,7 +7,6 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -18,6 +17,7 @@ import (
 	"github.com/zuiwuchang/xray_webui/db/manipulator"
 	"github.com/zuiwuchang/xray_webui/log"
 	"github.com/zuiwuchang/xray_webui/m/web"
+	"github.com/zuiwuchang/xray_webui/utils"
 )
 
 type Settings struct {
@@ -154,7 +154,7 @@ func (h *Settings) AddSubscription(c *gin.Context) {
 		c.String(http.StatusBadRequest, `url invalid`)
 		return
 	}
-	_, e = url.ParseRequestURI(req.URL)
+	_, e = utils.ParseRequestURI(req.URL)
 	if e != nil {
 		c.String(http.StatusBadRequest, e.Error())
 		return
@@ -217,7 +217,7 @@ func (h *Settings) PutSubscription(c *gin.Context) {
 		c.String(http.StatusBadRequest, `url invalid`)
 		return
 	}
-	_, e = url.ParseRequestURI(req.URL)
+	_, e = utils.ParseRequestURI(req.URL)
 	if e != nil {
 		c.String(http.StatusBadRequest, e.Error())
 		return
@@ -354,7 +354,7 @@ func (h *Settings) UpdateElement(c *gin.Context) {
 	if e != nil {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
-	} else if _, e = url.ParseRequestURI(subscription.URL); e != nil {
+	} else if _, e = utils.ParseRequestURI(subscription.URL); e != nil {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}

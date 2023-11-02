@@ -385,13 +385,21 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     this.disabled = true
     source.disabled = true
     ele.disabled = true
-    const dely = Delay.default()
+    const dely = Delay.default(this)
     this.httpClient.post(`/api/v1/proxy/start/${source.id}/${ele.id}`, {
       url: ele.rawURL,
       strategy: this.strategy,
+      name: ele.name,
     }).pipe(this.takeUntil()).subscribe({
       next: () => dely.do(() => {
-
+        this.toastService.add({
+          severity: 'success',
+          summary: this.translateService.instant(i18n.action.success),
+          detail: this.translateService.instant(i18n.proxy.started),
+        })
+        this.disabled = false
+        source.disabled = false
+        ele.disabled = false
       }),
       error: (e) => dely.do(() => {
         this.toastService.add({

@@ -11,7 +11,38 @@ func init() {
 
 const SettingsBucket = "settings"
 
+const SettingsLast = "last"
 const SettingsGeneral = "general"
+
+// 最後啓動的代理
+type Last struct {
+	// 代理 URL
+	URL string `json:"url"`
+	// 代理名稱
+	Name string `json:"name"`
+	// 使用的策略
+	Strategy uint32 `json:"strategy"`
+	// 所屬訂閱 id
+	Subscription uint64 `uri:"subscription"`
+	// 節點 id
+	ID uint64 `uri:"id"`
+}
+
+func (l *Last) Decode(b []byte) (e error) {
+	decoder := gob.NewDecoder(bytes.NewBuffer(b))
+	e = decoder.Decode(l)
+	return
+}
+
+func (l *Last) Encoder() (b []byte, e error) {
+	var buffer bytes.Buffer
+	encoder := gob.NewEncoder(&buffer)
+	e = encoder.Encode(l)
+	if e == nil {
+		b = buffer.Bytes()
+	}
+	return
+}
 
 // 常規設定
 type General struct {
