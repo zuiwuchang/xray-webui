@@ -2,6 +2,8 @@ package single
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -50,18 +52,20 @@ func Run() {
 }
 
 var defaultServer = &_Server{
-	start: make(chan startRequest),
-	stop:  make(chan stopRequest),
-	close: make(chan closeSignal),
-	write: make(chan commandWrite),
+	start:   make(chan startRequest),
+	stop:    make(chan stopRequest),
+	close:   make(chan closeSignal),
+	write:   make(chan commandWrite),
+	message: make(chan []byte, 1),
 }
 
 type _Server struct {
-	start chan startRequest
-	stop  chan stopRequest
-	close chan closeSignal
-	cmd   *_Command
-	write chan commandWrite
+	start   chan startRequest
+	stop    chan stopRequest
+	close   chan closeSignal
+	cmd     *_Command
+	write   chan commandWrite
+	message chan []byte
 }
 
 type startRequest struct {
@@ -95,6 +99,9 @@ func (s *_Server) Run() {
 					`strategy`, info.Strategy,
 				)
 				// 廣播代理進程結束
+				s.send(map[string]any{
+					`what`: 2,
+				})
 				info = nil
 			}
 		case req := <-s.start:
@@ -108,7 +115,16 @@ func (s *_Server) Run() {
 				)
 				info = req.info
 				// 廣播新的廣播進程
-
+				s.send(map[string]any{
+					`what`: 1,
+					`data`: map[string]any{
+						`name`:         req.info.Name,
+						`url`:          req.info.URL,
+						`strategy`:     req.info.Strategy,
+						`subscription`: req.info.Subscription,
+						`id`:           req.info.ID,
+					},
+				})
 				// 記錄最後啓動進程
 				e = m.PutLast(req.info)
 				if e != nil {
@@ -133,10 +149,33 @@ func (s *_Server) Run() {
 		}
 	}
 }
+func (s *_Server) send(o map[string]any) {
+	b, e := json.Marshal(o)
+	if e != nil {
+		return
+	}
+	for {
+		select {
+		case s.message <- b:
+			return
+		default:
+		}
+
+		select {
+		case s.message <- b:
+			return
+		case <-s.message:
+		}
+	}
+}
 func (s *_Server) runWrite() {
 	for {
-		write := <-s.write
-		os.Stdout.Write(write.b)
+		select {
+		case write := <-s.write:
+			os.Stdout.Write(write.b)
+		case message := <-s.message:
+			fmt.Println((string)(message))
+		}
 	}
 }
 func (s *_Server) doStart(req startRequest) (e error) {
