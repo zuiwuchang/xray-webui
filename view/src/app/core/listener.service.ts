@@ -48,7 +48,6 @@ export class ListenerService {
           if (typeof data === "string") {
             const o: Message = JSON.parse(data)
             if (o.what == 1) {
-              console.log(o.data)
               this.last_.next(o.data)
             }
           } else {
@@ -57,7 +56,7 @@ export class ListenerService {
             const flag = view.getBigUint64(8, true)
             if (this.flag_ == flag) {
               const o = this.id_
-              if (o && id < o) {
+              if (o && id <= o) {
                 return
               }
             } else {

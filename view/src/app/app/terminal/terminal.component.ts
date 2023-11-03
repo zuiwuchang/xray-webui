@@ -66,7 +66,7 @@ export class TerminalComponent extends Closed implements AfterViewInit {
         const flag = view.getBigUint64(8, true)
         if (this.flag_ == flag) {
           const o = this.id_
-          if (o && id < o) {
+          if (o && id <= o) {
             return
           }
         } else {
