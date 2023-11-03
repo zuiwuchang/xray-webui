@@ -421,12 +421,12 @@ name=%v
 url=%v
 subscription=%v
 id=%v
-strategy=%v 
+strategy=%v %s
 ----------------------------------------
 
 `,
 			info.Name, info.URL,
-			info.Subscription, info.ID, info.Strategy,
+			info.Subscription, info.ID, info.Strategy, info.StrategyName(),
 		)
 		dst := make([]byte, len(text)+16)
 		binary.LittleEndian.PutUint64(dst, 1)

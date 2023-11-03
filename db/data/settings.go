@@ -28,6 +28,23 @@ type Last struct {
 	ID uint64 `uri:"id" json:"id"`
 }
 
+func (l *Last) StrategyName() string {
+	switch l.Strategy {
+	case 1:
+		return `Default Strategy`
+	case 2:
+		return `Global Proxy`
+	case 3:
+		return `Public IP Proxy`
+	case 4:
+		return `Proxy First`
+	case 5:
+		return `Direct First`
+	case 6:
+		return `Global Direct`
+	}
+	return ``
+}
 func (l *Last) Decode(b []byte) (e error) {
 	decoder := gob.NewDecoder(bytes.NewBuffer(b))
 	e = decoder.Decode(l)
