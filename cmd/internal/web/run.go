@@ -11,7 +11,6 @@ import (
 	"github.com/zuiwuchang/xray_webui/log"
 	"github.com/zuiwuchang/xray_webui/m/register"
 	"github.com/zuiwuchang/xray_webui/m/single"
-	"github.com/zuiwuchang/xray_webui/m/writer"
 	"github.com/zuiwuchang/xray_webui/utils"
 
 	"github.com/gin-gonic/gin"
@@ -54,7 +53,6 @@ func Run(cnf *configure.HTTP, debug bool) {
 	os.RemoveAll(filepath.Join(utils.BasePath(), `var`, `conf`))
 	// 運行單件服務
 	single.Run()
-	writer.Run()
 	// serve
 	if h2 {
 		http.ServeTLS(l, mux, cnf.CertFile, cnf.KeyFile)

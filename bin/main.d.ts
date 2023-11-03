@@ -19,6 +19,14 @@ declare module 'xray/core' {
      * 程式根路徑
      */
     export const root: string
+    /**
+     * 將參數輸出到服務器 os.Stdout 和網頁日誌
+     */
+    export function print(...args: Array<any>): void
+    /**
+     * 將參數輸出到服務器 os.Stdout 和網頁日誌，並在末尾自動輸出換行
+     */
+    export function println(...args: Array<any>): void
 
     export interface ExecOptions {
         /**
@@ -42,7 +50,7 @@ declare module 'xray/core' {
      */
     export function exec(o: ExecOptions): string
     /**
-     * 調用一個系統進程等待進程結束，將進程 stdout/stderror 輸出到 os.stdout 和 網頁日誌
+     * o.log 爲 true 將 stdout/stderror 輸出到服務器進程的 os.Stdout 以及網頁日誌
      */
     export function exec(o: ExecLogOptions): void
 
@@ -50,13 +58,16 @@ declare module 'xray/core' {
         safe: true
     }
     /**
-     * 
-     * @param safe 爲 true 將返回進程返回的結束代碼
+     * o.safe 爲 true 將返回進程返回的結束代碼，而不會拋出異常
      */
     export function exec(o: ExecSafeOptions): { output: string, error?: Error, code: number }
     export interface ExecLogSafeOptions extends ExecSafeOptions {
         log: true
     }
+    /**
+     * o.safe 爲 true 將返回進程返回的結束代碼，而不會拋出異常  
+     * o.log 爲 true 將 stdout/stderror 輸出到服務器進程的 os.Stdout 以及網頁日誌
+     */
     export function exec(o: ExecLogSafeOptions): { error?: Error, code: number }
 
 }

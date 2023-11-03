@@ -43,13 +43,13 @@ ${s}
      * 啓動透明代理
      */
     turnOn(opts: TurnOptions) {
-        console.log('turn on', opts)
+        console.log('turn on', opts.url)
     }
     /**
      * 關閉透明代理
      */
     turnOff(opts: TurnOptions) {
-        console.log('turn off', opts)
+        console.log('turn off', opts.url)
     }
 
     /**
@@ -86,11 +86,13 @@ ${s}
         const isWindows = core.os == "windows"
         const separator = isWindows ? '\\' : '/'
         const dir = `${core.root}${separator}xray`
-        const name = isWindows ? `${dir}${separator}xray.exe` : `${dir}${separator}xray`
+        const name = isWindows ? 'xray.exe' : 'xray'
+        const args = ['run', '-c', cnf]
+        console.log('serve:', name, ...args)
         return {
             dir: dir,
-            name: name,
-            args: ['run', '-c', cnf],
+            name: `${dir}${separator}${name}`,
+            args: args,
         }
     }
 }

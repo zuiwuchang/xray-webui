@@ -19,18 +19,18 @@ var defaultWriter = _Writer{
 }
 
 func Writer() io.Writer {
+	if started == 0 && atomic.CompareAndSwapInt32(&started, 0, 1) {
+		go defaultWriter.Serve()
+	}
 	return &defaultWriter
 }
 
 var started int32
 
-func Run() {
+func Listen(closed chan struct{}) (*Listener, error) {
 	if started == 0 && atomic.CompareAndSwapInt32(&started, 0, 1) {
 		go defaultWriter.Serve()
 	}
-}
-
-func Listen(closed chan struct{}) (*Listener, error) {
 	return defaultWriter.Listen(closed)
 }
 

@@ -31,7 +31,45 @@ type _Native struct {
 
 func (n *_Native) register(o *goja.Object) {
 	o.Set(`exec`, n.exec)
+	o.Set(`print`, n.print)
+	o.Set(`println`, n.println)
 }
+func (n *_Native) print(call goja.FunctionCall) goja.Value {
+	return n.printAny(call, false)
+}
+func (n *_Native) println(call goja.FunctionCall) goja.Value {
+	return n.printAny(call, true)
+}
+func (n *_Native) printAny(call goja.FunctionCall, ln bool) goja.Value {
+	count := len(call.Arguments)
+	if count == 0 {
+		if ln {
+			fmt.Fprintln(writer.Writer())
+		} else {
+			fmt.Fprint(writer.Writer())
+		}
+		return nil
+	}
+	arrs := make([]interface{}, count)
+	for i := 0; i < count; i++ {
+		arg := call.Arguments[i]
+		export := arg.Export()
+		if native, ok := export.(interface {
+			String() string
+		}); ok {
+			arrs[i] = native.String()
+		} else {
+			arrs[i] = arg.ToString()
+		}
+	}
+	if ln {
+		fmt.Fprintln(writer.Writer(), arrs...)
+	} else {
+		fmt.Fprint(writer.Writer(), arrs...)
+	}
+	return nil
+}
+
 func (n *_Native) getString(val goja.Value) (ret string, ok bool) {
 	if val == nil || goja.IsNull(val) || goja.IsUndefined(val) {
 		return
