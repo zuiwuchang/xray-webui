@@ -9,6 +9,7 @@ import (
 	"github.com/zuiwuchang/xray_webui/js"
 	"github.com/zuiwuchang/xray_webui/log"
 	"github.com/zuiwuchang/xray_webui/m/web"
+	"github.com/zuiwuchang/xray_webui/utils"
 )
 
 type Firewall struct {
@@ -32,7 +33,7 @@ func (h Firewall) get(c *gin.Context) {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
-	result, e := vm.GetFirewall()
+	result, e := vm.Firewall()
 	if e != nil {
 		slog.Warn("firewall get error",
 			log.Error, e,
@@ -45,8 +46,58 @@ func (h Firewall) get(c *gin.Context) {
 	})
 }
 func (h Firewall) on(c *gin.Context) {
-	c.String(http.StatusNotImplemented, c.Request.URL.Path)
+	var o struct {
+		URL string `json:"url"`
+	}
+	e := h.Bind(c, &o)
+	if e != nil {
+		c.String(http.StatusBadRequest, e.Error())
+		return
+	}
+	u, e := utils.ParseRequestURI(o.URL)
+	if e != nil {
+		c.String(http.StatusBadRequest, e.Error())
+		return
+	}
+
+	vm, e := js.New(configure.Default().System.Script)
+	if e != nil {
+		slog.Warn("firewall on error",
+			log.Error, e,
+		)
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	e = vm.TurnOn(o.URL, u)
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+	}
 }
 func (h Firewall) off(c *gin.Context) {
-	c.String(http.StatusNotImplemented, c.Request.URL.Path)
+	var o struct {
+		URL string `json:"url"`
+	}
+	e := h.Bind(c, &o)
+	if e != nil {
+		c.String(http.StatusBadRequest, e.Error())
+		return
+	}
+	u, e := utils.ParseRequestURI(o.URL)
+	if e != nil {
+		c.String(http.StatusBadRequest, e.Error())
+		return
+	}
+
+	vm, e := js.New(configure.Default().System.Script)
+	if e != nil {
+		slog.Warn("firewall on error",
+			log.Error, e,
+		)
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	e = vm.TurnOff(o.URL, u)
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+	}
 }

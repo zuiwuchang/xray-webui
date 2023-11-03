@@ -539,4 +539,12 @@ export const i18n = {
 		*/
 		placeholderURL: "_p.pU",
 	},
+	/**
+	* 腳本日誌
+	*/
+	scriptLog: "sl",
+	/**
+	* 清空日誌
+	*/
+	clearLog: "cl",
 }

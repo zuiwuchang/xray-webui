@@ -1,4 +1,4 @@
-import { ConfigureOption } from "xray/webui"
+import { ConfigureOptions } from "xray/webui"
 
 /**
  * {@link https://xtls.github.io/config/log.html}
@@ -32,7 +32,7 @@ export interface Log {
     dnsLog?: boolean
 }
 
-export function generateLog(opts: ConfigureOption<any>): Log | undefined {
+export function generateLog(opts: ConfigureOptions<any>): Log | undefined {
     if (opts.environment.port) {
         return undefined
     }

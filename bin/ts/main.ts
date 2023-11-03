@@ -1,5 +1,5 @@
 import * as core from "xray/core";
-import { ConfigureOption, ConfigureResult, Metadata, Provider, ServeResult } from "xray/webui";
+import { ConfigureOptions, ConfigureResult, Metadata, Provider, ServeResult, TurnOptions } from "xray/webui";
 import { vless } from "./metadata/vless";
 import { vmess } from "./metadata/vmess";
 import { trojan } from "./metadata/trojan";
@@ -17,9 +17,9 @@ export function create(): Provider {
 }
 class myProvider implements Provider {
     /**
-     * 調用防火牆 查看 透明代理 設定
+     * 返回透明代理設定
      */
-    getFirewall(): string {
+    firewall(): string {
         let s: string
         if (core.os === `linux`) {
             const { output, error, code } = core.exec({
@@ -40,6 +40,19 @@ ${s}
 `
     }
     /**
+     * 啓動透明代理
+     */
+    turnOn(opts: TurnOptions) {
+        console.log('turn on', opts)
+    }
+    /**
+     * 關閉透明代理
+     */
+    turnOff(opts: TurnOptions) {
+        console.log('turn off', opts)
+    }
+
+    /**
      * 爲 web 設置 ui 
      */
     metadata(): Array<Metadata> {
@@ -53,7 +66,7 @@ ${s}
     /**
      * 返回 xray 設定
      */
-    configure(opts: ConfigureOption<Userdata>): ConfigureResult {
+    configure(opts: ConfigureOptions<Userdata>): ConfigureResult {
         const o: Xray = {
             log: generateLog(opts),
             dns: generateDNS(opts),
@@ -69,13 +82,13 @@ ${s}
     /**
      * 返回 啓用 xray 的命令
      */
-    serve(dir: string, cnf: string): ServeResult {
+    serve(cnf: string): ServeResult {
         const isWindows = core.os == "windows"
         const separator = isWindows ? '\\' : '/'
-        const cwd = `${dir}${separator}xray`
-        const name = isWindows ? `${cwd}${separator}xray.exe` : `${cwd}${separator}xray`
+        const dir = `${core.root}${separator}xray`
+        const name = isWindows ? `${dir}${separator}xray.exe` : `${dir}${separator}xray`
         return {
-            dir: cwd,
+            dir: dir,
             name: name,
             args: ['run', '-c', cnf],
         }

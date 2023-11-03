@@ -9,11 +9,13 @@ import { i18n } from 'src/app/i18n';
 import { TranslateService } from '@ngx-translate/core';
 import { HttpClient } from '@angular/common/http';
 import { Method, ToastService } from './core/toast.service';
+import { DialogService } from 'primeng/dynamicdialog';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
   providers: [MessageService],
+
 })
 export class AppComponent implements OnInit {
   constructor(

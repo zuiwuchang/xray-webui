@@ -1,22 +1,24 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { fromEvent, interval } from 'rxjs';
 import { ListenerService } from 'src/app/core/listener.service';
+import { i18n } from 'src/app/i18n';
 import { Closed } from 'src/internal/closed';
 import { Terminal } from 'xterm'
 import { FitAddon } from 'xterm-addon-fit';
 import { WebLinksAddon } from 'xterm-addon-web-links';
 
+
 @Component({
-  selector: 'app-terminal',
-  templateUrl: './terminal.component.html',
-  styleUrls: ['./terminal.component.scss'],
+  selector: 'app-log',
+  templateUrl: './log.component.html',
+  styleUrls: ['./log.component.scss']
 })
-export class TerminalComponent extends Closed implements AfterViewInit {
+export class LogComponent extends Closed implements AfterViewInit {
+  i18n = i18n
   private xterm_?: Terminal
   private fitAddon_?: FitAddon
   private webLinksAddon_?: WebLinksAddon
-  constructor(private readonly listenerService: ListenerService,
-  ) {
+  constructor() {
     super()
   }
   override ngOnDestroy(): void {
@@ -40,6 +42,7 @@ export class TerminalComponent extends Closed implements AfterViewInit {
     })
 
     this.xterm_ = xterm
+
     const fitAddon = new FitAddon()
     this.fitAddon_ = fitAddon
     xterm.loadAddon(fitAddon)
@@ -60,36 +63,27 @@ export class TerminalComponent extends Closed implements AfterViewInit {
       }
     })
 
-    this.listenerService.stream.pipe(this.takeUntil()).subscribe({
-      next: (data) => {
-        if (data) {
-          const view = new DataView(data)
-          const id = view.getBigUint64(0, true)
-          const flag = view.getBigUint64(8, true)
-          if (this.flag_ == flag) {
-            const o = this.id_
-            if (o && id <= o) {
-              return
-            }
-          } else {
-            this.flag_ = flag
-          }
-          this.id_ = id
+    // this.listenerService.stream.pipe(this.takeUntil()).subscribe({
+    //   next: (data) => {
+    //     const view = new DataView(data)
+    //     const id = view.getBigUint64(0, true)
+    //     const flag = view.getBigUint64(8, true)
+    //     if (this.flag_ == flag) {
+    //       const o = this.id_
+    //       if (o && id <= o) {
+    //         return
+    //       }
+    //     } else {
+    //       this.flag_ = flag
+    //     }
+    //     this.id_ = id
 
-          xterm.write(new Uint8Array(data, 16))
-        }
-      },
-    })
+    //     xterm.write(new Uint8Array(data, 16))
+    //   },
+    // })
+
     xterm.focus()
   }
   private id_?: bigint
   private flag_?: bigint
-
-  clearLog() {
-    const xterm = this.xterm_
-    if (xterm) {
-      xterm.clear()
-    }
-    this.listenerService.clearLog()
-  }
 }

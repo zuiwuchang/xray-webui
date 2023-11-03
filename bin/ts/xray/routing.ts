@@ -1,4 +1,4 @@
-import { ConfigureOption } from "xray/webui"
+import { ConfigureOptions } from "xray/webui"
 import { Userdata } from "./userdata"
 import { isPort } from "./utils"
 import { Rule as StrategyRule } from "./strategy/rule";
@@ -87,7 +87,7 @@ export interface Rule {
      */
     balancerTag?: string
 }
-export function generateRouting(opts: ConfigureOption<Userdata>): Routing | undefined {
+export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | undefined {
     if (isPort(opts.environment.port ?? 0)) {
         return
     }

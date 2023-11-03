@@ -24,8 +24,8 @@ export class ListenerService {
     return this.last_
   }
   storeLast?: Last
-  private stream_ = new ReplaySubject<ArrayBuffer>(128)
-  get stream(): Observable<ArrayBuffer> {
+  private stream_ = new ReplaySubject<ArrayBuffer | undefined>(128)
+  get stream(): Observable<ArrayBuffer | undefined> {
     return this.stream_
   }
   private async _serve() {
@@ -138,5 +138,11 @@ export class ListenerService {
         resolve(closed)
       }
     })
+  }
+  clearLog() {
+    for (let i = 0; i < 128; i++) {
+      this.stream_.next(undefined)
+    }
+
   }
 }

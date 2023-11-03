@@ -89,7 +89,9 @@ func (vm *Runtime) Check() (e error) {
 		return
 	}
 	names := []string{
-		`getFirewall`,
+		`firewall`,
+		`turnOn`,
+		`turnOff`,
 		`metadata`,
 		`configure`,
 		`serve`,
@@ -135,8 +137,86 @@ func (vm *Runtime) assertFunction(name string) (self goja.Value, f, destroy goja
 	f = callable
 	return
 }
-func (vm *Runtime) GetFirewall() (s string, e error) {
-	self, f, destroy, e := vm.assertFunction(`getFirewall`)
+func (vm *Runtime) TurnOn(rawURL string, u *url.URL) error {
+	return vm.turn(rawURL, u, `turnOn`)
+}
+func (vm *Runtime) TurnOff(rawURL string, u *url.URL) error {
+	return vm.turn(rawURL, u, `turnOff`)
+}
+func (vm *Runtime) turn(rawURL string, u *url.URL, name string) (e error) {
+	self, f, destroy, e := vm.assertFunction(`metadata`)
+	if e != nil {
+		return
+	} else if destroy != nil {
+		defer destroy(self)
+	}
+	tmp, e := vm.metadata(self, f)
+	if e != nil {
+		return
+	}
+	var metadatas []Metadata
+	e = json.Unmarshal(utils.StringToBytes(tmp), &metadatas)
+	if e != nil {
+		return
+	}
+	for _, metadata := range metadatas {
+		if metadata.Protocol == u.Scheme {
+			e = vm.turnMetadata(rawURL, u, name, self, metadata)
+			return
+		}
+	}
+	e = errors.New(`unknow scheme: ` + u.Scheme)
+	return
+}
+func (vm *Runtime) turnMetadata(rawURL string, u *url.URL, name string, self goja.Value, metadata Metadata) (e error) {
+	callable, ok := goja.AssertFunction(self.(*goja.Object).Get(name))
+	if !ok {
+		e = errors.New(`script method ` + name + ` not implemented`)
+		return
+	}
+
+	// userdata
+	var mSettings manipulator.Settings
+	general, e := mSettings.GetGeneral()
+	if e != nil {
+		return
+	}
+	userdataJSON, e := jsonnet.MakeVM().EvaluateAnonymousSnippet(`userdata.jsonnet`, general.Userdata)
+	if e != nil {
+		return
+	}
+	var userdata map[string]any
+	e = json.Unmarshal(utils.StringToBytes(userdataJSON), &userdata)
+	if e != nil {
+		return
+	}
+
+	// fileds
+	fileds, e := vm.getFileds(metadata, u)
+	if e != nil {
+		return
+	}
+
+	jstr, e := json.Marshal(map[string]any{
+		`fileds`:   fileds,
+		`userdata`: userdata,
+		`url`:      rawURL,
+	})
+	if e != nil {
+		return
+	}
+	opts, e := vm.parse(vm.json, vm.Runtime.ToValue(utils.BytesToString(jstr)))
+	if e != nil {
+		return
+	}
+	_, e = callable(self, opts)
+	if e != nil {
+		return
+	}
+	return
+}
+func (vm *Runtime) Firewall() (s string, e error) {
+	self, f, destroy, e := vm.assertFunction(`firewall`)
 	if e != nil {
 		return
 	} else if destroy != nil {
@@ -173,7 +253,7 @@ func (vm *Runtime) metadata(self goja.Value, f goja.Callable) (s string, e error
 	s = val.String()
 	return
 }
-func (vm *Runtime) Preview(u *url.URL, strategy uint32, env *Environment) (s, ext string, e error) {
+func (vm *Runtime) Preview(rawURL string, u *url.URL, strategy uint32, env *Environment) (s, ext string, e error) {
 	self, f, destroy, e := vm.assertFunction(`metadata`)
 	if e != nil {
 		return
@@ -191,43 +271,15 @@ func (vm *Runtime) Preview(u *url.URL, strategy uint32, env *Environment) (s, ex
 	}
 	for _, metadata := range metadatas {
 		if metadata.Protocol == u.Scheme {
-			s, ext, e = vm.preview(u, self, metadata, strategy, env)
+			s, ext, e = vm.preview(rawURL, u, self, metadata, strategy, env)
 			return
 		}
 	}
 	e = errors.New(`unknow scheme: ` + u.Scheme)
 	return
 }
-func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strategy uint32, env *Environment) (s, ext string, e error) {
-	callable, ok := goja.AssertFunction(self.(*goja.Object).Get(`configure`))
-	if !ok {
-		e = errors.New(`script method configure not implemented`)
-		return
-	}
-
-	// userdata
-	var mSettings manipulator.Settings
-	general, e := mSettings.GetGeneral()
-	if e != nil {
-		return
-	}
-	userdataJSON, e := jsonnet.MakeVM().EvaluateAnonymousSnippet(`userdata.jsonnet`, general.Userdata)
-	if e != nil {
-		return
-	}
-	var userdata map[string]any
-	e = json.Unmarshal(utils.StringToBytes(userdataJSON), &userdata)
-	if e != nil {
-		return
-	}
-
-	// strategy
-	var mStrategy manipulator.Strategy
-	strategyValue, e := mStrategy.Value(strategy)
-	if e != nil {
-		return
-	}
-	fileds := make(map[string]string)
+func (vm *Runtime) getFileds(metadata Metadata, u *url.URL) (fileds map[string]string, e error) {
+	fileds = make(map[string]string)
 	var (
 		o struct {
 			ok   bool
@@ -354,12 +406,48 @@ func (vm *Runtime) preview(u *url.URL, self goja.Value, metadata Metadata, strat
 		}
 		fileds[f.Key] = val
 	}
+	return
+}
+func (vm *Runtime) preview(rawURL string, u *url.URL, self goja.Value, metadata Metadata, strategy uint32, env *Environment) (s, ext string, e error) {
+	callable, ok := goja.AssertFunction(self.(*goja.Object).Get(`configure`))
+	if !ok {
+		e = errors.New(`script method configure not implemented`)
+		return
+	}
+
+	// userdata
+	var mSettings manipulator.Settings
+	general, e := mSettings.GetGeneral()
+	if e != nil {
+		return
+	}
+	userdataJSON, e := jsonnet.MakeVM().EvaluateAnonymousSnippet(`userdata.jsonnet`, general.Userdata)
+	if e != nil {
+		return
+	}
+	var userdata map[string]any
+	e = json.Unmarshal(utils.StringToBytes(userdataJSON), &userdata)
+	if e != nil {
+		return
+	}
+
+	// strategy
+	var mStrategy manipulator.Strategy
+	strategyValue, e := mStrategy.Value(strategy)
+	if e != nil {
+		return
+	}
+	fileds, e := vm.getFileds(metadata, u)
+	if e != nil {
+		return
+	}
 	env.Scheme = metadata.Protocol
 	jstr, e := json.Marshal(map[string]any{
 		`environment`: env,
 		`fileds`:      fileds,
 		`userdata`:    userdata,
 		`strategy`:    strategyValue,
+		`url`:         rawURL,
 	})
 	if e != nil {
 		return
@@ -420,18 +508,18 @@ func GetPort(ctx context.Context, begin, end uint16) (uint16, error) {
 	return 0, errors.New(`no free port found`)
 }
 
-func (vm *Runtime) Test(ctx context.Context, u *url.URL, getURL string) (duration time.Duration, e error) {
+func (vm *Runtime) Test(ctx context.Context, rawURL string, u *url.URL, getURL string) (duration time.Duration, e error) {
 	// 查找空閒端口
 	port, e := GetPort(ctx, 30000, 40000)
 	if e != nil {
 		return
 	}
-	duration, e = vm.TestAtPort(ctx, u, port, getURL)
+	duration, e = vm.TestAtPort(ctx, rawURL, u, port, getURL)
 	return
 }
-func (vm *Runtime) TestAtPort(ctx context.Context, u *url.URL, port uint16, getURL string) (duration time.Duration, e error) {
+func (vm *Runtime) TestAtPort(ctx context.Context, rawURL string, u *url.URL, port uint16, getURL string) (duration time.Duration, e error) {
 	// 生成配置
-	s, ext, e := vm.Preview(u, 1, &Environment{
+	s, ext, e := vm.Preview(rawURL, u, 1, &Environment{
 		Port: port,
 	})
 	if e != nil {
@@ -553,7 +641,7 @@ func (vm *Runtime) Start(ctx context.Context, info *data.Last) (cmd *exec.Cmd, e
 		return
 	}
 	// 生成配置
-	s, ext, e := vm.Preview(u, info.Strategy, &Environment{})
+	s, ext, e := vm.Preview(info.URL, u, info.Strategy, &Environment{})
 	if e != nil {
 		return
 	}
@@ -563,8 +651,7 @@ func (vm *Runtime) Start(ctx context.Context, info *data.Last) (cmd *exec.Cmd, e
 	}
 
 	// 寫入配置檔案
-	basePath := utils.BasePath()
-	dir := filepath.Join(basePath, `var`, `conf`)
+	dir := filepath.Join(utils.BasePath(), `var`, `conf`)
 	e = os.MkdirAll(dir, 0775)
 	if e != nil {
 		return
@@ -595,7 +682,7 @@ func (vm *Runtime) Start(ctx context.Context, info *data.Last) (cmd *exec.Cmd, e
 	} else if destroy != nil {
 		defer destroy(self)
 	}
-	ret, e := f(self, vm.Runtime.ToValue(basePath), vm.Runtime.ToValue(name))
+	ret, e := f(self, vm.Runtime.ToValue(name))
 	if e != nil {
 		return
 	}

@@ -28,4 +28,5 @@ export class Closed {
     ngOnDestroy(): void {
         this.closed_.next(true)
     }
+
 }

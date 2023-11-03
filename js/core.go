@@ -8,15 +8,13 @@ import (
 	"runtime"
 
 	"github.com/dop251/goja"
+	"github.com/zuiwuchang/xray_webui/m/writer"
 	"github.com/zuiwuchang/xray_webui/utils"
 	"github.com/zuiwuchang/xray_webui/version"
 )
 
 func RegisterCore(vm *goja.Runtime, module *goja.Object) {
 	obj := module.Get("exports").(*goja.Object)
-	obj.Set(`println`, func(args ...interface{}) {
-		fmt.Println(args...)
-	})
 	obj.Set(`os`, runtime.GOOS)
 	obj.Set(`arch`, runtime.GOARCH)
 	obj.Set(`version`, version.Version)
@@ -104,26 +102,50 @@ func (n *_Native) exec(call goja.FunctionCall) goja.Value {
 	if !ok {
 		panic(n.runtime.ToValue(errors.New(`exec args[0].safe must be a boolean or null or undefined`)))
 	}
+	log, ok := n.getBoolDefault(obj.Get(`log`), false)
+	if !ok {
+		panic(n.runtime.ToValue(errors.New(`exec args[0].safe must be a boolean or null or undefined`)))
+	}
 
 	var out bytes.Buffer
 	cmd := exec.Command(name, args...)
 	if dir != `` {
 		cmd.Dir = utils.BasePath()
 	}
-	cmd.Stdout = &out
-	cmd.Stderr = &out
+	if log {
+		cmd.Stdout = writer.Writer()
+		cmd.Stderr = cmd.Stdout
+	} else {
+		cmd.Stdout = &out
+		cmd.Stderr = &out
+	}
 	e := cmd.Run()
-	s := out.String()
 	if safe {
+		if log {
+			if e == nil {
+				return n.runtime.ToValue(map[string]any{
+					`code`: cmd.ProcessState.ExitCode(),
+				})
+			}
+			return n.runtime.ToValue(map[string]any{
+				`error`: n.runtime.NewGoError(e),
+				`code`:  cmd.ProcessState.ExitCode(),
+			})
+		} else if e == nil {
+			return n.runtime.ToValue(map[string]any{
+				`code`:   cmd.ProcessState.ExitCode(),
+				`output`: out.String(),
+			})
+		}
 		return n.runtime.ToValue(map[string]any{
 			`error`:  n.runtime.NewGoError(e),
 			`code`:   cmd.ProcessState.ExitCode(),
-			`output`: s,
+			`output`: out.String(),
 		})
 	} else {
 		if e != nil {
 			panic(n.runtime.NewGoError(e))
 		}
-		return n.runtime.ToValue(s)
+		return n.runtime.ToValue(out.String())
 	}
 }

@@ -1,7 +1,8 @@
 <ng-container [ngSwitch]="field?.ui">
     <ng-template [ngSwitchCase]="'text'">
         <div class="field p-float-label">
-            <input type="text" pInputText [disabled]="disabled" class="w-full" [(ngModel)]="value.value" />
+            <input type="text" pInputText [disabled]="disabled" class="w-full" [(ngModel)]="value.value"
+                [autofocus]="autofocus" />
             <label>{{getLabel(field?.label)}}</label>
         </div>
     </ng-template>

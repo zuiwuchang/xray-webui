@@ -20,6 +20,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { DropdownModule } from 'primeng/dropdown';
+import { AutoFocusModule } from 'primeng/autofocus';
 
 import { SettingsRoutingModule } from './settings-routing.module';
 import { GeneralComponent } from './general/general.component';
@@ -45,6 +46,7 @@ import { SharedModule } from '../shared/shared.module';
     TabViewModule, DialogModule, InputTextareaModule,
     RippleModule, ProgressSpinnerModule, CheckboxModule,
     InputTextModule, ConfirmPopupModule, DropdownModule,
+    AutoFocusModule,
     SettingsRoutingModule
   ]
 })

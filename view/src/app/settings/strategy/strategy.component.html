@@ -40,14 +40,15 @@
 </p>
 
 
-<p-dialog header="{{name(current.id)|translate}}" [(visible)]="visible" [style]="{width: '80vw'}" [maximizable]="false"
+<p-dialog header="{{name(current.id)|translate}}" [(visible)]="visible" [style]="{width: '80vw'}" [maximizable]="true"
     [modal]="true" [closable]="false" appendTo="body">
     <p-tabView>
         <p-tabPanel header="{{i18n.strategy.nameHost|translate}}">
             {{i18n.strategy.tableHost|translate}}
             <p class="p-float-label">
-                <textarea id="float-input-host" rows="13" pInputTextarea [(ngModel)]="current.host" autocapitalize="off"
-                    autocomplete="off" autocorrect="off" spellcheck="false" [disabled]="disabled"></textarea>
+                <textarea [autofocus]="true" id="float-input-host" rows="13" pInputTextarea [(ngModel)]="current.host"
+                    autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false"
+                    [disabled]="disabled"></textarea>
                 <label for="float-input-host">{{i18n.strategy.nameHost|translate}}</label>
             </p>
         </p-tabPanel>

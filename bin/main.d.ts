@@ -20,12 +20,7 @@ declare module 'xray/core' {
      */
     export const root: string
 
-    /**
-     * 輸出打印信息
-     */
-    export function println(...msg: Array<any>): void
-
-    export interface ExecOption {
+    export interface ExecOptions {
         /**
          * 要執行的進程
          */
@@ -39,18 +34,31 @@ declare module 'xray/core' {
          */
         dir?: string
     }
+    export interface ExecLogOptions extends ExecOptions {
+        log: true
+    }
     /**
-     * 調用一個系統進程等待進程結束並返回進程輸出到 stdout/stderror 的內容
+     * 調用一個系統進程等待進程結束，並返回進程輸出到 stdout/stderror 的內容
      */
-    export function exec(o: ExecOption): string
-    export interface ExecSafeOption extends ExecOption {
+    export function exec(o: ExecOptions): string
+    /**
+     * 調用一個系統進程等待進程結束，將進程 stdout/stderror 輸出到 os.stdout 和 網頁日誌
+     */
+    export function exec(o: ExecLogOptions): void
+
+    export interface ExecSafeOptions extends ExecOptions {
         safe: true
     }
     /**
      * 
      * @param safe 爲 true 將返回進程返回的結束代碼
      */
-    export function exec(o: ExecSafeOption): { output: string, error?: Error, code: number }
+    export function exec(o: ExecSafeOptions): { output: string, error?: Error, code: number }
+    export interface ExecLogSafeOptions extends ExecSafeOptions {
+        log: true
+    }
+    export function exec(o: ExecLogSafeOptions): { error?: Error, code: number }
+
 }
 declare module 'xray/webui' {
     /**
@@ -203,19 +211,23 @@ declare module 'xray/webui' {
          */
         port?: number
     }
-    export interface ConfigureOption<T> {
+    export interface ConfigureOptions<T> {
         /**
          * 設定環境
          */
         environment: Environment
         /**
-         * 節點信息
-         */
-        fileds: Record<string/** Filed.key */, string>
-        /**
          * 使用的策略
          */
         strategy: Strategy
+        /**
+         * 原始節點信息
+         */
+        url: string
+        /**
+         * 節點信息
+         */
+        fileds: Record<string/** Filed.key */, string>
         /**
          * 自定義設定
          */
@@ -246,18 +258,41 @@ declare module 'xray/webui' {
          */
         args?: Array<string>
     }
+    export interface TurnOptions {
+        /**
+         * 原始節點信息
+         */
+        url: string
+        /**
+         * 節點信息
+         */
+        fileds: Record<string/** Filed.key */, string>
+        /**
+         * 自定義設定
+         */
+        userdata?: T
+    }
     /**
      * 爲網頁 ui 提供了各種功能的具體實現
      */
     export interface Provider {
         /**
-         * 返回透明代理設定
-         */
-        getFirewall(): string
-        /**
          * 銷毀 Provider 和其綁定的資源
          */
         destroy?: () => void
+
+        /**
+         * 返回透明代理設定
+         */
+        firewall(): string
+        /**
+         * 啓動透明代理
+         */
+        turnOn(opts: TurnOptions): void
+        /**
+         * 關閉透明代理
+         */
+        turnOff(opts: TurnOptions): void
 
         /**
          * 返回支持的節點元信息
@@ -267,13 +302,12 @@ declare module 'xray/webui' {
         /**
          * 返回配置
          */
-        configure(opts: ConfigureOption): ConfigureResult
+        configure(opts: ConfigureOptions): ConfigureResult
 
         /**
          * 返回啓動代理的命令
-         * @param dir 程式根路徑
          * @param cnf 設定檔案路徑
          */
-        serve(dir: string, cnf: string): ServeResult
+        serve(cnf: string): ServeResult
     }
 }

@@ -130,7 +130,7 @@ func (h *Helper) do(port uint16, id, rawURL string) {
 
 	ctx, cancel := context.WithTimeout(h.ctx, time.Second*30)
 	defer cancel()
-	duration, e := vm.TestAtPort(ctx, u, port, h.getURL)
+	duration, e := vm.TestAtPort(ctx, rawURL, u, port, h.getURL)
 	if e != nil {
 		h.send(map[string]any{
 			`code`:  http.StatusOK,

@@ -131,7 +131,7 @@ func (h Proxy) TestOnce(c *gin.Context) {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
-	duration, e := vm.Test(ctx, u, general.URL)
+	duration, e := vm.Test(ctx, o.URL, u, general.URL)
 	if e != nil {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
@@ -164,7 +164,7 @@ func (h Proxy) Preview(c *gin.Context) {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
-	s, _, e := vm.Preview(u, o.Strategy, &js.Environment{})
+	s, _, e := vm.Preview(o.URL, u, o.Strategy, &js.Environment{})
 	if e != nil {
 		c.String(http.StatusInternalServerError, e.Error())
 		return

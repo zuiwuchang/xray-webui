@@ -17,6 +17,9 @@ import { QrComponent } from '../qr/qr.component';
 import { PreviewComponent } from '../preview/preview.component';
 import { UIValue } from '../ui-field/ui-field.component';
 import { Last, ListenerService } from 'src/app/core/listener.service';
+import { getItem, setItem } from 'src/internal/local-storage';
+import { SettingsService } from 'src/app/core/settings.service';
+import { TerminalComponent } from '../terminal/terminal.component';
 
 @Component({
   selector: 'app-home',
@@ -27,9 +30,11 @@ import { Last, ListenerService } from 'src/app/core/listener.service';
 export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
   i18n = i18n
   private prepare_: Prepare
-  activeIndex = 0
+  get activeIndex() {
+    return this.settingsService.activeIndex
+  }
   activeIndexChange(v: any) {
-    this.activeIndex = v
+    this.settingsService.activeIndex = v
   }
   constructor(private readonly httpClient: HttpClient,
     private readonly translateService: TranslateService,
@@ -38,6 +43,7 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     private readonly dialogService: DialogService,
     private readonly confirmationService: ConfirmationService,
     private readonly listenerService: ListenerService,
+    private readonly settingsService: SettingsService,
   ) {
     super()
     this.dialog = new DialogOfElement(httpClient, translateService, toastService)
@@ -712,6 +718,11 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       })
     })
 
+  }
+  @ViewChild(TerminalComponent)
+  private terminal_?: TerminalComponent
+  onClickClearLog() {
+    this.terminal_?.clearLog()
   }
   private _copyToClipboard(s: string) {
     try {

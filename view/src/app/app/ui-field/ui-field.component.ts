@@ -26,4 +26,7 @@ export class UiFieldComponent {
     const val = label[key]
     return val ?? label['default'] ?? def ?? ''
   }
+  get autofocus(): boolean {
+    return this.field?.key == 'name'
+  }
 }

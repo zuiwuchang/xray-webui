@@ -30,7 +30,7 @@ func Listen(closed chan struct{}) (*Listener, error) {
 	return defaultServer.Listen(closed)
 }
 
-var started int32 = 0
+var started int32
 
 func Run() {
 	if started == 0 && atomic.CompareAndSwapInt32(&started, 0, 1) {

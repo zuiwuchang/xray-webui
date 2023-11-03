@@ -1,9 +1,9 @@
-import { ConfigureOption } from "xray/webui";
+import { ConfigureOptions } from "xray/webui";
 import { Inbounds } from "./inbounds/inbounds";
 import { Userdata } from "./userdata";
 import { isLinux, isPort } from "./utils";
 
-export function generateInbounds(opts: ConfigureOption<Userdata>): Array<Inbounds> {
+export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inbounds> {
     const inbounds: Array<Inbounds> = []
     let port = opts.environment.port ?? 0
     if (isPort(port)) {

@@ -115,4 +115,6 @@ exports.keys = {
 
         placeholderURL: make('pU', '請輸入節點 URL'),
     },
+    scriptLog: make('sl', '腳本日誌'),
+    clearLog: make('cl', '清空日誌'),
 }

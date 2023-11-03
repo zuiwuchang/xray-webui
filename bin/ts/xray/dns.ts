@@ -1,4 +1,4 @@
-import { ConfigureOption } from "xray/webui"
+import { ConfigureOptions } from "xray/webui"
 import { Rule } from "./strategy/rule"
 import { Userdata } from "./userdata"
 
@@ -82,7 +82,7 @@ export interface Server {
     clientIp?: string
 }
 
-export function generateDNS(opts: ConfigureOption<Userdata>): DNS | undefined {
+export function generateDNS(opts: ConfigureOptions<Userdata>): DNS | undefined {
     if (opts.environment.port) {
         return undefined
     }

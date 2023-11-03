@@ -20,6 +20,7 @@ export class SettingsString {
   providedIn: 'root'
 })
 export class SettingsService {
+  activeIndex = 0
   theme = new SettingsString(
     "theme",
     "md-dark-deeppurple", // 默認主題

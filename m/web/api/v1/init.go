@@ -21,6 +21,7 @@ func (h Helper) Register(router *gin.RouterGroup) {
 		&Strategy{},
 		&Settings{},
 		Proxy{},
+		Scripts{},
 	}
 	for _, m := range ms {
 		m.Register(r)

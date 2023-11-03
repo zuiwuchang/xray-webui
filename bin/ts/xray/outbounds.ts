@@ -1,4 +1,4 @@
-import { ConfigureOption } from "xray/webui";
+import { ConfigureOptions } from "xray/webui";
 import { Outbounds } from "./outbounds/outbounds";
 import { Userdata } from "./userdata";
 import { getPort, getUint, isLinux, isPort } from "./utils";
@@ -21,7 +21,7 @@ import { Freedom } from "./outbounds/freedom";
 import { Blackhole } from "./outbounds/blackhole";
 import { DNS } from "./outbounds/dns";
 
-export function generateOutbounds(opts: ConfigureOption<Userdata>): Array<Outbounds> {
+export function generateOutbounds(opts: ConfigureOptions<Userdata>): Array<Outbounds> {
     const isport = isPort(opts.environment.port ?? 0)
     if (isport) {
         return [generateOutbound(opts)]
@@ -58,7 +58,7 @@ export function generateOutbounds(opts: ConfigureOption<Userdata>): Array<Outbou
     }
     return opts.strategy.value < 5 ? [outbound, freedom, blackhole, dns] : [freedom, outbound, blackhole, dns]
 }
-function generateOutbound(opts: ConfigureOption<Userdata>): Outbounds {
+function generateOutbound(opts: ConfigureOptions<Userdata>): Outbounds {
     switch (opts.environment.scheme) {
         case 'vless':
             return generateVLess(opts)
@@ -74,7 +74,7 @@ function generateOutbound(opts: ConfigureOption<Userdata>): Outbounds {
             throw new Error(`unknow scheme: ${opts.environment.scheme}`)
     }
 }
-function generateSocks(opts: ConfigureOption<Userdata>): Socks {
+function generateSocks(opts: ConfigureOptions<Userdata>): Socks {
     const fileds = opts.fileds
     const username = fileds.username ?? ''
     const password = fileds.password ?? ''
@@ -98,7 +98,7 @@ function generateSocks(opts: ConfigureOption<Userdata>): Socks {
         streamSettings: new OutboundStream(opts).generate(),
     }
 }
-function generateShadowsocks(opts: ConfigureOption<Userdata>): Shadowsocks {
+function generateShadowsocks(opts: ConfigureOptions<Userdata>): Shadowsocks {
     const fileds = opts.fileds
     return {
         tag: 'out-proxy',
@@ -117,7 +117,7 @@ function generateShadowsocks(opts: ConfigureOption<Userdata>): Shadowsocks {
         streamSettings: new OutboundStream(opts).generate(),
     }
 }
-function generateTrojan(opts: ConfigureOption<Userdata>): Trojan {
+function generateTrojan(opts: ConfigureOptions<Userdata>): Trojan {
     const fileds: TrojanFileds = opts.fileds
     const flow = fileds.flow
     return {
@@ -137,7 +137,7 @@ function generateTrojan(opts: ConfigureOption<Userdata>): Trojan {
         streamSettings: new OutboundStream(opts).generate(),
     }
 }
-function generateVMess(opts: ConfigureOption<Userdata>): VMess {
+function generateVMess(opts: ConfigureOptions<Userdata>): VMess {
     const fileds: VMessFileds = opts.fileds
     let encryption = fileds.encryption ?? 'auto'
     if (encryption == '') {
@@ -165,7 +165,7 @@ function generateVMess(opts: ConfigureOption<Userdata>): VMess {
         streamSettings: new OutboundStream(opts).generate(),
     }
 }
-function generateVLess(opts: ConfigureOption<Userdata>): VLess {
+function generateVLess(opts: ConfigureOptions<Userdata>): VLess {
     const fileds: VLessFileds = opts.fileds
     return {
         tag: 'out-proxy',
@@ -191,7 +191,7 @@ function generateVLess(opts: ConfigureOption<Userdata>): VLess {
 }
 
 class OutboundStream {
-    constructor(readonly opts: ConfigureOption<Userdata>) { }
+    constructor(readonly opts: ConfigureOptions<Userdata>) { }
     generate(): Stream {
         const fileds = this.opts.fileds
         const result: Stream = {}

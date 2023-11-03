@@ -56,6 +56,9 @@
                             [class]="addDisabledClass('pi pi-eraser text-2xl cursor-pointer',disabled||(!last&&!storeLast))"
                             pTooltip="{{i18n.proxy.closeFirewall|translate}}" tooltipPosition="top"
                             (click)="onClickTurnOff()"></i>
+                        <i pRipple class='pi pi-times-circle text-2xl cursor-pointer'
+                            pTooltip="{{i18n.clearLog|translate}}" tooltipPosition="top"
+                            (click)="onClickClearLog()"></i>
                     </p>
                     <app-terminal *ngIf="activeIndex==0"></app-terminal>
                 </ng-template>

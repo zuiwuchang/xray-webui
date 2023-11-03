@@ -41,9 +41,9 @@ function create() {
 exports.create = create;
 class myProvider {
     /**
-     * 調用防火牆 查看 透明代理 設定
+     * 返回透明代理設定
      */
-    getFirewall() {
+    firewall() {
         let s;
         if (core.os === `linux`) {
             const { output, error, code } = core.exec({
@@ -64,6 +64,18 @@ class myProvider {
 
 ${s}
 `;
+    }
+    /**
+     * 啓動透明代理
+     */
+    turnOn(opts) {
+        console.log('turn on', opts);
+    }
+    /**
+     * 關閉透明代理
+     */
+    turnOff(opts) {
+        console.log('turn off', opts);
     }
     /**
      * 爲 web 設置 ui
@@ -95,13 +107,13 @@ ${s}
     /**
      * 返回 啓用 xray 的命令
      */
-    serve(dir, cnf) {
+    serve(cnf) {
         const isWindows = core.os == "windows";
         const separator = isWindows ? '\\' : '/';
-        const cwd = `${dir}${separator}xray`;
-        const name = isWindows ? `${cwd}${separator}xray.exe` : `${cwd}${separator}xray`;
+        const dir = `${core.root}${separator}xray`;
+        const name = isWindows ? `${dir}${separator}xray.exe` : `${dir}${separator}xray`;
         return {
-            dir: cwd,
+            dir: dir,
             name: name,
             args: ['run', '-c', cnf],
         };

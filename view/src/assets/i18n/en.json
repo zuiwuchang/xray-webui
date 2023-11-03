@@ -195,5 +195,7 @@
 		"ao": "New node successfully",
 		"so": "Update node successfully",
 		"pU": "Please enter node URL"
-	}
+	},
+	"sl": "Script Log",
+	"cl": "Clear Log"
 }
