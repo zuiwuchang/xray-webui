@@ -65,6 +65,7 @@ var defaultServer = &_Server{
 	close:   make(chan closeSignal),
 	write:   make(chan []byte),
 	message: make(chan []byte, 1),
+	store:   make(chan []byte, 1),
 
 	add:    make(chan *Listener),
 	delete: make(chan *Listener),
@@ -78,6 +79,7 @@ type _Server struct {
 	cmd     *_Command
 	write   chan []byte
 	message chan []byte
+	store   chan []byte
 
 	add    chan *Listener
 	delete chan *Listener
@@ -172,9 +174,9 @@ func (s *_Server) send(o map[string]any) {
 
 func (s *_Server) runWrite() {
 	var (
-		last  []byte
-		id    uint64 = 1
-		cache        = list.New()
+		last, store []byte
+		id          uint64 = 1
+		cache              = list.New()
 	)
 	for {
 		select {
@@ -196,7 +198,16 @@ func (s *_Server) runWrite() {
 				l.WriteText(message)
 			}
 			last = message
+		case store = <-s.store:
+			for l := range s.keys {
+				l.WriteText(store)
+			}
 		case l := <-s.add:
+			if len(store) != 0 {
+				if !l.WriteText(store) {
+					return
+				}
+			}
 			if len(last) != 0 {
 				if !l.WriteText(last) {
 					return
@@ -268,7 +279,29 @@ func (s *_Server) doStart(req startRequest) (e error) {
 	s.cmd = command
 	return
 }
+func (s *_Server) sendStore(info *data.Last) {
+	b, e := json.Marshal(map[string]any{
+		`what`: 2,
+		`data`: info,
+	})
+	if e == nil {
+		for {
+			select {
+			case s.store <- b:
+				return
+			default:
+			}
+
+			select {
+			case s.store <- b:
+				return
+			case <-s.store:
+			}
+		}
+	}
+}
 func (s *_Server) sendStart(info *data.Last) {
+	s.sendStore(info)
 	s.send(map[string]any{
 		`what`: 1,
 		`data`: info,

@@ -190,6 +190,8 @@
 		"v": "Preview",
 		"f": "Turn on transparent proxy",
 		"cf": "Turn off transparent proxy",
+		"fOn": "Transparent proxy is turned on",
+		"fOff": "Transparent proxy is turned off",
 		"ao": "New node successfully",
 		"so": "Update node successfully",
 		"pU": "Please enter node URL"

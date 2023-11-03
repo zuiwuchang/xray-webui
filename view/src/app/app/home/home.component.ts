@@ -59,6 +59,23 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
   strategy = 1
   strategys: Array<{ name: string, value: number | string }> = []
   provider?: MetadataProvider
+  strategyNmae() {
+    switch (this.last?.strategy ?? 0) {
+      case 1:
+        return this.translateService.instant(i18n.strategy.default)
+      case 2:
+        return this.translateService.instant(i18n.strategy.global)
+      case 3:
+        return this.translateService.instant(i18n.strategy.public)
+      case 4:
+        return this.translateService.instant(i18n.strategy.proxy)
+      case 5:
+        return this.translateService.instant(i18n.strategy.korea)
+      case 6:
+        return this.translateService.instant(i18n.strategy.direct)
+    }
+    return ``
+  }
   private _updateStrategys() {
     const translate = this.translateService
     this.strategys = [
@@ -612,17 +629,88 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     this._turnOn(last.url)
   }
   onClickTurnOff() {
-    const last = this.last
+    const last = this.last ?? this.storeLast
     if (this.disabled || !last) {
       return
     }
     this._turnOff(last.url)
   }
   private _turnOn(rawURL: string, source?: Source, ele?: Element) {
-    console.log('turn on', rawURL)
+    this.disabled = true
+    if (source) {
+      source.disabled = true
+    }
+    if (ele) {
+      ele.disabled = true
+    }
+
+    const delay = Delay.default(this)
+    this.httpClient.post('/api/v1/firewall/on', {
+      url: rawURL,
+    }).pipe(this.takeUntil()).subscribe({
+      next: () => delay.do(() => {
+        if (ele) {
+          ele.disabled = false
+        }
+        if (source) {
+          source.disabled = false
+        }
+        this.disabled = false
+
+        this.toastService.add({ severity: 'success', summary: this.translateService.instant(i18n.action.success), detail: this.translateService.instant(i18n.proxy.firewallOn) })
+      }),
+      error: (e) => delay.do(() => {
+        if (ele) {
+          ele.disabled = false
+        }
+        if (source) {
+          source.disabled = false
+        }
+        this.disabled = false
+
+        const err = getErrorString(e)
+        this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: err })
+      })
+    })
+
   }
   private _turnOff(rawURL: string, source?: Source, ele?: Element) {
-    console.log('turn off', rawURL)
+    this.disabled = true
+    if (source) {
+      source.disabled = true
+    }
+    if (ele) {
+      ele.disabled = true
+    }
+
+    const delay = Delay.default(this)
+    this.httpClient.post('/api/v1/firewall/off', {
+      url: rawURL,
+    }).pipe(this.takeUntil()).subscribe({
+      next: () => delay.do(() => {
+        if (ele) {
+          ele.disabled = false
+        }
+        if (source) {
+          source.disabled = false
+        }
+        this.disabled = false
+
+        this.toastService.add({ severity: 'success', summary: this.translateService.instant(i18n.action.success), detail: this.translateService.instant(i18n.proxy.firewallOff) })
+      }),
+      error: (e) => delay.do(() => {
+        if (ele) {
+          ele.disabled = false
+        }
+        if (source) {
+          source.disabled = false
+        }
+        this.disabled = false
+
+        const err = getErrorString(e)
+        this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: err })
+      })
+    })
 
   }
   private _copyToClipboard(s: string) {

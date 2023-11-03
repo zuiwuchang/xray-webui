@@ -20,7 +20,7 @@ type Listener struct {
 func newListener(delete chan *Listener) *Listener {
 	return &Listener{
 		done:   make(chan struct{}),
-		ch:     make(chan Message),
+		ch:     make(chan Message, 128),
 		delete: delete,
 	}
 }
@@ -42,6 +42,8 @@ func (l *Listener) Write(b []byte) bool {
 		return true
 	case <-l.done:
 		return false
+	default:
+		return true
 	}
 }
 func (l *Listener) WriteText(b []byte) bool {
@@ -53,5 +55,7 @@ func (l *Listener) WriteText(b []byte) bool {
 		return true
 	case <-l.done:
 		return false
+	default:
+		return true
 	}
 }

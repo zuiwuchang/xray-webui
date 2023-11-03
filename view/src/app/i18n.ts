@@ -519,6 +519,14 @@ export const i18n = {
 		*/
 		closeFirewall: "_p.cf",
 		/**
+		* 设置透明代理成功
+		*/
+		firewallOn: "_p.fOn",
+		/**
+		* 设置透明代理失败
+		*/
+		firewallOff: "_p.fOff",
+		/**
 		* 新增節點成功
 		*/
 		addOK: "_p.ao",

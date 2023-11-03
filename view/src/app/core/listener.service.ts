@@ -47,6 +47,7 @@ export class ListenerService {
         const closed = await this._connect(url, (data) => {
           tick = 0
           if (typeof data === "string") {
+            console.log('listener recv:', data)
             const o: Message = JSON.parse(data)
             switch (o.what) {
               case 1:

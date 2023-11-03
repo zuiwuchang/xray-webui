@@ -13,13 +13,13 @@ export class Delay {
      * @returns 
      */
     static after(ms: number, isNotClosed?: IsNotClosed): Delay {
-        return new Delay(Date.now() + ms)
+        return new Delay(Date.now() + ms, isNotClosed)
     }
     /**
      * 創建一個默認的延遲器
      */
     static default(isNotClosed?: IsNotClosed): Delay {
-        return new Delay(Date.now() + 400)
+        return new Delay(Date.now() + 400, isNotClosed)
         // return new Delay(Date.now() + (environment.production ? 400 : 0))
     }
     constructor(readonly deadline: number, readonly isNotClosed?: IsNotClosed) { }
