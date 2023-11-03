@@ -41,6 +41,21 @@
                     </ng-template>
                 </ng-template>
                 <ng-template pTemplate="content">
+                    <p [class]="disabledClass('flex flex-wrap gap-2 align-content-center align-items-center')">
+                        <i pRipple
+                            [class]="addDisabledClass('pi pi-chevron-circle-right text-2xl cursor-pointer',disabled||last||!storeLast)"
+                            pTooltip="{{i18n.button.start|translate}}" tooltipPosition="top"
+                            (click)="onClickStoreLast()"></i>
+                        <i pRipple
+                            [class]="addDisabledClass('pi pi-stop-circle text-2xl cursor-pointer',disabled||!last)"
+                            pTooltip="{{i18n.button.stop|translate}}" tooltipPosition="top" (click)="onClickLast()"></i>
+                        <i pRipple [class]="addDisabledClass('pi pi-send text-2xl cursor-pointer',disabled||!last)"
+                            pTooltip="{{i18n.proxy.firewall|translate}}" tooltipPosition="top"
+                            (click)="onClickTurnOn()"></i>
+                        <i pRipple [class]="addDisabledClass('pi pi-eraser text-2xl cursor-pointer',disabled||!last)"
+                            pTooltip="{{i18n.proxy.closeFirewall|translate}}" tooltipPosition="top"
+                            (click)="onClickTurnOff()"></i>
+                    </p>
                     <app-terminal *ngIf="activeIndex==0"></app-terminal>
                 </ng-template>
             </p-accordionTab>
@@ -65,23 +80,23 @@
                 <ng-template pTemplate="content">
                     <div [class]="disabledClass('flex flex-wrap gap-2',item)">
                         <i pRipple class="pi pi-sort-amount-down-alt text-2xl cursor-pointer"
-                            pTooltip="{{i18n.proxy.sort|translate}}" tooltipPosition="bottom"
+                            pTooltip="{{i18n.proxy.sort|translate}}" tooltipPosition="top"
                             (click)="onClickSort(item)"></i>
                         <i pRipple class="pi pi-bolt text-2xl cursor-pointer" pTooltip="{{i18n.proxy.test|translate}}"
-                            tooltipPosition="bottom" (click)="onClickTest(item)"></i>
+                            tooltipPosition="top" (click)="onClickTest(item)"></i>
                         <i pRipple class="pi pi-plus text-2xl cursor-pointer" pTooltip="{{i18n.proxy.add|translate}}"
-                            tooltipPosition="bottom" (click)="onClickAdd(item)"></i>
+                            tooltipPosition="top" (click)="onClickAdd(item)"></i>
                         <i pRipple class="pi pi-file-import text-2xl cursor-pointer"
-                            pTooltip="{{i18n.proxy.importNode|translate}}" tooltipPosition="bottom"
+                            pTooltip="{{i18n.proxy.importNode|translate}}" tooltipPosition="top"
                             (click)="onClickImport(item)"></i>
                         <i pRipple class="pi pi-times text-2xl cursor-pointer" pTooltip="{{i18n.proxy.clear|translate}}"
-                            tooltipPosition="bottom" (click)="onClickClear(item)"></i>
+                            tooltipPosition="top" (click)="onClickClear(item)"></i>
                         <i pRipple class="pi pi-qrcode text-2xl cursor-pointer" pTooltip="{{i18n.proxy.qr|translate}}"
-                            tooltipPosition="bottom" (click)="onClickQR(item)"></i>
+                            tooltipPosition="top" (click)="onClickQR(item)"></i>
                         <i pRipple class="pi pi-copy text-2xl cursor-pointer" pTooltip="{{i18n.proxy.copy|translate}}"
-                            tooltipPosition="bottom" (click)="onClickCopy(item)"></i>
+                            tooltipPosition="top" (click)="onClickCopy(item)"></i>
                         <i pRipple class="pi pi-sync text-2xl cursor-pointer" pTooltip="{{i18n.proxy.update|translate}}"
-                            tooltipPosition="bottom" (click)="onClickUpdate(item)" *ngIf="i!=0"></i>
+                            tooltipPosition="top" (click)="onClickUpdate(item)" *ngIf="i!=0"></i>
 
                         <p-progressSpinner *ngIf="item.disabled" [style]="{width: '1.75rem', height: '1.75rem'}"
                             strokeWidth="5" fill="var(--surface-ground)" animationDuration=".5s"></p-progressSpinner>

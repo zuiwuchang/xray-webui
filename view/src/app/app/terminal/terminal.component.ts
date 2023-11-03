@@ -38,6 +38,7 @@ export class TerminalComponent extends Closed implements AfterViewInit {
       convertEol: true,
       disableStdin: true,
     })
+
     this.xterm_ = xterm
     const fitAddon = new FitAddon()
     this.fitAddon_ = fitAddon

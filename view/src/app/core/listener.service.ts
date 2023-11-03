@@ -23,6 +23,7 @@ export class ListenerService {
   get last(): Observable<Last | undefined> {
     return this.last_
   }
+  storeLast?: Last
   private stream_ = new ReplaySubject<ArrayBuffer>(128)
   get stream(): Observable<ArrayBuffer> {
     return this.stream_
@@ -47,8 +48,21 @@ export class ListenerService {
           tick = 0
           if (typeof data === "string") {
             const o: Message = JSON.parse(data)
-            if (o.what == 1) {
-              this.last_.next(o.data)
+            switch (o.what) {
+              case 1:
+                if (o.data) {
+                  this.storeLast = o.data
+                }
+                this.last_.next(o.data)
+                break
+              case 2:
+                if (o.data) {
+                  this.storeLast = o.data
+                }
+                break
+              default:
+                console.warn('unknow message', data)
+                break
             }
           } else {
             const view = new DataView(data)

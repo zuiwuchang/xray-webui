@@ -98,6 +98,9 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     })
   }
   last?: Last
+  get storeLast(): Last | undefined {
+    return this.listenerService.storeLast
+  }
   private clipboard_?: ClipboardJS
   @ViewChild("btnClipboard")
   private _btnClipboard?: ElementRef
@@ -167,6 +170,9 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     return data.id
   }
   disabled = false
+  addDisabledClass(css = '', add?: boolean | any) {
+    return add ? (css == '' ? 'p-disabled' : css + ' p-disabled') : css
+  }
   disabledClass(css = '', source?: Source): string {
     return this.disabled || source?.disabled ? (css == '' ? 'p-disabled' : css + ' p-disabled') : css
   }
@@ -425,13 +431,54 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       }),
     })
   }
-  onClickStop(source: Source, ele: Element) {
-    if (this.disabled || source.disabled || ele.disabled) {
+  onClickStoreLast() {
+    const last = this.storeLast
+    if (this.disabled || !last) {
       return
     }
     this.disabled = true
-    source.disabled = true
-    ele.disabled = true
+    const dely = Delay.default(this)
+    this.httpClient.post(`/api/v1/proxy/start/${last.subscription}/${last.id}`, {
+      url: last.url,
+      strategy: this.strategy,
+      name: last.name,
+    }).pipe(this.takeUntil()).subscribe({
+      next: () => dely.do(() => {
+        this.toastService.add({
+          severity: 'success',
+          summary: this.translateService.instant(i18n.action.success),
+          detail: this.translateService.instant(i18n.proxy.started),
+        })
+        this.disabled = false
+      }),
+      error: (e) => dely.do(() => {
+        this.toastService.add({
+          severity: 'error',
+          summary: this.translateService.instant(i18n.action.error),
+          detail: getErrorString(e),
+        })
+        this.disabled = false
+      }),
+    })
+  }
+  onClickLast() {
+    const last = this.last
+    if (this.disabled || !last) {
+      return
+    }
+    this.onClickStop()
+  }
+  onClickStop(source?: Source, ele?: Element) {
+    if (this.disabled || source?.disabled || ele?.disabled) {
+      return
+    }
+    this.disabled = true
+    if (source) {
+      source.disabled = true
+    }
+    if (ele) {
+      ele.disabled = true
+    }
     const dely = Delay.default(this)
     this.httpClient.delete('/api/v1/proxy').pipe(this.takeUntil()).subscribe({
       next: () => dely.do(() => {
@@ -441,9 +488,12 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
           detail: this.translateService.instant(i18n.proxy.stopped),
         })
         this.disabled = false
-        source.disabled = false
-        ele.disabled = false
-
+        if (source) {
+          source.disabled = false
+        }
+        if (ele) {
+          ele.disabled = false
+        }
       }),
       error: (e) => dely.do(() => {
         this.toastService.add({
@@ -452,8 +502,12 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
           detail: getErrorString(e),
         })
         this.disabled = false
-        source.disabled = false
-        ele.disabled = false
+        if (source) {
+          source.disabled = false
+        }
+        if (ele) {
+          ele.disabled = false
+        }
       }),
     })
   }
@@ -493,14 +547,18 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
         label: translateService.instant(i18n.proxy.test),
         icon: 'pi pi-bolt',
         command: () => {
-          this._testOnce(source, ele)
+          if (!this.disabled && !source.disabled && !ele.disabled) {
+            this._testOnce(source, ele)
+          }
         },
       },
       {
         label: translateService.instant(i18n.proxy.view),
         icon: 'pi pi-sync',
         command: () => {
-          this._preview(source, ele)
+          if (!this.disabled && !source.disabled && !ele.disabled) {
+            this._preview(source, ele)
+          }
         },
       },
       qr, copy, { separator: true },
@@ -508,14 +566,18 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
         label: translateService.instant(i18n.proxy.firewall),
         icon: 'pi pi-send',
         command: () => {
-          console.log('turn on', ele)
+          if (!this.disabled && !source.disabled && !ele.disabled) {
+            this._turnOn(ele.rawURL, source, ele)
+          }
         },
       },
       {
         label: translateService.instant(i18n.proxy.closeFirewall),
         icon: 'pi pi-eraser',
         command: () => {
-          console.log('turn off', ele)
+          if (!this.disabled && !source.disabled && !ele.disabled) {
+            this._turnOff(ele.rawURL, source, ele)
+          }
         },
       },
       { separator: true },
@@ -523,20 +585,45 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
         label: translateService.instant(i18n.edit),
         icon: 'pi pi-file-edit',
         command: () => {
-          this.dialog.edit(source, ele)
+          if (!this.disabled && !source.disabled && !ele.disabled) {
+            this.dialog.edit(source, ele)
+          }
         },
       },
       {
         label: translateService.instant(i18n.delete),
         icon: 'pi pi-trash',
         command: () => {
-          this.onClickDelete(source, ele)
+          if (!this.disabled && !source.disabled && !ele.disabled) {
+            this.onClickDelete(source, ele)
+          }
         },
       },
     ] : [qr, copy]
     ele.lang_ = lang
     ele.menus_ = menus
     return menus
+  }
+  onClickTurnOn() {
+    const last = this.last
+    if (this.disabled || !last) {
+      return
+    }
+    this._turnOn(last.url)
+  }
+  onClickTurnOff() {
+    const last = this.last
+    if (this.disabled || !last) {
+      return
+    }
+    this._turnOff(last.url)
+  }
+  private _turnOn(rawURL: string, source?: Source, ele?: Element) {
+    console.log('turn on', rawURL)
+  }
+  private _turnOff(rawURL: string, source?: Source, ele?: Element) {
+    console.log('turn off', rawURL)
+
   }
   private _copyToClipboard(s: string) {
     try {
@@ -555,9 +642,6 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     })
   }
   private _testOnce(source: Source, ele: Element) {
-    if (this.disabled || source.disabled || ele.disabled) {
-      return
-    }
     source.disabled = true
     ele.disabled = true
     ele.error = undefined
@@ -582,9 +666,6 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
     })
   }
   private _preview(source: Source, ele: Element) {
-    if (this.disabled || source.disabled || ele.disabled) {
-      return
-    }
     this.disabled = true
     source.disabled = true
     ele.disabled = true
