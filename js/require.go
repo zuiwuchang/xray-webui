@@ -16,5 +16,6 @@ func Registry() *require.Registry {
 		require.WithGlobalFolders(modules...),
 	)
 	registry.RegisterNativeModule(`xray/core`, RegisterCore)
+	registry.RegisterNativeModule(`console`, RequireConsole)
 	return registry
 }

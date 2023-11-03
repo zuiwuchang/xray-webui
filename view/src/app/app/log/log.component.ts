@@ -1,6 +1,7 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { fromEvent, interval } from 'rxjs';
 import { ListenerService } from 'src/app/core/listener.service';
+import { ScriptLogService } from 'src/app/core/script-log.service';
 import { i18n } from 'src/app/i18n';
 import { Closed } from 'src/internal/closed';
 import { Terminal } from 'xterm'
@@ -18,7 +19,7 @@ export class LogComponent extends Closed implements AfterViewInit {
   private xterm_?: Terminal
   private fitAddon_?: FitAddon
   private webLinksAddon_?: WebLinksAddon
-  constructor() {
+  constructor(private readonly scriptLogService: ScriptLogService) {
     super()
   }
   override ngOnDestroy(): void {
@@ -63,27 +64,37 @@ export class LogComponent extends Closed implements AfterViewInit {
       }
     })
 
-    // this.listenerService.stream.pipe(this.takeUntil()).subscribe({
-    //   next: (data) => {
-    //     const view = new DataView(data)
-    //     const id = view.getBigUint64(0, true)
-    //     const flag = view.getBigUint64(8, true)
-    //     if (this.flag_ == flag) {
-    //       const o = this.id_
-    //       if (o && id <= o) {
-    //         return
-    //       }
-    //     } else {
-    //       this.flag_ = flag
-    //     }
-    //     this.id_ = id
+    this.scriptLogService.stream.pipe(this.takeUntil()).subscribe({
+      next: (data) => {
+        if (data) {
+          const view = new DataView(data)
+          const id = view.getBigUint64(0, true)
+          const flag = view.getBigUint64(8, true)
+          if (this.flag_ == flag) {
+            const o = this.id_
+            if (o && id <= o) {
+              return
+            }
+          } else {
+            this.flag_ = flag
+          }
+          this.id_ = id
 
-    //     xterm.write(new Uint8Array(data, 16))
-    //   },
-    // })
+          xterm.write(new Uint8Array(data, 16))
+        }
+      },
+    })
 
     xterm.focus()
   }
   private id_?: bigint
   private flag_?: bigint
+
+  onClickClearLog() {
+    const xterm = this.xterm_
+    if (xterm) {
+      xterm.clear()
+    }
+    this.scriptLogService.clearLog()
+  }
 }

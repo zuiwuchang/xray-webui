@@ -17,7 +17,6 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
-	"github.com/dop251/goja_nodejs/console"
 	"github.com/dop251/goja_nodejs/require"
 	"github.com/google/go-jsonnet"
 	"github.com/zuiwuchang/xray_webui/db/data"
@@ -40,7 +39,7 @@ func New(path string) (runtime *Runtime, e error) {
 	vm := goja.New()
 	registry := Registry()
 	requireModule := registry.Enable(vm)
-	console.Enable(vm)
+	EnableConsole(vm)
 
 	ret, e := requireModule.Require(path)
 	if e != nil {
