@@ -121,7 +121,8 @@
                             <div [class]="disabledClass('col-12 border-round-md p-2',item)">
                                 <form #form="ngForm">
                                     <div class="flex flex-row gap-3 align-items-center">
-                                        <i class="pi pi-tag text-2xl"></i>
+                                        <i
+                                            [class]="isStarted(item,node)?'pi pi-check text-2xl':'pi pi-tag text-2xl'"></i>
                                         <ng-container *ngIf="node.metadata; then metadataView;else noMetadataView">
                                         </ng-container>
 
