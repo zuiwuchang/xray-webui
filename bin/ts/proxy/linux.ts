@@ -73,8 +73,8 @@ done
         if (servers.length > 0) {
             strs.push("# 放行服務器地址")
             for (const s of servers) {
-                strs.push(`iptables -t mangle -A XRAY -d ${s} -j RETURN
-iptables -t mangle -A XRAY_SELF -d ${s} -j RETURN`)
+                strs.push(`iptables -t mangle -A XRAY -d "${s}" -j RETURN
+iptables -t mangle -A XRAY_SELF -d "${s}" -j RETURN`)
             }
         }
         strs.push(`
@@ -97,7 +97,7 @@ iptables -t mangle -A OUTPUT -p udp -j XRAY_SELF # udp 到 XRAY_SELF 鏈
         message = ' turn on tproxy success'
     } else {
         strs.push(`# 已經設置過直接返回
-if iptables-save | grep -wq '\-A OUTPUT \-p tcp \-j XRAY_REDIRECT'; then
+if [[ \`iptables-save |egrep '\\-A OUTPUT \\-p udp \\-j XRAY_REDIRECT'\` != "" ]];then
     exit 0
 fi
 
@@ -106,13 +106,19 @@ iptables -t nat -N XRAY_REDIRECT
 # 放行私有地址與廣播地址
 for whitelist in "\${Whitelist[@]}"
 do
-    iptables -t nat -A XRAY -d "$whitelist" -j RETURN
+    iptables -t nat -A XRAY_REDIRECT -d "$whitelist" -j RETURN
 done
 `)
+        if (servers.length > 0) {
+            strs.push("# 放行服務器地址")
+            for (const s of servers) {
+                strs.push(`iptables -t nat -A XRAY_REDIRECT -d "${s}" -j RETURN`)
+            }
+        }
         strs.push(`iptables -t nat -A XRAY_REDIRECT -m mark --mark ${mark} -j RETURN # 放行所有 mark ${mark} 的流量
-iptables -t nat -A XRAY_REDIRECT -p tcp -j REDIRECT --to-ports "$PROXY_PORT" # tcp 到 tproxy 代理端口
-iptables -t nat -A PREROUTING -p tcp -j XRAY_REDIRECT # 對局域網設備進行代理
-iptables -t nat -A OUTPUT -p tcp -j XRAY_REDIRECT # 對本機進行代理`)
+        iptables -t nat -A XRAY_REDIRECT -p tcp -j REDIRECT --to-ports "$PROXY_PORT" # tcp 到 tproxy 代理端口
+        iptables -t nat -A PREROUTING -p tcp -j XRAY_REDIRECT # 對局域網設備進行代理
+        iptables -t nat -A OUTPUT -p tcp -j XRAY_REDIRECT # 對本機進行代理`)
         message = ' turn on redirect success'
     }
     core.exec({
