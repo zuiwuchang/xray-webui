@@ -279,7 +279,7 @@ declare module 'xray/webui' {
          */
         args?: Array<string>
     }
-    export interface TurnOptions {
+    export interface TurnOptions<T> {
         /**
          * 原始節點信息
          */

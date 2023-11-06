@@ -7,6 +7,7 @@ import (
 	"net"
 	"os/exec"
 	"runtime"
+	"sync"
 
 	"github.com/dop251/goja"
 	"github.com/zuiwuchang/xray_webui/m/writer"
@@ -67,36 +68,52 @@ func (n *_Native) registerStorage(o *goja.Object) {
 	}
 	f, _ := goja.AssertFunction(value)
 
-	storage, e := f(goja.Undefined(), n.runtime.ToValue(_Storage{
-		keys: make(map[string]string),
-	}))
+	storage, e := f(goja.Undefined(), n.runtime.ToValue(_storage))
 	if e != nil {
 		panic(e)
 	}
 	o.Set(`sessionStorage`, storage)
 }
 
-type _Storage struct {
-	keys map[string]string
+var _storage = &_Storage{
+	keys: make(map[string]string),
 }
 
-func (s _Storage) Len() int {
-	return len(s.keys)
+type _Storage struct {
+	keys   map[string]string
+	locker sync.RWMutex
 }
-func (s _Storage) Clear() {
+
+func (s *_Storage) Len() int {
+	s.locker.RLock()
+	n := len(s.keys)
+	s.locker.RUnlock()
+
+	return n
+}
+func (s *_Storage) Clear() {
+	s.locker.Lock()
 	for k := range s.keys {
 		delete(s.keys, k)
 	}
+	s.locker.Unlock()
 }
-func (s _Storage) Get(key string) (val string, exists bool) {
+func (s *_Storage) Get(key string) (val string, exists bool) {
+	s.locker.RLock()
 	val, exists = s.keys[key]
+	s.locker.RUnlock()
 	return
 }
-func (s _Storage) Delete(key string) {
+func (s *_Storage) Delete(key string) {
+	s.locker.Lock()
 	delete(s.keys, key)
+	s.locker.Unlock()
 }
-func (s _Storage) Set(key, val string) {
+func (s *_Storage) Set(key, val string) {
+	s.locker.Lock()
 	s.keys[key] = val
+	s.locker.Unlock()
+
 }
 func (n *_Native) print(call goja.FunctionCall) goja.Value {
 	return n.printAny(call, false)

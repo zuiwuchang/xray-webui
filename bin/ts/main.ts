@@ -12,6 +12,7 @@ import { generateInbounds } from "./xray/inbounds";
 import { Userdata } from "./xray/userdata";
 import { generateOutbounds } from "./xray/outbounds";
 import { generateRouting } from "./xray/routing";
+import { turnOffLinux, turnOnLinux } from "./proxy/linux";
 export function create(): Provider {
     return new myProvider()
 }
@@ -42,9 +43,9 @@ ${s}
     /**
      * 啓動透明代理
      */
-    turnOn(opts: TurnOptions) {
+    turnOn(opts: TurnOptions<Userdata>) {
         if (core.os === `linux`) {
-            console.log('turn on', opts.url)
+            turnOnLinux(opts)
         } else {
             throw new Error(`turnOn not implemented on ${core.os} ${core.arch}`)
         }
@@ -52,9 +53,9 @@ ${s}
     /**
      * 關閉透明代理
      */
-    turnOff(opts: TurnOptions) {
+    turnOff(opts: TurnOptions<Userdata>) {
         if (core.os === `linux`) {
-            console.log('turn off', opts.url)
+            turnOffLinux(opts)
         } else {
             throw new Error(`turnOff not implemented on ${core.os} ${core.arch}`)
         }

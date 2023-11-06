@@ -144,7 +144,7 @@ local accounts = [
 		// 如果爲 true，則在 linnux 下使用 tproxy 作爲全局代理，否則使用 redirect 作爲全局代理
 		tproxy: true,
 		// tproxy mark
-		mark: 2,
+		mark: 99,
 	},
 	routing: {
 		// 爲 bt 設置出棧 tag

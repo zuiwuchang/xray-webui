@@ -35,6 +35,7 @@ const log_1 = require("./xray/log");
 const inbounds_1 = require("./xray/inbounds");
 const outbounds_1 = require("./xray/outbounds");
 const routing_1 = require("./xray/routing");
+const linux_1 = require("./proxy/linux");
 function create() {
     return new myProvider();
 }
@@ -70,7 +71,7 @@ ${s}
      */
     turnOn(opts) {
         if (core.os === `linux`) {
-            console.log('turn on', opts.url);
+            (0, linux_1.turnOnLinux)(opts);
         }
         else {
             throw new Error(`turnOn not implemented on ${core.os} ${core.arch}`);
@@ -81,7 +82,7 @@ ${s}
      */
     turnOff(opts) {
         if (core.os === `linux`) {
-            console.log('turn off', opts.url);
+            (0, linux_1.turnOffLinux)(opts);
         }
         else {
             throw new Error(`turnOff not implemented on ${core.os} ${core.arch}`);
