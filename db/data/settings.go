@@ -121,7 +121,7 @@ local accounts = [
 	socks: {
 		// 監聽地址，默認 '127.0.0.1'
 		// bind: '0.0.0.0',
-		// 監聽端口，如果 < 1 則不啓用 socks 代理
+		// 監聽端口，如果無效 則不啓用 socks 代理
 		port: 1080,
 		// 如果爲 true 則允許代理 udp
 		udp: true,
@@ -132,14 +132,14 @@ local accounts = [
 	http: {
 		// 監聽地址，默認 '127.0.0.1'
 		// bind: '0.0.0.0',
-		// 監聽端口，如果 < 1 則不啓用 http 代理
+		// 監聽端口，如果無效 則不啓用 http 代理
 		// port: 8118,
 		// 用戶數組默認不需要認證
 		// accounts: accounts,
 	},
 	// 透明代理設定
 	proxy: {
-		// 監聽端口，如果 < 1 則不啓用 透明代理
+		// 監聽端口，如果無效 則不啓用 透明代理
 		port: 12345,
 		// 如果爲 true，則在 linnux 下使用 tproxy 作爲全局代理，否則使用 redirect 作爲全局代理
 		tproxy: true,

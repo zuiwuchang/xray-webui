@@ -8,7 +8,7 @@ export function isLinux(): boolean {
 /**
  * 如果 port 是一個合法的端口號，則返回 true，否則返回 false
  */
-export function isPort(port: any): boolean {
+export function isPort(port: any): port is number {
     return Number.isSafeInteger(port) && port > 0 && port < 65535
 }
 export function getUint(v: any, def?: number): number {

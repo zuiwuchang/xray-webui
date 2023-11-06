@@ -28,10 +28,9 @@ export function generateOutbounds(opts: ConfigureOptions<Userdata>): Array<Outbo
     }
     const outbound = generateOutbound(opts)
 
-    const isTProxy = opts.userdata?.proxy?.tproxy && isLinux()
-    const sockopt = isTProxy ? {
+    const sockopt = {
         mark: opts.userdata?.proxy?.mark ?? 99,
-    } : undefined
+    }
     const freedom: Freedom = {
         tag: 'out-freedom',
         protocol: 'freedom',

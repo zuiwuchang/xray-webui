@@ -44,9 +44,10 @@ export interface Account {
      */
     password?: string
 }
+
 export interface Proxy {
     /**
-     * 監聽端口，如果 < 1 則不啓用 透明代理
+     * 監聽端口，如果無效 則不啓用 透明代理
      */
     port?: number
     /**

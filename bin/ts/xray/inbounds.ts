@@ -5,7 +5,7 @@ import { isLinux, isPort } from "./utils";
 
 export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inbounds> {
     const inbounds: Array<Inbounds> = []
-    let port = opts.environment.port ?? 0
+    let port = opts.environment.port
     if (isPort(port)) {
         inbounds.push({
             protocol: 'socks',
@@ -18,7 +18,7 @@ export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inboun
         })
     } else {
         const userdata = opts.userdata
-        let port = userdata?.socks?.port ?? 0
+        let port = userdata?.socks?.port
         if (isPort(port)) {
             const socks = userdata!.socks!
             const accounts = socks.accounts
@@ -44,7 +44,7 @@ export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inboun
                 },
             })
         }
-        port = userdata?.http?.port ?? 0
+        port = userdata?.http?.port
         if (isPort(port)) {
             const http = userdata!.http!
             const accounts = http.accounts
@@ -66,7 +66,7 @@ export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inboun
                 },
             })
         }
-        port = userdata?.proxy?.port ?? 0
+        port = userdata?.proxy?.port
         if (isLinux() && isPort(port)) {
             const proxy = userdata!.proxy!
             inbounds.push({
