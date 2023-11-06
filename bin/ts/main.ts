@@ -32,7 +32,7 @@ class myProvider implements Provider {
                 s = `${output}`
             }
         } else {
-            s = `not support`
+            s = `not implemented`
         }
         return `--- ${core.os} ${core.arch} ---
 
@@ -43,13 +43,21 @@ ${s}
      * 啓動透明代理
      */
     turnOn(opts: TurnOptions) {
-        console.log('turn on', opts.url)
+        if (core.os === `linux`) {
+
+        } else {
+            throw new Error(`turnOn not implemented on ${core.os} ${core.arch}`)
+        }
     }
     /**
      * 關閉透明代理
      */
     turnOff(opts: TurnOptions) {
-        console.log('turn off', opts.url)
+        if (core.os === `linux`) {
+
+        } else {
+            throw new Error(`turnOff not implemented on ${core.os} ${core.arch}`)
+        }
     }
 
     /**
@@ -74,6 +82,9 @@ ${s}
             outbounds: generateOutbounds(opts),
             routing: generateRouting(opts),
         }
+        if (core.os === 'linux') {
+            core.sessionStorage.setItem('last', `${opts.fileds.address}`)
+        }
         return {
             content: JSON.stringify(o, undefined, '    '),
             extension: '.json'
@@ -89,6 +100,13 @@ ${s}
         const name = isWindows ? 'xray.exe' : 'xray'
         const args = ['run', '-c', cnf]
         console.log('serve:', name, ...args)
+        if (core.os === 'linux') {
+            const storage = core.sessionStorage
+            const ips = core.lookupHost(storage.getItem('last')!)
+            const s = JSON.stringify(ips)
+            console.log('address:', s)
+            storage.setItem('servers', s)
+        }
         return {
             dir: dir,
             name: `${dir}${separator}${name}`,
