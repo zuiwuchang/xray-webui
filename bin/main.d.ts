@@ -76,7 +76,7 @@ declare module 'xray/core' {
     export function lookupHost(hostname: string): Array<string>
     /**
      * 每次都會創建新的 js 環境調用腳本函數，你可以使用 sessionStorage 在多次調用中共享數據。  
-     * 例如你可以在 configure 調用中存儲下服務器的 ip 地址，然後在 turnOn 調用將服務器 ip 設置到直連白名單中
+     * 例如你可以在 serve 調用中存儲下服務器的 ip 地址，然後在 turnOn 調用將服務器 ip 設置到直連白名單中
      */
     export const sessionStorage: Storage
 
@@ -330,6 +330,6 @@ declare module 'xray/webui' {
          * @param cnf 設定檔案路徑
          * @param opts 生成設定檔的原始參數
          */
-        serve(cnf: string): ServeResult
+        serve(cnf: string, opts: ConfigureOptions<Userdata>): ServeResult
     }
 }

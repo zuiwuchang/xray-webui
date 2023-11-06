@@ -44,7 +44,7 @@ ${s}
      */
     turnOn(opts: TurnOptions) {
         if (core.os === `linux`) {
-
+            console.log('turn on', opts.url)
         } else {
             throw new Error(`turnOn not implemented on ${core.os} ${core.arch}`)
         }
@@ -54,7 +54,7 @@ ${s}
      */
     turnOff(opts: TurnOptions) {
         if (core.os === `linux`) {
-
+            console.log('turn off', opts.url)
         } else {
             throw new Error(`turnOff not implemented on ${core.os} ${core.arch}`)
         }
@@ -82,9 +82,6 @@ ${s}
             outbounds: generateOutbounds(opts),
             routing: generateRouting(opts),
         }
-        if (core.os === 'linux') {
-            core.sessionStorage.setItem('last', `${opts.fileds.address}`)
-        }
         return {
             content: JSON.stringify(o, undefined, '    '),
             extension: '.json'
@@ -93,19 +90,25 @@ ${s}
     /**
      * 返回 啓用 xray 的命令
      */
-    serve(cnf: string): ServeResult {
+    serve(cnf: string, opts: ConfigureOptions<Userdata>): ServeResult {
         const isWindows = core.os == "windows"
         const separator = isWindows ? '\\' : '/'
         const dir = `${core.root}${separator}xray`
         const name = isWindows ? 'xray.exe' : 'xray'
         const args = ['run', '-c', cnf]
-        console.log('serve:', name, ...args)
-        if (core.os === 'linux') {
-            const storage = core.sessionStorage
-            const ips = core.lookupHost(storage.getItem('last')!)
-            const s = JSON.stringify(ips)
-            console.log('address:', s)
-            storage.setItem('servers', s)
+        if (!opts.environment.port) {
+            console.log('serve:', name, ...args)
+            if (core.os === 'linux') {
+                const storage = core.sessionStorage
+                try {
+                    const s = JSON.stringify(core.lookupHost(opts.fileds.address!))
+                    console.log('address:', s)
+                    storage.setItem('servers', s)
+                } catch (e) {
+                    console.warn('address:', e)
+                    storage.removeItem('servers')
+                }
+            }
         }
         return {
             dir: dir,

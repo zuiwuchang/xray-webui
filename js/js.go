@@ -252,7 +252,7 @@ func (vm *Runtime) metadata(self goja.Value, f goja.Callable) (s string, e error
 	s = val.String()
 	return
 }
-func (vm *Runtime) Preview(rawURL string, u *url.URL, strategy uint32, env *Environment) (s, ext string, e error) {
+func (vm *Runtime) Preview(rawURL string, u *url.URL, strategy uint32, env *Environment) (s, ext string, opts goja.Value, e error) {
 	self, f, destroy, e := vm.assertFunction(`metadata`)
 	if e != nil {
 		return
@@ -270,13 +270,14 @@ func (vm *Runtime) Preview(rawURL string, u *url.URL, strategy uint32, env *Envi
 	}
 	for _, metadata := range metadatas {
 		if metadata.Protocol == u.Scheme {
-			s, ext, e = vm.preview(rawURL, u, self, metadata, strategy, env)
+			s, ext, opts, e = vm.preview(rawURL, u, self, metadata, strategy, env)
 			return
 		}
 	}
 	e = errors.New(`unknow scheme: ` + u.Scheme)
 	return
 }
+
 func (vm *Runtime) getFileds(metadata Metadata, u *url.URL) (fileds map[string]string, e error) {
 	fileds = make(map[string]string)
 	var (
@@ -407,7 +408,7 @@ func (vm *Runtime) getFileds(metadata Metadata, u *url.URL) (fileds map[string]s
 	}
 	return
 }
-func (vm *Runtime) preview(rawURL string, u *url.URL, self goja.Value, metadata Metadata, strategy uint32, env *Environment) (s, ext string, e error) {
+func (vm *Runtime) preview(rawURL string, u *url.URL, self goja.Value, metadata Metadata, strategy uint32, env *Environment) (s, ext string, opts goja.Value, e error) {
 	callable, ok := goja.AssertFunction(self.(*goja.Object).Get(`configure`))
 	if !ok {
 		e = errors.New(`script method configure not implemented`)
@@ -451,7 +452,7 @@ func (vm *Runtime) preview(rawURL string, u *url.URL, self goja.Value, metadata 
 	if e != nil {
 		return
 	}
-	opts, e := vm.parse(vm.json, vm.Runtime.ToValue(utils.BytesToString(jstr)))
+	opts, e = vm.parse(vm.json, vm.Runtime.ToValue(utils.BytesToString(jstr)))
 	if e != nil {
 		return
 	}
@@ -518,7 +519,7 @@ func (vm *Runtime) Test(ctx context.Context, rawURL string, u *url.URL, getURL s
 }
 func (vm *Runtime) TestAtPort(ctx context.Context, rawURL string, u *url.URL, port uint16, getURL string) (duration time.Duration, e error) {
 	// 生成配置
-	s, ext, e := vm.Preview(rawURL, u, 1, &Environment{
+	s, ext, opts, e := vm.Preview(rawURL, u, 1, &Environment{
 		Port: port,
 	})
 	if e != nil {
@@ -555,7 +556,7 @@ func (vm *Runtime) TestAtPort(ctx context.Context, rawURL string, u *url.URL, po
 	} else if destroy != nil {
 		defer destroy(self)
 	}
-	ret, e := f(self, vm.Runtime.ToValue(name))
+	ret, e := f(self, vm.Runtime.ToValue(name), opts)
 	if e != nil {
 		return
 	}
@@ -646,7 +647,7 @@ func (vm *Runtime) Start(ctx context.Context, info *data.Last) (cmd *exec.Cmd, e
 		return
 	}
 	// 生成配置
-	s, ext, e := vm.Preview(info.URL, u, info.Strategy, &Environment{})
+	s, ext, opts, e := vm.Preview(info.URL, u, info.Strategy, &Environment{})
 	if e != nil {
 		return
 	}
@@ -687,7 +688,7 @@ func (vm *Runtime) Start(ctx context.Context, info *data.Last) (cmd *exec.Cmd, e
 	} else if destroy != nil {
 		defer destroy(self)
 	}
-	ret, e := f(self, vm.Runtime.ToValue(name))
+	ret, e := f(self, vm.Runtime.ToValue(name), opts)
 	if e != nil {
 		return
 	}

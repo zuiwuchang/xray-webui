@@ -164,7 +164,7 @@ func (h Proxy) Preview(c *gin.Context) {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
 	}
-	s, _, e := vm.Preview(o.URL, u, o.Strategy, &js.Environment{})
+	s, _, _, e := vm.Preview(o.URL, u, o.Strategy, &js.Environment{})
 	if e != nil {
 		c.String(http.StatusInternalServerError, e.Error())
 		return
