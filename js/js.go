@@ -555,7 +555,7 @@ func (vm *Runtime) TestAtPort(ctx context.Context, rawURL string, u *url.URL, po
 	} else if destroy != nil {
 		defer destroy(self)
 	}
-	ret, e := f(self, vm.Runtime.ToValue(basePath), vm.Runtime.ToValue(name))
+	ret, e := f(self, vm.Runtime.ToValue(name))
 	if e != nil {
 		return
 	}
@@ -577,18 +577,25 @@ func (vm *Runtime) TestAtPort(ctx context.Context, rawURL string, u *url.URL, po
 	cmd := exec.Command(obj.Name, obj.Args...)
 	// cmd.Stdout = os.Stdout
 	// cmd.Stderr = os.Stderr
+	// cmd.Stdout = writer.Writer()
+	// cmd.Stderr = cmd.Stdout
 	e = cmd.Start()
 	if e != nil {
 		return
 	}
+	defer func() {
+		cmd.Process.Kill()
+		cmd.Wait()
+	}()
 	done := make(chan error, 1)
-	at := time.Now()
+	var at time.Time
 	// 發送代理請求測試
 	go func() {
 		// 等待進程就緒
 		timer := time.NewTimer(time.Second * 2)
 		select {
 		case <-timer.C:
+			at = time.Now()
 			done <- vm.getURL(ctx, port, getURL)
 		case <-ctx.Done():
 			if !timer.Stop() {
@@ -600,7 +607,6 @@ func (vm *Runtime) TestAtPort(ctx context.Context, rawURL string, u *url.URL, po
 	select {
 	case <-ctx.Done():
 		e = ctx.Err()
-		cmd.Process.Kill()
 	case err := <-done:
 		if err == nil {
 			duration = time.Since(at)

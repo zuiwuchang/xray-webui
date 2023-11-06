@@ -266,6 +266,7 @@ func (s *_Server) doStart(req startRequest) (e error) {
 	e = req.ctx.Err()
 	if e != nil {
 		cmd.Process.Kill()
+		cmd.Wait()
 		return
 	}
 
