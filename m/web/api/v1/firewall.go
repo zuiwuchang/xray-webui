@@ -70,6 +70,9 @@ func (h Firewall) on(c *gin.Context) {
 	}
 	e = vm.TurnOn(o.URL, u)
 	if e != nil {
+		slog.Warn("firewall on error",
+			log.Error, e,
+		)
 		c.String(http.StatusInternalServerError, e.Error())
 	}
 }
@@ -90,7 +93,7 @@ func (h Firewall) off(c *gin.Context) {
 
 	vm, e := js.New(configure.Default().System.Script)
 	if e != nil {
-		slog.Warn("firewall on error",
+		slog.Warn("firewall off error",
 			log.Error, e,
 		)
 		c.String(http.StatusInternalServerError, e.Error())
@@ -98,6 +101,9 @@ func (h Firewall) off(c *gin.Context) {
 	}
 	e = vm.TurnOff(o.URL, u)
 	if e != nil {
+		slog.Warn("firewall off error",
+			log.Error, e,
+		)
 		c.String(http.StatusInternalServerError, e.Error())
 	}
 }

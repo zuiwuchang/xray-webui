@@ -4,7 +4,7 @@ exports.generateRouting = void 0;
 const utils_1 = require("./utils");
 const rule_1 = require("./strategy/rule");
 function generateRouting(opts) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     if ((0, utils_1.isPort)((_a = opts.environment.port) !== null && _a !== void 0 ? _a : 0)) {
         return;
     }
@@ -64,11 +64,15 @@ function generateRouting(opts) {
     }
     const rules = [
         // 攔截域名解析
-        {
+        ((_c = (_b = opts.userdata) === null || _b === void 0 ? void 0 : _b.proxy) === null || _c === void 0 ? void 0 : _c.tproxy) ? {
             type: 'field',
             inboundTag: ['in-proxy'],
             port: 53,
             outboundTag: 'out-dns'
+        } : {
+            type: 'field',
+            inboundTag: ['in-proxy'],
+            outboundTag: 'out-proxy'
         },
         {
             type: 'field',
@@ -78,9 +82,9 @@ function generateRouting(opts) {
     ];
     // 阻止訪問
     const block = new rule_1.Rule().pushDomain(strategy.blockDomain).pushIP(strategy.blockIP);
-    const routing = (_b = opts.userdata) === null || _b === void 0 ? void 0 : _b.routing;
+    const routing = (_d = opts.userdata) === null || _d === void 0 ? void 0 : _d.routing;
     if (routing) {
-        const bittorrent = (_c = routing.bittorrent) !== null && _c !== void 0 ? _c : '';
+        const bittorrent = (_e = routing.bittorrent) !== null && _e !== void 0 ? _e : '';
         if (bittorrent != '') {
             rules.push({
                 type: 'field',

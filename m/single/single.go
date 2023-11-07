@@ -18,6 +18,7 @@ import (
 	"github.com/zuiwuchang/xray_webui/db/manipulator"
 	"github.com/zuiwuchang/xray_webui/js"
 	"github.com/zuiwuchang/xray_webui/log"
+	"github.com/zuiwuchang/xray_webui/utils"
 )
 
 func Start(ctx context.Context, info *data.Last) error {
@@ -54,6 +55,26 @@ func Run() {
 			if e != nil {
 				slog.Warn(`start last fail`, log.Error, e)
 				return
+			}
+			if general.Firewall {
+				u, e := utils.ParseRequestURI(last.URL)
+				if e != nil {
+					return
+				}
+				vm, e := js.New(configure.Default().System.Script)
+				if e != nil {
+					slog.Warn("firewall last on error",
+						log.Error, e,
+					)
+					return
+				}
+				e = vm.TurnOn(last.URL, u)
+				if e != nil {
+					slog.Warn("firewall last on error",
+						log.Error, e,
+					)
+					return
+				}
 			}
 		}
 	}

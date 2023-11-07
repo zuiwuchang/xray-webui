@@ -27,15 +27,15 @@ export function generateOutbounds(opts: ConfigureOptions<Userdata>): Array<Outbo
         return [generateOutbound(opts)]
     }
     const outbound = generateOutbound(opts)
+    const mark = opts.userdata?.proxy?.mark ?? 99
 
-    const sockopt = {
-        mark: opts.userdata?.proxy?.mark ?? 99,
-    }
     const freedom: Freedom = {
         tag: 'out-freedom',
         protocol: 'freedom',
         streamSettings: {
-            sockopt: sockopt,
+            sockopt: {
+                mark: mark,
+            },
         },
     }
     const blackhole: Blackhole = {
@@ -52,9 +52,12 @@ export function generateOutbounds(opts: ConfigureOptions<Userdata>): Array<Outbo
             port: 53,
         },
         streamSettings: {
-            sockopt: sockopt,
+            sockopt: {
+                mark: mark,
+            },
         },
     }
+
     return opts.strategy.value < 5 ? [outbound, freedom, blackhole, dns] : [freedom, outbound, blackhole, dns]
 }
 function generateOutbound(opts: ConfigureOptions<Userdata>): Outbounds {

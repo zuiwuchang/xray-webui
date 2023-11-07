@@ -116,9 +116,10 @@ done
             }
         }
         strs.push(`iptables -t nat -A XRAY_REDIRECT -m mark --mark ${mark} -j RETURN # 放行所有 mark ${mark} 的流量
-        iptables -t nat -A XRAY_REDIRECT -p tcp -j REDIRECT --to-ports "$PROXY_PORT" # tcp 到 tproxy 代理端口
-        iptables -t nat -A PREROUTING -p tcp -j XRAY_REDIRECT # 對局域網設備進行代理
-        iptables -t nat -A OUTPUT -p tcp -j XRAY_REDIRECT # 對本機進行代理`)
+
+iptables -t nat -A XRAY_REDIRECT -p tcp -j REDIRECT --to-ports "$PROXY_PORT" # tcp 到 tproxy 代理端口
+iptables -t nat -A PREROUTING -p tcp -j XRAY_REDIRECT # 對局域網設備進行代理
+iptables -t nat -A OUTPUT -p tcp -j XRAY_REDIRECT # 對本機進行代理`)
         message = ' turn on redirect success'
     }
     core.exec({

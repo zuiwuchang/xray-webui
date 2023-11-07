@@ -118,7 +118,7 @@ if [[ -f "$name" ]];then
 fi
 source=(
     "$target"
-    etc
+    etc js ts
 )
 exec="${args[@]} ${source[@]}"
 echo $exec

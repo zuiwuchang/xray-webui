@@ -9,14 +9,14 @@ function generateOutbounds(opts) {
         return [generateOutbound(opts)];
     }
     const outbound = generateOutbound(opts);
-    const sockopt = {
-        mark: (_d = (_c = (_b = opts.userdata) === null || _b === void 0 ? void 0 : _b.proxy) === null || _c === void 0 ? void 0 : _c.mark) !== null && _d !== void 0 ? _d : 99,
-    };
+    const mark = (_d = (_c = (_b = opts.userdata) === null || _b === void 0 ? void 0 : _b.proxy) === null || _c === void 0 ? void 0 : _c.mark) !== null && _d !== void 0 ? _d : 99;
     const freedom = {
         tag: 'out-freedom',
         protocol: 'freedom',
         streamSettings: {
-            sockopt: sockopt,
+            sockopt: {
+                mark: mark,
+            },
         },
     };
     const blackhole = {
@@ -32,7 +32,9 @@ function generateOutbounds(opts) {
             port: 53,
         },
         streamSettings: {
-            sockopt: sockopt,
+            sockopt: {
+                mark: mark,
+            },
         },
     };
     return opts.strategy.value < 5 ? [outbound, freedom, blackhole, dns] : [freedom, outbound, blackhole, dns];
