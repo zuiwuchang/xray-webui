@@ -2,14 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateOutbounds = void 0;
 const utils_1 = require("./utils");
-function generateOutbounds(opts) {
-    var _a, _b, _c, _d;
-    const isport = (0, utils_1.isPort)((_a = opts.environment.port) !== null && _a !== void 0 ? _a : 0);
+function generateOutbounds(opts, ip) {
+    var _a, _b, _c;
+    const isport = (0, utils_1.isPort)(opts.environment.port);
     if (isport) {
         return [generateOutbound(opts)];
     }
-    const outbound = generateOutbound(opts);
-    const mark = (_d = (_c = (_b = opts.userdata) === null || _b === void 0 ? void 0 : _b.proxy) === null || _c === void 0 ? void 0 : _c.mark) !== null && _d !== void 0 ? _d : 99;
+    const outbound = generateOutbound(opts, ip);
+    const mark = (_c = (_b = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.proxy) === null || _b === void 0 ? void 0 : _b.mark) !== null && _c !== void 0 ? _c : 99;
     const freedom = {
         tag: 'out-freedom',
         protocol: 'freedom',
@@ -40,23 +40,23 @@ function generateOutbounds(opts) {
     return opts.strategy.value < 5 ? [outbound, freedom, blackhole, dns] : [freedom, outbound, blackhole, dns];
 }
 exports.generateOutbounds = generateOutbounds;
-function generateOutbound(opts) {
+function generateOutbound(opts, ip) {
     switch (opts.environment.scheme) {
         case 'vless':
-            return generateVLess(opts);
+            return generateVLess(opts, ip);
         case 'vmess':
-            return generateVMess(opts);
+            return generateVMess(opts, ip);
         case 'trojan':
-            return generateTrojan(opts);
+            return generateTrojan(opts, ip);
         case 'ss':
-            return generateShadowsocks(opts);
+            return generateShadowsocks(opts, ip);
         case 'socks':
-            return generateSocks(opts);
+            return generateSocks(opts, ip);
         default:
             throw new Error(`unknow scheme: ${opts.environment.scheme}`);
     }
 }
-function generateSocks(opts) {
+function generateSocks(opts, ip) {
     var _a, _b;
     const fileds = opts.fileds;
     const username = (_a = fileds.username) !== null && _a !== void 0 ? _a : '';
@@ -67,7 +67,7 @@ function generateSocks(opts) {
         settings: {
             servers: [
                 {
-                    address: fileds.address,
+                    address: ip !== null && ip !== void 0 ? ip : fileds.address,
                     port: (0, utils_1.getPort)(fileds.port),
                     users: username != '' || password != '' ? [
                         {
@@ -81,7 +81,7 @@ function generateSocks(opts) {
         streamSettings: new OutboundStream(opts).generate(),
     };
 }
-function generateShadowsocks(opts) {
+function generateShadowsocks(opts, ip) {
     const fileds = opts.fileds;
     return {
         tag: 'out-proxy',
@@ -89,7 +89,7 @@ function generateShadowsocks(opts) {
         settings: {
             servers: [
                 {
-                    address: fileds.address,
+                    address: ip !== null && ip !== void 0 ? ip : fileds.address,
                     port: (0, utils_1.getPort)(fileds.port),
                     method: fileds.method,
                     password: fileds.password,
@@ -100,7 +100,7 @@ function generateShadowsocks(opts) {
         streamSettings: new OutboundStream(opts).generate(),
     };
 }
-function generateTrojan(opts) {
+function generateTrojan(opts, ip) {
     const fileds = opts.fileds;
     const flow = fileds.flow;
     return {
@@ -109,7 +109,7 @@ function generateTrojan(opts) {
         settings: {
             servers: [
                 {
-                    address: fileds.address,
+                    address: ip !== null && ip !== void 0 ? ip : fileds.address,
                     port: (0, utils_1.getPort)(fileds.port),
                     password: fileds.userID,
                     flow: flow,
@@ -120,7 +120,7 @@ function generateTrojan(opts) {
         streamSettings: new OutboundStream(opts).generate(),
     };
 }
-function generateVMess(opts) {
+function generateVMess(opts, ip) {
     var _a;
     const fileds = opts.fileds;
     let encryption = (_a = fileds.encryption) !== null && _a !== void 0 ? _a : 'auto';
@@ -133,7 +133,7 @@ function generateVMess(opts) {
         settings: {
             vnext: [
                 {
-                    address: fileds.address,
+                    address: ip !== null && ip !== void 0 ? ip : fileds.address,
                     port: (0, utils_1.getPort)(fileds.port),
                     users: [
                         {
@@ -149,7 +149,7 @@ function generateVMess(opts) {
         streamSettings: new OutboundStream(opts).generate(),
     };
 }
-function generateVLess(opts) {
+function generateVLess(opts, ip) {
     var _a;
     const fileds = opts.fileds;
     return {
@@ -158,7 +158,7 @@ function generateVLess(opts) {
         settings: {
             vnext: [
                 {
-                    address: fileds.address,
+                    address: ip !== null && ip !== void 0 ? ip : fileds.address,
                     port: (0, utils_1.getPort)(fileds.port),
                     users: [
                         {

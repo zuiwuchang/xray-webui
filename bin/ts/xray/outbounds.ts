@@ -21,12 +21,12 @@ import { Freedom } from "./outbounds/freedom";
 import { Blackhole } from "./outbounds/blackhole";
 import { DNS } from "./outbounds/dns";
 
-export function generateOutbounds(opts: ConfigureOptions<Userdata>): Array<Outbounds> {
-    const isport = isPort(opts.environment.port ?? 0)
+export function generateOutbounds(opts: ConfigureOptions<Userdata>, ip?: string): Array<Outbounds> {
+    const isport = isPort(opts.environment.port)
     if (isport) {
         return [generateOutbound(opts)]
     }
-    const outbound = generateOutbound(opts)
+    const outbound = generateOutbound(opts, ip)
     const mark = opts.userdata?.proxy?.mark ?? 99
 
     const freedom: Freedom = {
@@ -60,23 +60,23 @@ export function generateOutbounds(opts: ConfigureOptions<Userdata>): Array<Outbo
 
     return opts.strategy.value < 5 ? [outbound, freedom, blackhole, dns] : [freedom, outbound, blackhole, dns]
 }
-function generateOutbound(opts: ConfigureOptions<Userdata>): Outbounds {
+function generateOutbound(opts: ConfigureOptions<Userdata>, ip?: string): Outbounds {
     switch (opts.environment.scheme) {
         case 'vless':
-            return generateVLess(opts)
+            return generateVLess(opts, ip)
         case 'vmess':
-            return generateVMess(opts)
+            return generateVMess(opts, ip)
         case 'trojan':
-            return generateTrojan(opts)
+            return generateTrojan(opts, ip)
         case 'ss':
-            return generateShadowsocks(opts)
+            return generateShadowsocks(opts, ip)
         case 'socks':
-            return generateSocks(opts)
+            return generateSocks(opts, ip)
         default:
             throw new Error(`unknow scheme: ${opts.environment.scheme}`)
     }
 }
-function generateSocks(opts: ConfigureOptions<Userdata>): Socks {
+function generateSocks(opts: ConfigureOptions<Userdata>, ip?: string): Socks {
     const fileds = opts.fileds
     const username = fileds.username ?? ''
     const password = fileds.password ?? ''
@@ -86,7 +86,7 @@ function generateSocks(opts: ConfigureOptions<Userdata>): Socks {
         settings: {
             servers: [
                 {
-                    address: fileds.address!,
+                    address: ip ?? fileds.address!,
                     port: getPort(fileds.port),
                     users: username != '' || password != '' ? [
                         {
@@ -100,7 +100,7 @@ function generateSocks(opts: ConfigureOptions<Userdata>): Socks {
         streamSettings: new OutboundStream(opts).generate(),
     }
 }
-function generateShadowsocks(opts: ConfigureOptions<Userdata>): Shadowsocks {
+function generateShadowsocks(opts: ConfigureOptions<Userdata>, ip?: string): Shadowsocks {
     const fileds = opts.fileds
     return {
         tag: 'out-proxy',
@@ -108,7 +108,7 @@ function generateShadowsocks(opts: ConfigureOptions<Userdata>): Shadowsocks {
         settings: {
             servers: [
                 {
-                    address: fileds.address!,
+                    address: ip ?? fileds.address!,
                     port: getPort(fileds.port),
                     method: fileds.method! as any,
                     password: fileds.password!,
@@ -119,7 +119,7 @@ function generateShadowsocks(opts: ConfigureOptions<Userdata>): Shadowsocks {
         streamSettings: new OutboundStream(opts).generate(),
     }
 }
-function generateTrojan(opts: ConfigureOptions<Userdata>): Trojan {
+function generateTrojan(opts: ConfigureOptions<Userdata>, ip?: string): Trojan {
     const fileds: TrojanFileds = opts.fileds
     const flow = fileds.flow
     return {
@@ -128,7 +128,7 @@ function generateTrojan(opts: ConfigureOptions<Userdata>): Trojan {
         settings: {
             servers: [
                 {
-                    address: fileds.address!,
+                    address: ip ?? fileds.address!,
                     port: getPort(fileds.port),
                     password: fileds.userID!,
                     flow: flow,
@@ -139,7 +139,7 @@ function generateTrojan(opts: ConfigureOptions<Userdata>): Trojan {
         streamSettings: new OutboundStream(opts).generate(),
     }
 }
-function generateVMess(opts: ConfigureOptions<Userdata>): VMess {
+function generateVMess(opts: ConfigureOptions<Userdata>, ip?: string): VMess {
     const fileds: VMessFileds = opts.fileds
     let encryption = fileds.encryption ?? 'auto'
     if (encryption == '') {
@@ -151,7 +151,7 @@ function generateVMess(opts: ConfigureOptions<Userdata>): VMess {
         settings: {
             vnext: [
                 {
-                    address: fileds.address!,
+                    address: ip ?? fileds.address!,
                     port: getPort(fileds.port),
                     users: [
                         {
@@ -167,7 +167,7 @@ function generateVMess(opts: ConfigureOptions<Userdata>): VMess {
         streamSettings: new OutboundStream(opts).generate(),
     }
 }
-function generateVLess(opts: ConfigureOptions<Userdata>): VLess {
+function generateVLess(opts: ConfigureOptions<Userdata>, ip?: string): VLess {
     const fileds: VLessFileds = opts.fileds
     return {
         tag: 'out-proxy',
@@ -175,7 +175,7 @@ function generateVLess(opts: ConfigureOptions<Userdata>): VLess {
         settings: {
             vnext: [
                 {
-                    address: fileds.address!,
+                    address: ip ?? fileds.address!,
                     port: getPort(fileds.port),
                     users: [
                         {

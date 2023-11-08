@@ -7,6 +7,7 @@ import (
 
 func init() {
 	gob.Register(General{})
+
 }
 
 const SettingsBucket = "settings"
@@ -137,8 +138,17 @@ local accounts = [
 		// 用戶數組默認不需要認證
 		// accounts: accounts,
 	},
+	// 一個 dns 服務入口，只能解析 A/AAAA 記錄 用於在某些情況下提供無污染的 域名解析
+	dns: {
+		// 監聽地址，默認 '0.0.0.0'
+		// bind: '127.0.0.1',
+		// 監聽端口，如果無效 則不啓用 dns 服務
+		// port: 10053,
+	},
 	// 透明代理設定
 	proxy: {
+		// 監聽地址，默認 '0.0.0.0'
+		// bind: '127.0.0.1',
 		// 監聽端口，如果無效 則不啓用 透明代理
 		port: 12345,
 		// 如果爲 true，則在 linnux 下使用 tproxy 作爲全局代理，否則使用 redirect 作爲全局代理

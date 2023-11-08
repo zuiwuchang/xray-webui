@@ -13,6 +13,7 @@ import { Userdata } from "./xray/userdata";
 import { generateOutbounds } from "./xray/outbounds";
 import { generateRouting } from "./xray/routing";
 import { turnOffLinux, turnOnLinux } from "./proxy/linux";
+import { isPort } from "./xray/utils";
 export function create(): Provider {
     return new myProvider()
 }
@@ -76,11 +77,23 @@ ${s}
      * 返回 xray 設定
      */
     configure(opts: ConfigureOptions<Userdata>): ConfigureResult {
+        let ips: undefined | Array<string>
+        let ip: undefined | string
+        const address = opts.fileds.address!
+        const arrs = core.lookupHost(address)
+        if (arrs && arrs.length > 0) {
+            core.sessionStorage.setItem('dns', JSON.stringify({
+                address: address,
+                ips: arrs,
+            }))
+            ips = arrs
+            ip = arrs[0]
+        }
         const o: Xray = {
             log: generateLog(opts),
-            dns: generateDNS(opts),
+            dns: generateDNS(opts, ips),
             inbounds: generateInbounds(opts),
-            outbounds: generateOutbounds(opts),
+            outbounds: generateOutbounds(opts, ip),
             routing: generateRouting(opts),
         }
         return {
@@ -100,14 +113,13 @@ ${s}
         if (!opts.environment.port) {
             console.log('serve:', name, ...args)
             if (core.os === 'linux') {
-                const storage = core.sessionStorage
                 try {
-                    const s = JSON.stringify(core.lookupHost(opts.fileds.address!))
+                    const s = JSON.stringify(this._servers(opts.fileds.address!))
                     console.log('address:', s)
-                    storage.setItem('servers', s)
+                    core.sessionStorage.setItem('servers', s)
                 } catch (e) {
                     console.warn('address:', e)
-                    storage.removeItem('servers')
+                    core.sessionStorage.removeItem('servers')
                 }
             }
         }
@@ -116,5 +128,22 @@ ${s}
             name: `${dir}${separator}${name}`,
             args: args,
         }
+    }
+    /**
+     * 返回緩存的服務器 ip
+     */
+    private _servers(address: string): Array<string> {
+        const s = core.sessionStorage.getItem('dns') ?? ''
+        if (s != '') {
+            try {
+                const o = JSON.parse(s)
+                if (o.address == address) {
+                    return o.ips
+                }
+            } catch (e) {
+                console.warn(e)
+            }
+        }
+        return core.lookupHost(address)
     }
 }

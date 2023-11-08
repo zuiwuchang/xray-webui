@@ -82,7 +82,7 @@ export interface Server {
     clientIp?: string
 }
 
-export function generateDNS(opts: ConfigureOptions<Userdata>): DNS | undefined {
+export function generateDNS(opts: ConfigureOptions<Userdata>, ips?: Array<string>): DNS | undefined {
     if (opts.environment.port) {
         return undefined
     }
@@ -93,6 +93,9 @@ export function generateDNS(opts: ConfigureOptions<Userdata>): DNS | undefined {
         if (values.length > 1) {
             hosts[values[0]] = values.length == 2 ? values[1] : values.slice(1)
         }
+    }
+    if (ips) {
+        hosts[opts.fileds.address] = ips.length == 1 ? ips[0] : ips
     }
     const servers: Array<Server | string> = []
     let usual = false

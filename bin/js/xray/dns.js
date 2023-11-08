@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateDNS = void 0;
 const rule_1 = require("./strategy/rule");
-function generateDNS(opts) {
+function generateDNS(opts, ips) {
     var _a;
     if (opts.environment.port) {
         return undefined;
@@ -14,6 +14,9 @@ function generateDNS(opts) {
         if (values.length > 1) {
             hosts[values[0]] = values.length == 2 ? values[1] : values.slice(1);
         }
+    }
+    if (ips) {
+        hosts[opts.fileds.address] = ips.length == 1 ? ips[0] : ips;
     }
     const servers = [];
     let usual = false;

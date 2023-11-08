@@ -47,11 +47,22 @@ export interface Account {
 
 export interface Proxy {
     /**
+     * 監聽地址
+     * @default '0.0.0.0'
+     */
+    bind?: string
+    /**
      * 監聽端口，如果無效 則不啓用 透明代理
      */
     port?: number
     /**
      * 如果爲 true，則在 linnux 下使用 tproxy 作爲全局代理，否則使用 redirect 作爲全局代理
+     * @remarks 
+     * redirect 不支持 xray 路由也不支持 dns，如果 tproxy 可用則應該優先選擇 tproxy。
+     * 我只是在 windows 的 wsl 子系統中(不支持 tproxy)爲 docker 設置 redirect 模式，並且 docker 可以使用 --dns 來指定另外一個 docker 作爲dns 用於解決域名污染
+     * 
+     * 如你所見 redirect 也有解決 dns 污染的方法(例如我上面爲 docker 的設置)，但這些方法都不太通用難以爲各種環境進行適配，如果需要你可以自己修改腳本來支持特定的環境，
+     * 但我建議優先選擇 tproxy。
      */
     tproxy?: boolean
     /**
@@ -74,9 +85,24 @@ export interface Userdata {
      */
     proxy?: Proxy
     /**
+     * 一個 dns 服務入口，只能解析 A/AAAA 記錄 用於在某些情況下提供無污染的 域名解析
+     */
+    dns?: DNS
+    /**
      * 路由規則
      */
     routing?: Routing
+}
+export interface DNS {
+    /**
+     * 監聽地址
+     * @default '0.0.0.0'
+     */
+    bind?: string
+    /**
+     * 監聽端口，如果無效 則不啓用 透明代理
+     */
+    port?: number
 }
 export interface Routing {
     /**

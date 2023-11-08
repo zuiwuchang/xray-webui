@@ -62,9 +62,15 @@ function generateRouting(opts) {
                 .pushIP(strategy.directIP);
             break;
     }
+    const tproxy = ((_c = (_b = opts.userdata) === null || _b === void 0 ? void 0 : _b.proxy) === null || _c === void 0 ? void 0 : _c.tproxy) ? true : false;
     const rules = [
         // 攔截域名解析
-        ((_c = (_b = opts.userdata) === null || _b === void 0 ? void 0 : _b.proxy) === null || _c === void 0 ? void 0 : _c.tproxy) ? {
+        {
+            type: 'field',
+            inboundTag: ['in-dns'],
+            outboundTag: 'out-dns'
+        },
+        tproxy ? {
             type: 'field',
             inboundTag: ['in-proxy'],
             port: 53,

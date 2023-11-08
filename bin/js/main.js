@@ -103,11 +103,23 @@ ${s}
      * 返回 xray 設定
      */
     configure(opts) {
+        let ips;
+        let ip;
+        const address = opts.fileds.address;
+        const arrs = core.lookupHost(address);
+        if (arrs && arrs.length > 0) {
+            core.sessionStorage.setItem('dns', JSON.stringify({
+                address: address,
+                ips: arrs,
+            }));
+            ips = arrs;
+            ip = arrs[0];
+        }
         const o = {
             log: (0, log_1.generateLog)(opts),
-            dns: (0, dns_1.generateDNS)(opts),
+            dns: (0, dns_1.generateDNS)(opts, ips),
             inbounds: (0, inbounds_1.generateInbounds)(opts),
-            outbounds: (0, outbounds_1.generateOutbounds)(opts),
+            outbounds: (0, outbounds_1.generateOutbounds)(opts, ip),
             routing: (0, routing_1.generateRouting)(opts),
         };
         return {
@@ -127,15 +139,14 @@ ${s}
         if (!opts.environment.port) {
             console.log('serve:', name, ...args);
             if (core.os === 'linux') {
-                const storage = core.sessionStorage;
                 try {
-                    const s = JSON.stringify(core.lookupHost(opts.fileds.address));
+                    const s = JSON.stringify(this._servers(opts.fileds.address));
                     console.log('address:', s);
-                    storage.setItem('servers', s);
+                    core.sessionStorage.setItem('servers', s);
                 }
                 catch (e) {
                     console.warn('address:', e);
-                    storage.removeItem('servers');
+                    core.sessionStorage.removeItem('servers');
                 }
             }
         }
@@ -144,5 +155,24 @@ ${s}
             name: `${dir}${separator}${name}`,
             args: args,
         };
+    }
+    /**
+     * 返回緩存的服務器 ip
+     */
+    _servers(address) {
+        var _a;
+        const s = (_a = core.sessionStorage.getItem('dns')) !== null && _a !== void 0 ? _a : '';
+        if (s != '') {
+            try {
+                const o = JSON.parse(s);
+                if (o.address == address) {
+                    return o.ips;
+                }
+            }
+            catch (e) {
+                console.warn(e);
+            }
+        }
+        return core.lookupHost(address);
     }
 }

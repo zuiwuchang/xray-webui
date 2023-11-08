@@ -145,9 +145,15 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
                 .pushIP(strategy.directIP)
             break
     }
+    const tproxy = opts.userdata?.proxy?.tproxy ? true : false
     const rules: Array<Rule> = [
         // 攔截域名解析
-        opts.userdata?.proxy?.tproxy ? {
+        {
+            type: 'field',
+            inboundTag: ['in-dns'],
+            outboundTag: 'out-dns'
+        },
+        tproxy ? {
             type: 'field',
             inboundTag: ['in-proxy'],
             port: 53,
