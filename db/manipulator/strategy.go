@@ -23,7 +23,7 @@ func (m Strategy) init(tx *bolt.Tx) (bucket *bolt.Bucket, e error) {
 		item data.Strategy
 		err  error
 	)
-	for _, id := range []uint32{1, 2, 3, 4, 5, 6} {
+	for id := uint32(1); id <= 6; id++ {
 		binary.LittleEndian.PutUint32(key[:], id)
 		b := bucket.Get(key[:])
 		err = item.Decode(b)
