@@ -66,20 +66,6 @@ export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inboun
                 },
             })
         }
-        port = userdata?.dns?.port
-        if (isPort(port)) {
-            const dns = userdata!.dns!
-            inbounds.push({
-                protocol: 'dokodemo-door',
-                tag: 'in-dns',
-                listen: dns?.bind ?? '0.0.0.0',
-                port: port,
-                settings: {
-                    network: 'tcp,udp',
-                    followRedirect: true,
-                },
-            })
-        }
         port = userdata?.proxy?.port
         if (isLinux() && isPort(port)) {
             const proxy = userdata!.proxy!

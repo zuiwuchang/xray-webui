@@ -1,4 +1,5 @@
 import { ConfigureOptions } from "xray/webui"
+import { Userdata } from "./userdata"
 
 /**
  * {@link https://xtls.github.io/config/log.html}
@@ -32,11 +33,12 @@ export interface Log {
     dnsLog?: boolean
 }
 
-export function generateLog(opts: ConfigureOptions<any>): Log | undefined {
+export function generateLog(opts: ConfigureOptions<Userdata>): Log | undefined {
     if (opts.environment.port) {
         return undefined
     }
     return {
-        loglevel: 'warning',
+        loglevel: opts.userdata?.log?.level ?? 'warning',
+        dnsLog: opts.userdata?.log?.dns ? true : false,
     }
 }

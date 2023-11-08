@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateInbounds = void 0;
 const utils_1 = require("./utils");
 function generateInbounds(opts) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h;
     const inbounds = [];
     let port = opts.environment.port;
     if ((0, utils_1.isPort)(port)) {
@@ -69,27 +69,13 @@ function generateInbounds(opts) {
                 },
             });
         }
-        port = (_g = userdata === null || userdata === void 0 ? void 0 : userdata.dns) === null || _g === void 0 ? void 0 : _g.port;
-        if ((0, utils_1.isPort)(port)) {
-            const dns = userdata.dns;
-            inbounds.push({
-                protocol: 'dokodemo-door',
-                tag: 'in-dns',
-                listen: (_h = dns === null || dns === void 0 ? void 0 : dns.bind) !== null && _h !== void 0 ? _h : '0.0.0.0',
-                port: port,
-                settings: {
-                    network: 'tcp,udp',
-                    followRedirect: true,
-                },
-            });
-        }
-        port = (_j = userdata === null || userdata === void 0 ? void 0 : userdata.proxy) === null || _j === void 0 ? void 0 : _j.port;
+        port = (_g = userdata === null || userdata === void 0 ? void 0 : userdata.proxy) === null || _g === void 0 ? void 0 : _g.port;
         if ((0, utils_1.isLinux)() && (0, utils_1.isPort)(port)) {
             const proxy = userdata.proxy;
             inbounds.push({
                 protocol: 'dokodemo-door',
                 tag: 'in-proxy',
-                listen: (_k = proxy.bind) !== null && _k !== void 0 ? _k : '0.0.0.0',
+                listen: (_h = proxy.bind) !== null && _h !== void 0 ? _h : '0.0.0.0',
                 port: port,
                 settings: {
                     network: 'tcp,udp',

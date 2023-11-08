@@ -118,6 +118,18 @@ local accounts = [
 	},
 ];
 {
+	// 日誌設定
+	log: {
+		// 要記錄的日誌等級
+		// level: 'debug',      // 調試程序時用到的輸出信息
+		// level: 'info',           // 運行時的狀態信息
+		// level: 'warning',  // 認的設定，發生了一些不影響正常運作的問題時輸出的訊息，但有可能影響使用者的體驗
+		// level: 'error',         // 遇到了無法正常運作的問題，需要立即解決
+		// level: 'none',         // 不記錄任何內容
+
+		// 如果爲 true 啓用 dns 查詢日誌
+		// dnsLog: true,
+	},
 	// socks 代理設定
 	socks: {
 		// 監聽地址，默認 '127.0.0.1'
@@ -138,13 +150,6 @@ local accounts = [
 		// 用戶數組默認不需要認證
 		// accounts: accounts,
 	},
-	// 一個 dns 服務入口，只能解析 A/AAAA 記錄 用於在某些情況下提供無污染的 域名解析
-	dns: {
-		// 監聽地址，默認 '0.0.0.0'
-		// bind: '127.0.0.1',
-		// 監聽端口，如果無效 則不啓用 dns 服務
-		// port: 10053,
-	},
 	// 透明代理設定
 	proxy: {
 		// 監聽地址，默認 '0.0.0.0'
@@ -155,6 +160,10 @@ local accounts = [
 		tproxy: true,
 		// tproxy mark
 		mark: 99,
+		/**
+		* 只有在 linux 下使用 redirect 模式時有效，如果設置會攔截連接 53 端口的 udp/tcp 重定向到此值
+		*/
+	   // dns: '127.0.0.1:10053',
 	},
 	routing: {
 		// 爲 bt 設置出棧 tag

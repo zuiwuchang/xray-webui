@@ -148,25 +148,20 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
     const tproxy = opts.userdata?.proxy?.tproxy ? true : false
     const rules: Array<Rule> = [
         // 攔截域名解析
-        {
-            type: 'field',
-            inboundTag: ['in-dns'],
-            outboundTag: 'out-dns'
-        },
         tproxy ? {
             type: 'field',
             inboundTag: ['in-proxy'],
             port: 53,
-            outboundTag: 'out-dns'
+            outboundTag: 'out-dns',
         } : {
             type: 'field',
             inboundTag: ['in-proxy'],
-            outboundTag: 'out-proxy'
+            outboundTag: 'out-proxy',
         },
         {
             type: 'field',
             ip: ['8.8.8.8', '1.1.1.1'],
-            outboundTag: 'out-proxy'
+            outboundTag: 'out-proxy',
         },
     ]
     // 阻止訪問

@@ -27,7 +27,7 @@ exports.turnOffLinux = exports.turnOnLinux = void 0;
 const core = __importStar(require("xray/core"));
 const utils_1 = require("../xray/utils");
 function turnOnLinux(opts) {
-    var _a, _b, _c, _d, _e, _f, _g, _h;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     const port = (_c = (_b = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.proxy) === null || _b === void 0 ? void 0 : _b.port) !== null && _c !== void 0 ? _c : 0;
     if (!(0, utils_1.isPort)(port)) {
         throw new Error('proxy port invalid');
@@ -141,16 +141,19 @@ done
                 strs.push(`iptables -t nat -A XRAY_REDIRECT -d "${s}" -j RETURN`);
             }
         }
-        console.info(servers);
         strs.push(`iptables -t nat -A XRAY_REDIRECT -m mark --mark ${mark} -j RETURN # 放行所有 mark ${mark} 的流量
 
 iptables -t nat -A XRAY_REDIRECT -p tcp -j REDIRECT --to-ports "$PROXY_PORT" # tcp 到 tproxy 代理端口
 iptables -t nat -A PREROUTING -p tcp -j XRAY_REDIRECT # 對局域網設備進行代理
 iptables -t nat -A OUTPUT -p tcp -j XRAY_REDIRECT # 對本機進行代理
-
-#iptables -t nat -A OUTPUT -p udp -m udp --dport 53 -j DNAT --to-destination 127.0.0.1:10053
-#iptables -t nat -A OUTPUT -p tcp -m tcp --dport 53 -j DNAT --to-destination 127.0.0.1:10053
 `);
+        const dns = (_l = (_k = (_j = opts.userdata) === null || _j === void 0 ? void 0 : _j.proxy) === null || _k === void 0 ? void 0 : _k.dns) !== null && _l !== void 0 ? _l : '';
+        if (dns != '') {
+            strs.push(`
+iptables -t nat -A OUTPUT -p udp -m udp --dport 53 -j DNAT --to-destination ${dns}
+iptables -t nat -A OUTPUT -p tcp -m tcp --dport 53 -j DNAT --to-destination ${dns}
+`);
+        }
         message = ' turn on redirect success';
     }
     core.exec({
@@ -161,7 +164,7 @@ iptables -t nat -A OUTPUT -p tcp -j XRAY_REDIRECT # 對本機進行代理
 }
 exports.turnOnLinux = turnOnLinux;
 function turnOffLinux(opts) {
-    var _a, _b;
+    var _a, _b, _c, _d, _e;
     const strs = [];
     let message;
     if ((_b = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.proxy) === null || _b === void 0 ? void 0 : _b.tproxy) {
@@ -210,8 +213,14 @@ fi
         message = ' turn off tproxy success';
     }
     else {
-        strs.push(`#!/bin/bash
-set -e
+        strs.push(`#!/bin/bash`);
+        const dns = (_e = (_d = (_c = opts.userdata) === null || _c === void 0 ? void 0 : _c.proxy) === null || _d === void 0 ? void 0 : _d.dns) !== null && _e !== void 0 ? _e : '';
+        if (dns != '') {
+            strs.push(`iptables -t nat -D OUTPUT -p udp -m udp --dport 53 -j DNAT --to-destination ${dns}
+iptables -t nat -D OUTPUT -p tcp -m tcp --dport 53 -j DNAT --to-destination ${dns}
+`);
+        }
+        strs.push(`set -e
 
 # 清空 XRAY
 if iptables-save | grep -wq '\\-A PREROUTING \\-p tcp \\-j XRAY_REDIRECT'; then
