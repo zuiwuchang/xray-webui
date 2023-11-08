@@ -26,10 +26,10 @@
 /static/3rdpartylicenses.txt
 
 /.tmp/
-/xray_webui
-/xray_webuid
-/bin/xray_webui
-/bin/xray_webuid
+/xray-webui
+/xray-webuid
+/bin/xray-webui
+/bin/xray-webuid
 /bin/var/
 /bin/xray/
 

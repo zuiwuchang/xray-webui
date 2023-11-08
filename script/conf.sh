@@ -1,5 +1,5 @@
-Target="xray_webui"
-Docker="github.com/zuiwuchang/xray_webui"
+Target="xray-webui"
+Docker="github.com/zuiwuchang/xray-webui"
 Dir=$(cd "$(dirname $BASH_SOURCE)/.." && pwd)
 Version="v0.0.1"
 View=1

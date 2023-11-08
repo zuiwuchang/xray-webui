@@ -119,6 +119,7 @@ fi
 source=(
     "$target"
     etc js ts
+    tsconfig.json main.d.ts
 )
 other=()
 case "$os" in
