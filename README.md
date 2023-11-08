@@ -55,7 +55,7 @@ systemctl status xray-webui.service
 
 # 設定
 
-設定當是一個 [jsonnet](https://jsonnet.org/)，如果你不理解 jsonnet 你可以簡單的把它看作是一個比較容易書寫的 json。默認的設定檔都在主程序所在位置的 etc 檔案夾下
+設定檔是一個 [jsonnet](https://jsonnet.org/)，如果你不理解 jsonnet 你可以簡單的把它看作是一個比較容易書寫的 json。默認的設定檔都在主程序所在位置的 etc 檔案夾下
 
 通常你只需要修改 ./etc/cnf/http.libsonnet 中的 Addr 來修改 webui 的監聽端口，以及 Accounts 來替換掉默認的管理用戶名密碼就好
 
@@ -72,7 +72,7 @@ systemctl status xray-webui.service
 
 xray-webui 默認加載一個 js(js/main.js) 腳本，腳本必須導出一個 `export function create(): Provider` 函數
 
-Provider 會橋接網頁 ui 以及對底層 xray 的調用，main.d.ts 中有詳細的定義，此外 ts 檔案夾下存放了一個官方維護的腳本，你可以參數它按需編寫自己的腳本
+Provider 會橋接網頁 ui 以及對底層 xray 的調用，main.d.ts 中有詳細的定義，此外 ts 檔案夾下存放了一個官方維護的腳本，你可以參考它按需編寫自己的腳本
 
 ```
 /**
@@ -121,7 +121,7 @@ export interface Provider {
 * **configure** 這個函數應該爲 xray 生成設定檔案的內容，以供後續使用它來啓動 xray
 * **serve** 這個函數應該返回啓動 xray 的命令，cnf 是存儲了 configure 生成內容的檔案路徑
 
-一些系統支持設置透明代理(目前官方只維護了 linux 腳本)，你可以修改下述三個函數來自定義如何啓動與關閉你所在平臺的透明代理
+一些系統支持設置透明代理(目前官方只維護了 linux windows 腳本)，你可以修改下述三個函數來自定義如何啓動與關閉你所在平臺的透明代理
 
 * **firewall** 它返回的內容會被顯示到網頁 `/settings/firewall` 頁面。用於顯示當前網頁設定(linux 目前只是打印了 iptables-save 設定)
 * **turnOn** 它在用戶點擊網頁上的**啓用透明代理**等按鈕時被調用。(linux 目前是調用了 iptable 設置代理規則)
@@ -155,9 +155,9 @@ tproxy 擁有最完整的支持，它可以正確代理 udp/tcp。並且 xray �
 
 > 切換了 tproxy/redirect 模式後，需要重啓 xray 進程在啓用透明代理。因爲不同模式需要生成不同的 xray 設定。
 
-redirect 只代理了 tcp 數據，並且因爲無法區分 xray 出棧流量所以除了到服務器和私有地址之外的所有地址都將使用代理訪問。這意味着任何策略和 xray 的路由都無法正常工作，所有流量都將結果代理無法分流朝鮮和非朝鮮。
+redirect 只代理了 tcp 數據，並且因爲無法區分 xray 出棧流量所以除了到服務器和私有地址之外的所有地址都將使用代理訪問。這意味着任何策略和 xray 的路由都無法正常工作，所有流量都將經過代理而無法分流朝鮮和非朝鮮。
 
-redirect 模式下只處理了 tcp 數據，所以遇到 dns 污染無能爲力，但你可以子在 userdata 中設置一個 proxy.dns 值 (後續例子中假設它被設置爲 '127.0.0.1:10053')，這樣在啓動透明代理時腳本會自動創建下述規則將 dns 流量重新定位到一個無污染的 dns 服務器
+redirect 模式下只處理了 tcp 數據，所以遇到 dns 污染無能爲力，但你可以在 userdata 中設置一個 proxy.dns 值 (後續例子中假設它被設置爲 '127.0.0.1:10053')，這樣在啓動透明代理時腳本會自動創建下述規則將 dns 流量重新定位到一個無污染的 dns 服務器
 
 ```
 iptables -t nat -D OUTPUT -p udp -m udp --dport 53 -j DNAT --to-destination 127.0.0.1:10053
@@ -185,7 +185,7 @@ Corefile 是設定檔案在本例子中可以按照如下填寫:
 
 # windows-tun2socks
 
-windows 下需要使用 tun2socks 來支持透明代理，它將創建一個虛擬網卡並且通過需要路由規則來實現透明代理。它面臨的問題和 linux-redirect 類似，無法識別出 xray 的出棧流量，所以只能將到 xray 服務器的流量方向其它的流量都通過代理訪問。這導致策略和 xray 的路由都會失效，無法對朝鮮和非朝鮮流量進行分流
+windows 下需要使用 tun2socks 來支持透明代理，它將創建一個虛擬網卡並且通過修改路由規則來實現透明代理。它面臨的問題和 linux-redirect 類似，無法識別出 xray 的出棧流量，所以只能將到 xray 服務器的流量放行，其它的流量則都通過代理訪問。這導致策略和 xray 的路由都會失效，無法對朝鮮和非朝鮮流量進行分流
 
 
 # mac
