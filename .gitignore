@@ -32,6 +32,7 @@
 /bin/xray-webuid
 /bin/var/
 /bin/xray/
+/bin/db.json
 
 # grpc code
 /protocol/

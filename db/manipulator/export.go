@@ -1,6 +1,7 @@
 package manipulator
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"log/slog"
@@ -9,30 +10,24 @@ import (
 
 	"github.com/zuiwuchang/xray_webui/db/data"
 	"github.com/zuiwuchang/xray_webui/log"
+	"github.com/zuiwuchang/xray_webui/version"
 	bolt "go.etcd.io/bbolt"
 )
 
 type _Root struct {
-	General   *data.General    `json:"general"`
-	Last      *data.Last       `json:"last"`
-	Strategys []*data.Strategy `json:"strategys"`
+	General       *data.General    `json:"general"`
+	Last          *data.Last       `json:"last"`
+	Strategys     []*data.Strategy `json:"strategys"`
+	Subscriptions []*_Subscription `json:"subscriptions"`
 }
 
-func Export(dbpath, filename string) error {
-	db, e := bolt.Open(dbpath, 0600, &bolt.Options{
-		Timeout: time.Second * 5,
-	})
-	if e != nil {
-		return e
-	}
-	defer db.Close()
+type _Subscription struct {
+	data.Subscription
+	Elements []*data.Element `json:"elements"`
+}
+
+func (root *_Root) Pull(db *bolt.DB) error {
 	return db.View(func(tx *bolt.Tx) (e error) {
-		var root _Root
-		f, e := os.Create(filename)
-		if e != nil {
-			return
-		}
-		defer f.Close()
 		bucket := tx.Bucket([]byte(data.SettingsBucket))
 		if bucket == nil {
 			e = fmt.Errorf("bucket not exist : %s", data.SettingsBucket)
@@ -74,16 +69,248 @@ func Export(dbpath, filename string) error {
 			}
 			return nil
 		})
+		if e != nil {
+			return
+		}
 
-		enc := json.NewEncoder(f)
-		enc.SetIndent(``, `	`)
-		e = enc.Encode(&root)
+		bucket = tx.Bucket([]byte(data.SubscriptionBucket))
+		if bucket == nil {
+			e = fmt.Errorf("bucket not exist : %s", data.SubscriptionBucket)
+			return
+		}
+		elementBucket := tx.Bucket([]byte(data.ElementBucket))
+		if bucket == nil {
+			return fmt.Errorf("bucket not exist : %s", data.ElementBucket)
+		}
+
+		e = bucket.ForEach(func(k, v []byte) error {
+			var node data.Subscription
+			e := node.Decode(v)
+			if e == nil {
+				list := elementBucket.Bucket(k)
+				if list == nil {
+					return fmt.Errorf("bucket not exist : %v", binary.LittleEndian.Uint64(k))
+				}
+				var items []*data.Element
+				e = list.ForEach(func(k, v []byte) error {
+					var node data.Element
+					e := node.Decode(v)
+					if e == nil {
+						items = append(items, &node)
+					} else {
+						slog.Warn(`Decode Element error`,
+							log.Error, e,
+						)
+					}
+					return nil
+				})
+				if e != nil {
+					return e
+				}
+				root.Subscriptions = append(root.Subscriptions, &_Subscription{
+					Subscription: node,
+					Elements:     items,
+				})
+			} else {
+				slog.Warn(`Decode Strategy error`,
+					log.Error, e,
+				)
+			}
+			return nil
+		})
 		return
 	})
 
 }
+func (root *_Root) NewBucket(tx *bolt.Tx, name []byte) (bucket *bolt.Bucket, e error) {
+	bucket = tx.Bucket(name)
+	if bucket != nil {
+		e = tx.DeleteBucket(name)
+		if e != nil {
+			bucket = nil
+			return
+		}
+	}
+	bucket, e = tx.CreateBucket(name)
+	return
+}
+func (root *_Root) Push(db *bolt.DB) error {
+	return db.Update(func(tx *bolt.Tx) (e error) {
+		bucketName := []byte(`__private_data`)
+		bucket, e := root.NewBucket(tx, bucketName)
+		if e != nil {
+			return
+		}
+		b := make([]byte, 4)
+		binary.LittleEndian.PutUint32(b, uint32(version.DB))
+		e = bucket.Put([]byte(`version`), b)
+		if e != nil {
+			return
+		}
+
+		bucket, e = root.NewBucket(tx, []byte(data.SubscriptionBucket))
+		if e != nil {
+			return
+		}
+		elementBucket, e := root.NewBucket(tx, []byte(data.ElementBucket))
+		if e != nil {
+			return
+		}
+
+		var last *data.Last
+		for _, node := range root.Subscriptions {
+			subscription, e := bucket.NextSequence()
+			if e != nil {
+				return e
+			}
+			var key [8]byte
+			binary.LittleEndian.PutUint64(key[:], subscription)
+			lastSubscription := false
+			if last == nil && root.Last != nil {
+				lastSubscription = root.Last.Subscription == node.ID
+			}
+			node.ID = subscription
+			val, e := node.Encoder()
+			if e != nil {
+				return e
+			}
+			e = bucket.Put(key[:], val)
+			if e != nil {
+				return e
+			}
+			items, e := elementBucket.CreateBucket(key[:])
+			if e != nil {
+				return e
+			}
+			for _, item := range node.Elements {
+				id, e := items.NextSequence()
+				if e != nil {
+					return e
+				}
+				if last == nil && lastSubscription && item.ID == root.Last.ID {
+					last = root.Last
+					last.Subscription = subscription
+					last.ID = id
+				}
+				var key [8]byte
+				binary.LittleEndian.PutUint64(key[:], id)
+				item.ID = id
+				val, e := item.Encoder()
+				if e != nil {
+					return e
+				}
+				e = items.Put(key[:], val)
+				if e != nil {
+					return e
+				}
+			}
+		}
+
+		bucket, e = root.NewBucket(tx, []byte(data.StrategyBucket))
+		if e != nil {
+			return
+		}
+		keys := make(map[uint32]*data.Strategy)
+		for _, strategy := range root.Strategys {
+			if strategy.ID > 0 && strategy.ID < 7 {
+				keys[strategy.ID] = strategy
+			}
+		}
+		for id := uint32(1); id <= 6; id++ {
+			if _, ok := keys[id]; !ok {
+				keys[id] = &data.Strategy{
+					ID: id,
+				}
+			}
+		}
+		var key [4]byte
+		for _, strategy := range keys {
+			b, e := strategy.Encoder()
+			if e != nil {
+				return e
+			}
+			binary.LittleEndian.PutUint32(key[:], strategy.ID)
+			e = bucket.Put(key[:], b)
+			if e != nil {
+				return e
+			}
+		}
+
+		bucket, e = root.NewBucket(tx, []byte(data.SettingsBucket))
+		if e != nil {
+			return
+		}
+		if last != nil {
+			b, e = last.Encoder()
+			if e != nil {
+				return
+			}
+			e = bucket.Put([]byte(data.SettingsLast), b)
+			if e != nil {
+				return
+			}
+		}
+		if root.General != nil {
+			b, e = root.General.Encoder()
+			if e != nil {
+				return
+			}
+			e = bucket.Put([]byte(data.SettingsGeneral), b)
+			if e != nil {
+				return
+			}
+		}
+		return
+	})
+}
+
+func Export(dbpath, filename string) (e error) {
+	db, e := bolt.Open(dbpath, 0600, &bolt.Options{
+		Timeout: time.Second * 5,
+	})
+	if e != nil {
+		return
+	}
+	defer db.Close()
+
+	var root _Root
+	e = root.Pull(db)
+	if e != nil {
+		return
+	}
+
+	f, e := os.Create(filename)
+	if e != nil {
+		return
+	}
+	defer f.Close()
+	enc := json.NewEncoder(f)
+	enc.SetIndent(``, `	`)
+	e = enc.Encode(&root)
+	return
+}
 
 func Import(dbpath, filename string) (e error) {
+	f, e := os.Open(filename)
+	if e != nil {
+		return
+	}
+	defer f.Close()
+	var root _Root
+	dec := json.NewDecoder(f)
+	e = dec.Decode(&root)
+	if e != nil {
+		return
+	}
 
+	db, e := bolt.Open(dbpath, 0600, &bolt.Options{
+		Timeout: time.Second * 5,
+	})
+	if e != nil {
+		return
+	}
+	defer db.Close()
+
+	e = root.Push(db)
 	return
 }
