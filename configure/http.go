@@ -7,8 +7,6 @@ type HTTP struct {
 	CertFile string
 	KeyFile  string
 
-	Swagger bool
-
 	Option ServerOption
 
 	Accounts []Account

@@ -120,7 +120,16 @@ source=(
     "$target"
     etc js ts
 )
-exec="${args[@]} ${source[@]}"
+other=()
+case "$os" in
+    linux)
+        other=(
+            xray-webui.service
+        )
+    ;;
+esac
+
+exec="${args[@]} ${source[@]} ${other[@]}"
 echo $exec
 eval "$exec >> /dev/null"
 
