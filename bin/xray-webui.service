@@ -1,0 +1,11 @@
+[Unit]
+Description=XRay Web UI Service
+After=network-online.target
+Wants=network-online.target
+ 
+[Service]
+Type=simple
+ExecStart=/opt/xray-webui/xray-webui web
+KillMode=control-group
+Restart=on-failure
+ 

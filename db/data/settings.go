@@ -128,7 +128,7 @@ local accounts = [
 		// level: 'none',         // 不記錄任何內容
 
 		// 如果爲 true 啓用 dns 查詢日誌
-		// dnsLog: true,
+		// log: true,
 	},
 	// socks 代理設定
 	socks: {
@@ -163,7 +163,7 @@ local accounts = [
 		/**
 		* 只有在 linux 下使用 redirect 模式時有效，如果設置會攔截連接 53 端口的 udp/tcp 重定向到此值
 		*/
-	   // dns: '127.0.0.1:10053',
+		// dns: '127.0.0.1:10053',
 	},
 	routing: {
 		// 爲 bt 設置出棧 tag
