@@ -9,3 +9,5 @@ ExecStart=/opt/xray-webui/xray-webui web
 KillMode=control-group
 Restart=on-failure
  
+[Install]
+WantedBy=multi-user.target
