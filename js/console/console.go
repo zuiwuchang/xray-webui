@@ -1,4 +1,4 @@
-package js
+package console
 
 import (
 	"fmt"
@@ -12,11 +12,11 @@ const (
 	ModuleID = `console`
 )
 
-func EnableConsole(runtime *goja.Runtime) {
+func Enable(runtime *goja.Runtime) {
 	runtime.Set("console", require.Require(runtime, "console"))
 }
 
-func RequireConsole(runtime *goja.Runtime, module *goja.Object) {
+func Require(runtime *goja.Runtime, module *goja.Object) {
 	obj := module.Get(`exports`).(*goja.Object)
 	obj.Set(`trace`, nativeTrace)
 	obj.Set(`debug`, nativeDebug)

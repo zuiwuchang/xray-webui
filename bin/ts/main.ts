@@ -13,7 +13,6 @@ import { Userdata } from "./xray/userdata";
 import { generateOutbounds } from "./xray/outbounds";
 import { generateRouting } from "./xray/routing";
 import { turnOffLinux, turnOnLinux } from "./proxy/linux";
-import { isPort } from "./xray/utils";
 export function create(): Provider {
     return new myProvider()
 }
@@ -47,6 +46,8 @@ ${s}
     turnOn(opts: TurnOptions<Userdata>) {
         if (core.os === `linux`) {
             turnOnLinux(opts)
+        } else if (core.os === `windows`) {
+
         } else {
             throw new Error(`turnOn not implemented on ${core.os} ${core.arch}`)
         }
@@ -57,6 +58,8 @@ ${s}
     turnOff(opts: TurnOptions<Userdata>) {
         if (core.os === `linux`) {
             turnOffLinux(opts)
+        } else if (core.os === `windows`) {
+
         } else {
             throw new Error(`turnOff not implemented on ${core.os} ${core.arch}`)
         }

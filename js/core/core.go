@@ -1,4 +1,4 @@
-package js
+package core
 
 import (
 	"bytes"
@@ -10,12 +10,17 @@ import (
 	"sync"
 
 	"github.com/dop251/goja"
+	"github.com/zuiwuchang/xray_webui/js/args"
 	"github.com/zuiwuchang/xray_webui/m/writer"
 	"github.com/zuiwuchang/xray_webui/utils"
 	"github.com/zuiwuchang/xray_webui/version"
 )
 
-func RegisterCore(vm *goja.Runtime, module *goja.Object) {
+const (
+	ModuleID = `xray/core`
+)
+
+func Require(vm *goja.Runtime, module *goja.Object) {
 	obj := module.Get("exports").(*goja.Object)
 	obj.Set(`os`, runtime.GOOS)
 	obj.Set(`arch`, runtime.GOARCH)
@@ -151,83 +156,34 @@ func (n *_Native) printAny(call goja.FunctionCall, ln bool) goja.Value {
 	return nil
 }
 
-func (n *_Native) getString(val goja.Value) (ret string, ok bool) {
-	if val == nil || goja.IsNull(val) || goja.IsUndefined(val) {
-		return
-	}
-	ret, ok = val.Export().(string)
-	return
-}
-func (n *_Native) getStringDefault(val goja.Value, def string) (ret string, ok bool) {
-	if val == nil || goja.IsNull(val) || goja.IsUndefined(val) {
-		ret = def
-		ok = true
-		return
-	}
-	ret, ok = val.Export().(string)
-	return
-}
-func (n *_Native) getStrings(val goja.Value) (ret []string, ok bool) {
-	if val == nil || goja.IsNull(val) || goja.IsUndefined(val) {
-		return
-	}
-	args, ok := val.Export().([]any)
-	if ok {
-		ret = make([]string, len(args))
-		for i, arg := range args {
-			ret[i] = fmt.Sprint(arg)
-		}
-	}
-	return
-}
-
-func (n *_Native) getStringsDefault(val goja.Value, def []string) (ret []string, ok bool) {
-	if val == nil || goja.IsNull(val) || goja.IsUndefined(val) {
-		ret = def
-		ok = true
-		return
-	}
-	ret, ok = n.getStrings(val)
-	return
-}
-func (n *_Native) getBoolDefault(val goja.Value, def bool) (ret bool, ok bool) {
-	if val == nil || goja.IsNull(val) || goja.IsUndefined(val) {
-		ret = def
-		ok = true
-		return
-	}
-	ret, ok = val.Export().(bool)
-	return
-}
-
 func (n *_Native) exec(call goja.FunctionCall) goja.Value {
 	obj, ok := call.Argument(0).(*goja.Object)
 	if !ok {
-		panic(n.runtime.ToValue(errors.New(`exec args[0] invalid`)))
+		panic(n.runtime.NewGoError(errors.New(`exec args[0] invalid`)))
 	}
-	name, ok := n.getString(obj.Get(`name`))
+	name, ok := args.GetString(obj.Get(`name`))
 	if !ok {
-		panic(n.runtime.ToValue(errors.New(`exec args[0].name must be a string`)))
+		panic(n.runtime.NewGoError(errors.New(`exec args[0].name must be a string`)))
 	}
-	args, ok := n.getStringsDefault(obj.Get(`args`), nil)
+	arg, ok := args.GetStringsDefault(obj.Get(`args`), nil)
 	if !ok {
-		panic(n.runtime.ToValue(errors.New(`exec args[0].args must be an Array or null or undefined`)))
+		panic(n.runtime.NewGoError(errors.New(`exec args[0].args must be an Array or null or undefined`)))
 	}
-	dir, ok := n.getStringDefault(obj.Get(`dir`), ``)
+	dir, ok := args.GetStringDefault(obj.Get(`dir`), ``)
 	if !ok {
-		panic(n.runtime.ToValue(errors.New(`exec args[0].dir must be a string or null or undefined`)))
+		panic(n.runtime.NewGoError(errors.New(`exec args[0].dir must be a string or null or undefined`)))
 	}
-	safe, ok := n.getBoolDefault(obj.Get(`safe`), false)
+	safe, ok := args.GetBoolDefault(obj.Get(`safe`), false)
 	if !ok {
-		panic(n.runtime.ToValue(errors.New(`exec args[0].safe must be a boolean or null or undefined`)))
+		panic(n.runtime.NewGoError(errors.New(`exec args[0].safe must be a boolean or null or undefined`)))
 	}
-	log, ok := n.getBoolDefault(obj.Get(`log`), false)
+	log, ok := args.GetBoolDefault(obj.Get(`log`), false)
 	if !ok {
-		panic(n.runtime.ToValue(errors.New(`exec args[0].safe must be a boolean or null or undefined`)))
+		panic(n.runtime.NewGoError(errors.New(`exec args[0].log must be a boolean or null or undefined`)))
 	}
 
 	var out bytes.Buffer
-	cmd := exec.Command(name, args...)
+	cmd := exec.Command(name, arg...)
 	if dir != `` {
 		cmd.Dir = utils.BasePath()
 	}

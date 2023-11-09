@@ -6,6 +6,12 @@ export function isLinux(): boolean {
     return core.os == 'linux'
 }
 /**
+ * 如果系統運行在 windows 平臺，則返回 true，否則返回 false
+ */
+export function isWindows(): boolean {
+    return core.os == 'windows'
+}
+/**
  * 如果 port 是一個合法的端口號，則返回 true，否則返回 false
  */
 export function isPort(port: any): port is number {

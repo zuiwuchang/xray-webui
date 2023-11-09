@@ -1,6 +1,6 @@
 import { ConfigureOptions } from "xray/webui"
 import { Userdata } from "./userdata"
-import { isPort } from "./utils"
+import { isPort, isWindows } from "./utils"
 import { Rule as StrategyRule } from "./strategy/rule";
 
 /**
@@ -148,15 +148,15 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
     const tproxy = opts.userdata?.proxy?.tproxy ? true : false
     const rules: Array<Rule> = [
         // 攔截域名解析
-        tproxy ? {
+        !tproxy || isWindows() ? {
+            type: 'field',
+            inboundTag: ['in-proxy'],
+            outboundTag: 'out-proxy',
+        } : {
             type: 'field',
             inboundTag: ['in-proxy'],
             port: 53,
             outboundTag: 'out-dns',
-        } : {
-            type: 'field',
-            inboundTag: ['in-proxy'],
-            outboundTag: 'out-proxy',
         },
         {
             type: 'field',

@@ -79,7 +79,116 @@ declare module 'xray/core' {
      * 例如你可以在 serve 調用中存儲下服務器的 ip 地址，然後在 turnOn 調用將服務器 ip 設置到直連白名單中
      */
     export const sessionStorage: Storage
+}
+/**
+ * 服務進程管理，目前主要用於啓動 tun2socks 進程 
+ */
+declare module 'xray/systemctl' {
+    export enum Run {
+        /**
+         * 不執行任何額外工作，只是進行註冊
+         */
+        none = 1,
+        /**
+         * 註冊成功後立刻運行服務
+         */
+        start = 2,
+    }
+    export enum Restart {
+        /**
+         * 不執行重啓
+         */
+        none = 1,
+        /**
+         * 進程錯誤時重啓
+         */
+        fail = 2,
+        /**
+         * 始終執行重啓
+         */
+        always = 3,
+    }
+    export interface InstallOptions {
+        /**
+         * 服務唯一名稱
+         */
+        id: string
+        /**
+         * 要執行的進程
+         */
+        name: string
+        /**
+         * 傳遞給進程的啓動參數
+         */
+        args?: Array<any>
+        /**
+         * 啓動進程的工作路徑
+         */
+        dir?: string
 
+        /**
+         * 一個毫秒數，用於在進程重啓前等待的時間
+         * @default 0
+         */
+        interval?: number
+        /**
+         * 進程重啓策略
+         * @default Restart.none
+         */
+        restart?: Restart
+        /**
+         * 安裝成功後要執行的操作
+         * @default Run.none
+         */
+        run?: Run
+        /**
+         * 如果爲 true 則將進程 stdout/stderror 輸出到 os.Stdout 和網頁
+         */
+        log?: boolean
+    }
+    /**
+     * 以指定信息安裝一個服務，如果服務存在則替換掉舊服務。
+     * @returns 返回是否有新的服務被安裝/替換
+     */
+    function install(opts: RegisterOptions): boolean
+    /**
+     * 卸載一個服務
+     * @returns 返回是否有存在的服務被卸載
+     */
+    function uninstall(id: string): boolean
+    /**
+     * 如果服務沒有運行則運行它
+     * @returns 返回是否有新進程被開啓(如果進程已經運行則不會運行新進程)
+     */
+    function start(id: string): boolean
+    /**
+     * 關閉正在運行的服務
+     * @returns 返回是否有進程被開啓(如果進程不是運行狀態則執行關閉操作)
+     */
+    function stop(id: string): boolean
+
+    export interface Status {
+        /**
+         * 服務安裝信息
+         */
+        install: InstallOptions
+        /**
+         * 服務進程的退出碼，如果爲 undefined 則表示從未退出過
+         */
+        code?: number
+        /**
+         * 服務進程已經啓動了多少次
+         */
+        count: number
+        /**
+         * 服務進程目前是否處於啓動狀態
+         */
+        run: boolean
+    }
+    /**
+     * 如果服務存在，則返回它的狀態
+     */
+    function status(id: string): Status | undefined
 }
 declare module 'xray/webui' {
     /**
@@ -277,7 +386,7 @@ declare module 'xray/webui' {
         /**
          * 傳遞給進程的啓動參數
          */
-        args?: Array<string>
+        args?: Array<any>
     }
     export interface TurnOptions<T> {
         /**

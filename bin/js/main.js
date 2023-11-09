@@ -73,6 +73,8 @@ ${s}
         if (core.os === `linux`) {
             (0, linux_1.turnOnLinux)(opts);
         }
+        else if (core.os === `windows`) {
+        }
         else {
             throw new Error(`turnOn not implemented on ${core.os} ${core.arch}`);
         }
@@ -83,6 +85,8 @@ ${s}
     turnOff(opts) {
         if (core.os === `linux`) {
             (0, linux_1.turnOffLinux)(opts);
+        }
+        else if (core.os === `windows`) {
         }
         else {
             throw new Error(`turnOff not implemented on ${core.os} ${core.arch}`);

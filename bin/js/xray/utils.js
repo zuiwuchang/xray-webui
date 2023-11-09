@@ -23,7 +23,7 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPort = exports.getInt = exports.getUint = exports.isPort = exports.isLinux = void 0;
+exports.getPort = exports.getInt = exports.getUint = exports.isPort = exports.isWindows = exports.isLinux = void 0;
 const core = __importStar(require("xray/core"));
 /**
  * 如果系統運行在 linux 平臺，則返回 true，否則返回 false
@@ -32,6 +32,13 @@ function isLinux() {
     return core.os == 'linux';
 }
 exports.isLinux = isLinux;
+/**
+ * 如果系統運行在 windows 平臺，則返回 true，否則返回 false
+ */
+function isWindows() {
+    return core.os == 'windows';
+}
+exports.isWindows = isWindows;
 /**
  * 如果 port 是一個合法的端口號，則返回 true，否則返回 false
  */
