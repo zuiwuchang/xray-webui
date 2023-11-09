@@ -1,0 +1,10 @@
+<configuration>
+   <id>xray-webui-service</id>
+   <name>XRay Web UI Service</name>
+   <description>XRay Web UI for windows</description>
+   <workingdirectory>%BASE%</workingdirectory>
+   <executable>%BASE%\xray-webui.exe</executable>
+   <startargument>web</startargument>
+   <log mode="none"/>
+   <onfailure action="restart" delay="10 sec"/>
+</configuration>

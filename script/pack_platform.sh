@@ -128,6 +128,12 @@ case "$os" in
             xray-webui.service
         )
     ;;
+    windows)
+        other=(
+            xray-webui-service.exe xray-webui-service.xml
+            run.bat install.bat uninstall.bat
+        )
+    ;;
 esac
 
 exec="${args[@]} ${source[@]} ${other[@]}"
