@@ -39,26 +39,36 @@ func (m Element) List(sub uint64) (items []*data.Element, e error) {
 		if bucket == nil {
 			return fmt.Errorf("bucket not exist : %s", data.ElementBucket)
 		}
-		var key [8]byte
-		binary.LittleEndian.PutUint64(key[:], sub)
-		bucket = bucket.Bucket(key[:])
-		if bucket == nil {
-			return fmt.Errorf("bucket not exist : %v", sub)
-		}
-		e = bucket.ForEach(func(k, v []byte) error {
-			var node data.Element
-			e := node.Decode(v)
-			if e == nil {
-				items = append(items, &node)
-			} else {
-				slog.Warn(`Decode Element error`,
-					log.Error, e,
-				)
-			}
-			return nil
-		})
-		return nil
+		var err error
+		items, err = listElement(bucket, sub)
+		return err
 	})
+	return
+}
+func listElement(bucket *bolt.Bucket, sub uint64) (items []*data.Element, e error) {
+	var key [8]byte
+	binary.LittleEndian.PutUint64(key[:], sub)
+	bucket = bucket.Bucket(key[:])
+	if bucket == nil {
+		e = fmt.Errorf("bucket not exist : %v", sub)
+		return
+	}
+	var err error
+	c := bucket.Cursor()
+	for k, v := c.First(); k != nil; k, v = c.Next() {
+		if v == nil {
+			continue
+		}
+		var node data.Element
+		err = node.Decode(v)
+		if err == nil {
+			items = append(items, &node)
+		} else {
+			slog.Warn(`Decode Element error`,
+				log.Error, err,
+			)
+		}
+	}
 	return
 }
 

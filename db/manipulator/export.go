@@ -18,6 +18,7 @@ type _Root struct {
 	General       *data.General    `json:"general"`
 	Last          *data.Last       `json:"last"`
 	Strategys     []*data.Strategy `json:"strategys"`
+	Manual        []*data.Element  `json:"manual"`
 	Subscriptions []*_Subscription `json:"subscriptions"`
 }
 
@@ -82,7 +83,10 @@ func (root *_Root) Pull(db *bolt.DB) error {
 		if bucket == nil {
 			return fmt.Errorf("bucket not exist : %s", data.ElementBucket)
 		}
-
+		root.Manual, e = listElement(elementBucket, 0)
+		if e != nil {
+			return
+		}
 		e = bucket.ForEach(func(k, v []byte) error {
 			var node data.Subscription
 			e := node.Decode(v)
@@ -91,19 +95,7 @@ func (root *_Root) Pull(db *bolt.DB) error {
 				if list == nil {
 					return fmt.Errorf("bucket not exist : %v", binary.LittleEndian.Uint64(k))
 				}
-				var items []*data.Element
-				e = list.ForEach(func(k, v []byte) error {
-					var node data.Element
-					e := node.Decode(v)
-					if e == nil {
-						items = append(items, &node)
-					} else {
-						slog.Warn(`Decode Element error`,
-							log.Error, e,
-						)
-					}
-					return nil
-				})
+				items, e := listElement(elementBucket, node.ID)
 				if e != nil {
 					return e
 				}
@@ -134,6 +126,36 @@ func (root *_Root) NewBucket(tx *bolt.Tx, name []byte) (bucket *bolt.Bucket, e e
 	bucket, e = tx.CreateBucket(name)
 	return
 }
+func (root *_Root) push(bucket *bolt.Bucket, sub uint64, items []*data.Element, last *data.Last, matched bool) (*data.Last, error) {
+	var key [8]byte
+	binary.LittleEndian.PutUint64(key[:], sub)
+	bucket, e := bucket.CreateBucketIfNotExists(key[:])
+	if e != nil {
+		return last, e
+	}
+	for _, item := range items {
+		id, e := bucket.NextSequence()
+		if e != nil {
+			return last, e
+		}
+		if last == nil && matched && item.ID == root.Last.ID {
+			last = root.Last
+			last.Subscription = sub
+			last.ID = id
+		}
+		binary.LittleEndian.PutUint64(key[:], id)
+		item.ID = id
+		val, e := item.Encoder()
+		if e != nil {
+			return last, e
+		}
+		e = bucket.Put(key[:], val)
+		if e != nil {
+			return last, e
+		}
+	}
+	return last, nil
+}
 func (root *_Root) Push(db *bolt.DB) error {
 	return db.Update(func(tx *bolt.Tx) (e error) {
 		bucketName := []byte(`__private_data`)
@@ -157,52 +179,39 @@ func (root *_Root) Push(db *bolt.DB) error {
 			return
 		}
 
-		var last *data.Last
+		last, e := root.push(elementBucket,
+			0, root.Manual,
+			nil, root.Last != nil && root.Last.Subscription == 0,
+		)
+		if e != nil {
+			return
+		}
+		var (
+			key8 [8]byte
+			id8  uint64
+		)
 		for _, node := range root.Subscriptions {
 			subscription, e := bucket.NextSequence()
 			if e != nil {
 				return e
 			}
-			var key [8]byte
-			binary.LittleEndian.PutUint64(key[:], subscription)
-			lastSubscription := false
-			if last == nil && root.Last != nil {
-				lastSubscription = root.Last.Subscription == node.ID
-			}
+			id8 = node.ID
 			node.ID = subscription
 			val, e := node.Encoder()
 			if e != nil {
 				return e
 			}
-			e = bucket.Put(key[:], val)
+			binary.LittleEndian.PutUint64(key8[:], subscription)
+			e = bucket.Put(key8[:], val)
 			if e != nil {
 				return e
 			}
-			items, e := elementBucket.CreateBucket(key[:])
+			last, e = root.push(elementBucket,
+				node.ID, node.Elements,
+				last, root.Last != nil && root.Last.Subscription == id8,
+			)
 			if e != nil {
 				return e
-			}
-			for _, item := range node.Elements {
-				id, e := items.NextSequence()
-				if e != nil {
-					return e
-				}
-				if last == nil && lastSubscription && item.ID == root.Last.ID {
-					last = root.Last
-					last.Subscription = subscription
-					last.ID = id
-				}
-				var key [8]byte
-				binary.LittleEndian.PutUint64(key[:], id)
-				item.ID = id
-				val, e := item.Encoder()
-				if e != nil {
-					return e
-				}
-				e = items.Put(key[:], val)
-				if e != nil {
-					return e
-				}
 			}
 		}
 
