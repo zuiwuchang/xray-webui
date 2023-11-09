@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"log"
+	"errors"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -16,12 +16,14 @@ func BasePath() string {
 	}
 	filename, e := exec.LookPath(os.Args[0])
 	if e != nil {
-		log.Fatalln(e)
+		if !errors.Is(e, exec.ErrDot) {
+			panic(e)
+		}
 	}
 
 	filename, e = filepath.Abs(filename)
 	if e != nil {
-		log.Fatalln(e)
+		panic(e)
 	}
 	basePath = filepath.Dir(filename)
 	return basePath

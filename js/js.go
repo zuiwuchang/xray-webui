@@ -17,10 +17,10 @@ import (
 	"time"
 
 	"github.com/dop251/goja"
-	"github.com/dop251/goja_nodejs/require"
 	"github.com/google/go-jsonnet"
 	"github.com/zuiwuchang/xray_webui/db/data"
 	"github.com/zuiwuchang/xray_webui/db/manipulator"
+	"github.com/zuiwuchang/xray_webui/js/require"
 	"github.com/zuiwuchang/xray_webui/utils"
 	"golang.org/x/net/proxy"
 )
@@ -72,6 +72,7 @@ func New(path string) (runtime *Runtime, e error) {
 		e = errors.New(`JSON.parse not a function`)
 		return
 	}
+
 	runtime = &Runtime{
 		Runtime:       vm,
 		RequireModule: requireModule,
