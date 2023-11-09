@@ -20,7 +20,41 @@ export class SettingsString {
   providedIn: 'root'
 })
 export class SettingsService {
-  activeIndex = 0
+  private activeIndex_?: any
+  get activeIndex() {
+    let v = this.activeIndex_
+    if (v === undefined || v === null) {
+      const s = getItem('activeIndex') ?? ''
+      if (s == '') {
+        v = -1
+      } else {
+        try {
+          const o = JSON.parse(s) ?? -1
+          if (typeof o === "number" || Array.isArray(o)) {
+            v = o
+          } else {
+            v = -1
+          }
+        } catch (e) {
+          v = -1
+          console.warn(e)
+        }
+      }
+      this.activeIndex_ = v
+    }
+    return v
+  }
+  set activeIndex(v: any) {
+    if (v == this.activeIndex_) {
+      return
+    }
+    this.activeIndex_ = v
+    try {
+      setItem('activeIndex', JSON.stringify(v))
+    } catch (e) {
+      console.warn(e)
+    }
+  }
   theme = new SettingsString(
     "theme",
     "md-dark-deeppurple", // 默認主題
