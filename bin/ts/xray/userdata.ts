@@ -75,6 +75,10 @@ export interface Proxy {
      * 只有在 linux 下使用 redirect 模式時有效，如果設置會攔截連接 53 端口的 udp/tcp 重定向到此值
      */
     dns?: string
+
+    tun2socks?: {
+
+    }
 }
 export interface Userdata {
     /**

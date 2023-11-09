@@ -20,6 +20,7 @@ import (
 	"github.com/google/go-jsonnet"
 	"github.com/zuiwuchang/xray_webui/db/data"
 	"github.com/zuiwuchang/xray_webui/db/manipulator"
+	"github.com/zuiwuchang/xray_webui/js/console"
 	"github.com/zuiwuchang/xray_webui/js/require"
 	"github.com/zuiwuchang/xray_webui/utils"
 	"golang.org/x/net/proxy"
@@ -39,7 +40,7 @@ func New(path string) (runtime *Runtime, e error) {
 	vm := goja.New()
 	registry := Registry()
 	requireModule := registry.Enable(vm)
-	EnableConsole(vm)
+	console.Enable(vm)
 
 	ret, e := requireModule.Require(path)
 	if e != nil {

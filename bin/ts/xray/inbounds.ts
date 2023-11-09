@@ -1,7 +1,7 @@
 import { ConfigureOptions } from "xray/webui";
 import { Inbounds } from "./inbounds/inbounds";
 import { Userdata } from "./userdata";
-import { isLinux, isPort } from "./utils";
+import { isLinux, isPort, isWindows } from "./utils";
 
 export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inbounds> {
     const inbounds: Array<Inbounds> = []
@@ -67,30 +67,45 @@ export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inboun
             })
         }
         port = userdata?.proxy?.port
-        if (isLinux() && isPort(port)) {
-            const proxy = userdata!.proxy!
-            inbounds.push({
-                protocol: 'dokodemo-door',
-                tag: 'in-proxy',
-                listen: proxy.bind ?? '0.0.0.0',
-                port: port,
-                settings: {
-                    network: 'tcp,udp',
-                    followRedirect: true,
-                },
-                sniffing: {
-                    enabled: true,
-                    destOverride: [
-                        'http', 'tls',
-                    ],
-                },
-                streamSettings: {
-                    network: 'tcp',
-                    sockopt: {
-                        tproxy: proxy.tproxy ? 'tproxy' : 'redirect',
+        if (isPort(port)) {
+            if (isLinux()) {
+                const proxy = userdata!.proxy!
+                inbounds.push({
+                    protocol: 'dokodemo-door',
+                    tag: 'in-proxy',
+                    listen: proxy.bind ?? '0.0.0.0',
+                    port: port,
+                    settings: {
+                        network: 'tcp,udp',
+                        followRedirect: true,
                     },
-                }
-            })
+                    sniffing: {
+                        enabled: true,
+                        destOverride: [
+                            'http', 'tls',
+                        ],
+                    },
+                    streamSettings: {
+                        network: 'tcp',
+                        sockopt: {
+                            tproxy: proxy.tproxy ? 'tproxy' : 'redirect',
+                        },
+                    }
+                })
+            } else if (isWindows()) {
+                const proxy = userdata!.proxy!
+                inbounds.push({
+                    protocol: 'socks',
+                    tag: 'in-proxy',
+                    listen: proxy.bind ?? '0.0.0.0',
+                    port: port,
+                    settings: {
+                        auth: 'noauth',
+                        udp: true,
+                        userLevel: 0,
+                    }
+                })
+            }
         }
     }
     return inbounds
