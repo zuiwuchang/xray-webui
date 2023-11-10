@@ -91,11 +91,7 @@ func (s *Systemctl) Install(opts InstallOptions) (ok bool, e error) {
 		found.Kill()
 		delete(s.keys, opts.ID)
 	}
-	srv := &Service{
-		install: &opts,
-		done:    make(chan struct{}),
-		command: make(chan *_Command),
-	}
+	srv := newService(&opts)
 	go srv.Serve()
 	s.keys[opts.ID] = srv
 	switch opts.Run {
