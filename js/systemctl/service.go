@@ -4,6 +4,8 @@ import (
 	"errors"
 	"os/exec"
 	"sync/atomic"
+
+	"github.com/zuiwuchang/xray_webui/m/writer"
 )
 
 var ErrorServiceKilled = errors.New(`service alreay killed`)
@@ -13,6 +15,16 @@ type Service struct {
 	done    chan struct{}
 	command chan *_Command
 	killed  int32
+	exit    chan *_Cmd
+}
+
+func newService(opts *InstallOptions) *Service {
+	return &Service{
+		install: opts,
+		done:    make(chan struct{}),
+		command: make(chan *_Command),
+		exit:    make(chan *_Cmd, 1),
+	}
 }
 
 const (
@@ -33,8 +45,8 @@ type Status struct {
 	Code int
 	// 服務進程已經啓動了多少次
 	Count int
-	// 服務進程目前是否處於啓動狀態
-	Run bool
+	// 當前進程 pid
+	PID int
 }
 
 func (s *Service) Kill() {
@@ -104,6 +116,12 @@ func (s *Service) Serve() {
 		select {
 		case <-s.done:
 			return
+		case exit := <-s.exit:
+			if exit == cmd {
+				code = exit.code
+				cmd = nil
+				count++
+			}
 		case evt := <-s.command:
 			switch evt.Evt {
 			case evtStart:
@@ -133,25 +151,54 @@ func (s *Service) Serve() {
 				}
 				close(evt.Error)
 			case evtStatus:
-				evt.Result = &Status{
+				status := &Status{
 					Install: *s.install,
 					Code:    code,
 					Count:   count,
-					Run:     cmd != nil,
 				}
+				if cmd != nil {
+					status.PID = cmd.pid
+				}
+				evt.Result = status
 				close(evt.Error)
 			}
 		}
 	}
 }
 func (s *Service) start() (cmd *_Cmd, e error) {
+	c := exec.Command(s.install.Name, s.install.Args...)
+	if s.install.Dir != `` {
+		c.Dir = s.install.Dir
+	}
+	if s.install.Log {
+		c.Stdout = writer.Writer()
+		c.Stderr = c.Stdout
+	}
+	e = c.Start()
+	if e != nil {
+		return
+	}
+	ch := make(chan int, 1)
+	cmd = &_Cmd{
+		cmd: c,
+		pid: c.Process.Pid,
+		ch:  ch,
+	}
+	go func() {
+		c.Wait()
+		cmd.code = c.ProcessState.ExitCode()
+		ch <- cmd.code
+		s.exit <- cmd
+	}()
 	return
 }
 
 type _Cmd struct {
-	cmd *exec.Cmd
+	pid, code int
+	cmd       *exec.Cmd
+	ch        <-chan int
 }
 
 func (c *_Cmd) Wait() int {
-	return 0
+	return <-c.ch
 }

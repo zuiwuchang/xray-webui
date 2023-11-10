@@ -193,6 +193,8 @@ func (b *_Bridge) Status(call goja.FunctionCall) goja.Value {
 		b.ObjectSet(o, `code`, status.Code)
 	}
 	b.ObjectSet(o, `count`, status.Count)
-	b.ObjectSet(o, `run`, status.Run)
+	if status.PID != 0 {
+		b.ObjectSet(o, `pid`, status.PID)
+	}
 	return o
 }

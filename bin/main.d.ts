@@ -173,6 +173,10 @@ declare module 'xray/systemctl' {
          */
         install: InstallOptions
         /**
+         * 當前進程 pid 如果爲 uninstall 表示沒有進程運行
+         */
+        pid?: number
+        /**
          * 服務進程的退出碼，如果爲 undefined 則表示從未退出過
          */
         code?: number
@@ -180,10 +184,6 @@ declare module 'xray/systemctl' {
          * 服務進程已經啓動了多少次
          */
         count: number
-        /**
-         * 服務進程目前是否處於啓動狀態
-         */
-        run: boolean
     }
     /**
      * 如果服務存在，則返回它的狀態
