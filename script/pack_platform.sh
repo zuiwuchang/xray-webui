@@ -132,6 +132,8 @@ case "$os" in
         other=(
             xray-webui-service.exe xray-webui-service.xml
             run.bat install.bat uninstall.bat
+            tun2socks/tun2socks-windows-amd64.exe
+            tun2socks/wintun.dll
         )
     ;;
 esac
