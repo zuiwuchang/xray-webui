@@ -23,7 +23,7 @@ Index:
 
 # 安裝
 
-1. 下載最新壓縮包並解壓
+1. [下載](https://github.com/zuiwuchang/xray-webui/releases)最新壓縮包並解壓
 2. 下載最新的 [xray](https://github.com/XTLS/Xray-core/releases) 並解壓到 xray-webui 所在路徑的 xray 檔案夾下。
 
 ## linux 開機啓動
@@ -52,6 +52,21 @@ systemctl status xray-webui.service
 
 
 > 此外如果你的程式不是安裝在 /opt/xray-webui 檔案夾中，要記得修改 xray-webui.service 中 ExecStart 屬性指定的啓動路徑
+
+## windows 開機啓動
+
+對於 windows 使用 WinSW 將其包裝成了服務，你可以使用管理員權限運行下述指令
+
+```
+@REM 安裝服務
+xray-webui-service.exe install
+
+@REM 卸載服務
+xray-webui-service.exe uninstall
+```
+
+服務安裝成功的化會在系統重啓後自動運行，如果要立刻運行你可以在 windows 服務管理界面打開或關閉 xray-webui-service 服務
+
 
 # 設定
 

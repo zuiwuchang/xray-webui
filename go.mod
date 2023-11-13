@@ -5,7 +5,6 @@ go 1.21
 require (
 	github.com/andybalholm/brotli v1.0.5
 	github.com/dop251/goja v0.0.0-20230919151941-fc55792775de
-	github.com/dop251/goja_nodejs v0.0.0-20230914102007-198ba9a8b098
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/go-jsonnet v0.20.0
 	github.com/gorilla/websocket v1.5.0
