@@ -80,43 +80,47 @@ Provider 會橋接網頁 ui 以及對底層 xray 的調用，main.d.ts 中有詳
     */
 export interface Provider {
     /**
-        * 銷毀 Provider 和其綁定的資源
-        */
+    * 銷毀 Provider 和其綁定的資源
+    */
     destroy?: () => void
-
     /**
-        * 返回透明代理設定
-        */
+    * 返回底層 xray 版本
+    */
+    version(): string
+    /**
+    * 返回透明代理設定
+    */
     firewall(): string
     /**
-        * 啓動透明代理
-        */
+    * 啓動透明代理
+    */
     turnOn(opts: TurnOptions): void
     /**
-        * 關閉透明代理
-        */
+    * 關閉透明代理
+    */
     turnOff(opts: TurnOptions): void
 
     /**
-        * 返回支持的節點元信息
-        */
+    * 返回支持的節點元信息
+    */
     metadata(): Array<Metadata>
 
     /**
-        * 返回配置
-        */
+    * 返回配置
+    */
     configure(opts: ConfigureOptions): ConfigureResult
 
     /**
-        * 返回啓動代理的命令
-        * @param cnf 設定檔案路徑
-        * @param opts 生成設定檔的原始參數
-        */
+    * 返回啓動代理的命令
+    * @param cnf 設定檔案路徑
+    * @param opts 生成設定檔的原始參數
+    */
     serve(cnf: string, opts: ConfigureOptions<Userdata>): ServeResult
 }
 ```
 
 * **destroy** 每次響應用戶 ui 請求時，都會調用腳本的 create 函數創建 Provider 實例，並在 實例不需要時調用 destroy(如果存在) 釋放資源
+* **version** 返回 xray 版本號供網頁顯示，它只會被加載一次之後會被存儲在服務器緩存中
 * **metadata** 返回了一個元信息，網頁 ui 會依據它爲各種協議生成輸入 ui，同時系統也會依據它的定義來解析與生成代理節點的訂閱信息
 * **configure** 這個函數應該爲 xray 生成設定檔案的內容，以供後續使用它來啓動 xray
 * **serve** 這個函數應該返回啓動 xray 的命令，cnf 是存儲了 configure 生成內容的檔案路徑
