@@ -1,0 +1,29 @@
+services:
+  # coder-server 在瀏覽器上提供一個 vscode 的代碼編寫環境
+  code:
+    image: lscr.io/linuxserver/code-server:latest
+    environment:
+      # 更多設定請查看 https://hub.docker.com/r/linuxserver/code-server
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
+      - PASSWORD=123 #optional
+    ports:
+      - 9443:8443
+      - 9000:1989
+    restart: always
+
+  # xray 和 webui 用於爲容器提供透明代理
+  xray:
+    image: king011/xray-webui:v0.0.2
+    restart: always
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./docker/data/:/data
+      - ./bin/db.json:/db.json:ro
+    environment:
+      - XRAY_IMPORT=/db.json # 第一次運行容器時導入設定
+      # - XRAY_ADDR=:80 # 覆蓋設定檔案中指定的監聽端口
+    network_mode: service:code # 和 code 使用同一網路

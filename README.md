@@ -18,6 +18,7 @@ Index:
     * [linux redirect](#linux-redirect)
     * [windows](#windows-tun2socks)
     * [mac](#mac)
+* [docker](#docker)
 
 ![](preview.gif)
 
@@ -237,3 +238,45 @@ userdata 中的 proxy.tun2socks 定義了 tun2socks 相關設定
 因爲我沒有 mac 的設備所以沒有使用過這個系統，也無法進行調試。目前你需要自己修改腳本來支持它。但 mac 好像使用了類似 linux 的 iptables 架構，你或許可以參考下 linux 的腳本實現。
 
 此外如果你改好了腳本，很歡迎你 pull 一個 commit 我會將它合併到項目以方便其它 mac 用戶使用
+
+# docker
+
+通常如果你只是爲了突破朝鮮的網路封鎖不建議使用 docker 運行本程式它會讓你本機的網路環境顯得複雜，並且在使用 docker 時可能並不容易修改 js 腳本。
+
+在 docker 中使用本程序的真正價值在於和 [code-server](https://github.com/coder/code-server) 一起使用，code-server 在瀏覽器上提供了一個 vscode 環境，docker 提供了一個與主機獨立的虛擬網路，xray-webui+xray+iptables 爲這個獨立的虛擬網路提供了突破朝鮮封鎖的網路環境，藉助這些工具你可以方便的搭建一個能夠訪問到自由網路的 vscode  開發環境。對於這個方案本喵已經使用很多年你可以參考 [https://github.com/powerpuffpenguin/development-images](https://github.com/powerpuffpenguin/development-images)，這是本喵使用此方案創建的一些特定開發環境。
+
+下面是一個 docker-compose 使用此方案的極簡例子
+
+```
+services:
+  # coder-server 在瀏覽器上提供一個 vscode 的代碼編寫環境
+  code:
+    image: lscr.io/linuxserver/code-server:latest
+    environment:
+      # 更多設定請查看 https://hub.docker.com/r/linuxserver/code-server
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
+      - PASSWORD=123 #optional
+    ports:
+      - 9443:8443
+      - 9000:1989
+    restart: always
+
+  # xray 和 webui 用於爲容器提供透明代理
+  xray:
+    image: king011/xray-webui:v0.0.2
+    restart: always
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    volumes:
+      - ./docker/data/:/data
+      - ./bin/db.json:/db.json:ro
+    environment:
+      - XRAY_IMPORT=/db.json # 第一次運行容器時導入設定
+      # - XRAY_ADDR=:80 # 覆蓋設定檔案中指定的監聽端口
+    network_mode: service:code # 和 code 使用同一網路
+```
+
+上面的設定首先創建了一個 code 服務，它使用 linuxserver 打包的 code-server 環境用於提供代碼編寫環境。xray 服務則是本項目的 image，cap_add 是設置 iptables 必須的容器權限， network_mode 指定了和 code 使用同一網路，這樣在 xray 服務中設置的 iptables 規則也會被 code 服務使用。
