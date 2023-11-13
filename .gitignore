@@ -33,6 +33,7 @@
 /bin/var/
 /bin/xray/
 /bin/db.json
+/bin/tun2socks/*.bat
 
 # grpc code
 /protocol/

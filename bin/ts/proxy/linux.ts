@@ -2,19 +2,13 @@ import { TurnOptions } from "xray/webui";
 import * as core from "xray/core";
 import { Userdata } from "../xray/userdata";
 import { isPort } from "../xray/utils";
+import { getServers } from "./servers";
 export function turnOnLinux(opts: TurnOptions<Userdata>) {
     const port = opts.userdata?.proxy?.port ?? 0
     if (!isPort(port)) {
         throw new Error('proxy port invalid')
     }
-    const servers: Array<string> = []
-    const str = core.sessionStorage.getItem('servers')
-    if (str) {
-        const o = JSON.parse(str)
-        if (Array.isArray(o)) {
-            servers.push(...o)
-        }
-    }
+    const servers = getServers()
     let message: string
     const strs: Array<string> = [
         `#!/bin/bash

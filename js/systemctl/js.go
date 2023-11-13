@@ -42,7 +42,7 @@ func Require(runtime *goja.Runtime, module *goja.Object) {
 
 	bridge := &_Bridge{
 		runtime:   runtime,
-		systemctl: New(),
+		systemctl: defaultSystemctl,
 	}
 	obj.Set(`install`, bridge.Install)
 	obj.Set(`uninstall`, bridge.Uninstall)

@@ -11,6 +11,8 @@ type Systemctl struct {
 	rw   sync.RWMutex
 }
 
+var defaultSystemctl = New()
+
 func New() *Systemctl {
 	return &Systemctl{
 		keys: make(map[string]*Service),

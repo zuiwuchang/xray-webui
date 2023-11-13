@@ -13,6 +13,8 @@ import { Userdata } from "./xray/userdata";
 import { generateOutbounds } from "./xray/outbounds";
 import { generateRouting } from "./xray/routing";
 import { turnOffLinux, turnOnLinux } from "./proxy/linux";
+import { isLinux, isWindows } from "./xray/utils";
+import { turnOffWindows, turnOnWindows } from "./proxy/windows";
 export function create(): Provider {
     return new myProvider()
 }
@@ -22,9 +24,20 @@ class myProvider implements Provider {
      */
     firewall(): string {
         let s: string
-        if (core.os === `linux`) {
+        if (isLinux()) {
             const { output, error, code } = core.exec({
                 name: 'iptables-save',
+                safe: true,
+            })
+            if (error) {
+                s = ` code : ${code}\nerror : ${error}\noutput: ${output}`
+            } else {
+                s = `${output}`
+            }
+        } else if (isWindows()) {
+            const { output, error, code } = core.exec({
+                name: 'NETSTAT.EXE',
+                args: ['-nr'],
                 safe: true,
             })
             if (error) {
@@ -47,7 +60,7 @@ ${s}
         if (core.os === `linux`) {
             turnOnLinux(opts)
         } else if (core.os === `windows`) {
-
+            turnOnWindows(opts)
         } else {
             throw new Error(`turnOn not implemented on ${core.os} ${core.arch}`)
         }
@@ -59,7 +72,7 @@ ${s}
         if (core.os === `linux`) {
             turnOffLinux(opts)
         } else if (core.os === `windows`) {
-
+            turnOffWindows(opts)
         } else {
             throw new Error(`turnOff not implemented on ${core.os} ${core.arch}`)
         }
@@ -115,7 +128,7 @@ ${s}
         const args = ['run', '-c', cnf]
         if (!opts.environment.port) {
             console.log('serve:', name, ...args)
-            if (core.os === 'linux') {
+            if (core.os === 'linux' || isWindows) {
                 try {
                     const s = JSON.stringify(this._servers(opts.fileds.address!))
                     console.log('address:', s)

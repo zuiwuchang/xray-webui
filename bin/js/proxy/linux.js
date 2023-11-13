@@ -26,20 +26,14 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.turnOffLinux = exports.turnOnLinux = void 0;
 const core = __importStar(require("xray/core"));
 const utils_1 = require("../xray/utils");
+const servers_1 = require("./servers");
 function turnOnLinux(opts) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     const port = (_c = (_b = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.proxy) === null || _b === void 0 ? void 0 : _b.port) !== null && _c !== void 0 ? _c : 0;
     if (!(0, utils_1.isPort)(port)) {
         throw new Error('proxy port invalid');
     }
-    const servers = [];
-    const str = core.sessionStorage.getItem('servers');
-    if (str) {
-        const o = JSON.parse(str);
-        if (Array.isArray(o)) {
-            servers.push(...o);
-        }
-    }
+    const servers = (0, servers_1.getServers)();
     let message;
     const strs = [
         `#!/bin/bash

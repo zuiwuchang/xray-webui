@@ -75,9 +75,47 @@ export interface Proxy {
      * 只有在 linux 下使用 redirect 模式時有效，如果設置會攔截連接 53 端口的 udp/tcp 重定向到此值
      */
     dns?: string
-
+    /**
+     * 目前在 windows 下使用 tun2socks 實現透明代理，這裏是需要提供的一些網卡相關設定
+     */
     tun2socks?: {
+        /**
+         * socks5 代理地址 ip:port
+         * 
+         * @remarks
+         * tun2socks 會使用 socks5 來轉發流量，如果不設置則使用 `127.0.0.1:${userdata.proxy.port}`
+         * 
+         * @example
+         * 192.168.1.1:1080
+         */
+        socks5?: string
+        /**
+         * 系統默認上網網關 ip
+         * 
+         * @remarks
+         * 啓動透明代理時會修改路由讓上網流量經過 tun2socks 的虛擬網卡轉發，但 windows 路由很混亂爲了保證
+         * 虛擬網卡能正常獲取到流量需要刪除默認的路由網關。在關閉透明代理時需要恢復刪除的路由規則否則關閉透明代理後
+         * 無法正常連接網路
+         * 
+         * @default '192.168.1.1'
+         */
+        gateway?: string
+        /**
+         * 虛擬網卡使用的 dns 服務器 ip 地址，不能帶端口 
+         * @default 8.8.8.8
+         */
+        dns?: string
 
+        /**
+         * tun2socks 虛擬網卡 ip
+         * @default 192.168.123.1
+         */
+        addr?: string
+        /**
+         * tun2socks 虛擬網卡 子網掩碼
+         * @default 255.255.255.0
+         */
+        mask?: string
     }
 }
 export interface Userdata {

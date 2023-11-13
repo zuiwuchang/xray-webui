@@ -79,6 +79,26 @@ declare module 'xray/core' {
      * 例如你可以在 serve 調用中存儲下服務器的 ip 地址，然後在 turnOn 調用將服務器 ip 設置到直連白名單中
      */
     export const sessionStorage: Storage
+
+    /**
+     * 讓腳本暫停一段時間後再繼續運行
+     * @param ms 要暫停的毫秒數
+     */
+    export function sleep(ms: number): void
+
+    export interface NetInterface {
+        name: string
+        addrs: Array<string>
+    }
+    /**
+     * 返回網卡信息
+     */
+    export function interfaces(): Array<NetInterface>
+
+    /**
+     * 創建一個文本檔案並寫入指定內容
+     */
+    export function writeTextFile(filepath: string, text: string): void
 }
 /**
  * 服務進程管理，目前主要用於啓動 tun2socks 進程 
@@ -150,7 +170,7 @@ declare module 'xray/systemctl' {
      * 以指定信息安裝一個服務，如果服務存在則替換掉舊服務。
      * @returns 返回是否有新的服務被安裝/替換
      */
-    function install(opts: RegisterOptions): boolean
+    function install(opts: InstallOptions): boolean
     /**
      * 卸載一個服務
      * @returns 返回是否有存在的服務被卸載
