@@ -187,7 +187,7 @@ Corefile 是設定檔案在本例子中可以按照如下填寫:
 
 windows 下需要使用 tun2socks 來支持透明代理，它將創建一個虛擬網卡並且通過修改路由規則來實現透明代理。它面臨的問題和 linux-redirect 類似，無法識別出 xray 的出棧流量，所以只能將到 xray 服務器的流量放行，其它的流量則都通過代理訪問。這導致策略和 xray 的路由都會失效，無法對朝鮮和非朝鮮流量進行分流
 
-tun2socks 使用了 [https://github.com/xjasonlyu/tun2socks](https://github.com/xjasonlyu/tun2socks) 和 [https://www.wintun.net/](https://www.wintun.net/) 已經被打包到 tun2socks 檔案夾下，你或許可能從它們各自記得官網更新這兩個套件到最新版本
+tun2socks 使用了 [https://github.com/xjasonlyu/tun2socks](https://github.com/xjasonlyu/tun2socks) 和 [https://www.wintun.net/](https://www.wintun.net/) 已經被打包到 tun2socks 檔案夾下，你或許可以從它們各自記得官網更新這兩個套件到最新版本
 
 userdata 中的 proxy.tun2socks 定義了 tun2socks 相關設定
 
@@ -206,9 +206,12 @@ userdata 中的 proxy.tun2socks 定義了 tun2socks 相關設定
 }
 ```
 
-通常你只需要修改 gateway 爲你上網的網關將其它保存模式設定即可。當你點擊網頁商上的啓動透明代理按鈕時，服務器會啓動一個 tun2socks 服務，並且修改 windows 的默認路由將到服務器以及 socks5 代理的地址路由到 此處添加的 gateway，並將其它流量路由到虛擬的 tun2socks 網卡從而到達代理的目的。
+通常你只需要修改 gateway 爲你實際上網的網關地址，其它保持模式設定即可。當你點擊網頁上的啓動透明代理按鈕時，服務器會啓動一個 tun2socks 服務，並且修改 windows 的默認路由將到服務器以及 socks5 代理的地址路由到 gateway 填寫的網關地址 ，並將其它流量路由到虛擬的 tun2socks 網卡從而到達代理的目的。
 
 當你點擊網頁上的關閉透明代理按鈕時，服務器會關閉 tun2socks 服務，同時修改 windows 的路由規則將之前設置到虛擬網卡的流量重新路由到 gateway 添加的網關地址
+
+> tun2socks 支持 udp 流量所以與 linux-redirect 相比不會存在 dns 污染問題。
+> 你可以不使用本機的 socks5 代理(userdata.proxy.port)，而是使用一個局域網內的 socks5 代理，此時可以將它填寫到 tun2socks.socks5 這樣局域網內的 socks5 因爲不受本機路由的影響，所以可以正確的處理 xray 的路由規則實現爲朝鮮和非朝鮮流量分流
 
 # mac
 
