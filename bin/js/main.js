@@ -36,6 +36,8 @@ const inbounds_1 = require("./xray/inbounds");
 const outbounds_1 = require("./xray/outbounds");
 const routing_1 = require("./xray/routing");
 const linux_1 = require("./proxy/linux");
+const utils_1 = require("./xray/utils");
+const windows_1 = require("./proxy/windows");
 function create() {
     return new myProvider();
 }
@@ -46,9 +48,22 @@ class myProvider {
      */
     firewall() {
         let s;
-        if (core.os === `linux`) {
+        if ((0, utils_1.isLinux)()) {
             const { output, error, code } = core.exec({
                 name: 'iptables-save',
+                safe: true,
+            });
+            if (error) {
+                s = ` code : ${code}\nerror : ${error}\noutput: ${output}`;
+            }
+            else {
+                s = `${output}`;
+            }
+        }
+        else if ((0, utils_1.isWindows)()) {
+            const { output, error, code } = core.exec({
+                name: 'NETSTAT.EXE',
+                args: ['-nr'],
                 safe: true,
             });
             if (error) {
@@ -74,6 +89,7 @@ ${s}
             (0, linux_1.turnOnLinux)(opts);
         }
         else if (core.os === `windows`) {
+            (0, windows_1.turnOnWindows)(opts);
         }
         else {
             throw new Error(`turnOn not implemented on ${core.os} ${core.arch}`);
@@ -87,6 +103,7 @@ ${s}
             (0, linux_1.turnOffLinux)(opts);
         }
         else if (core.os === `windows`) {
+            (0, windows_1.turnOffWindows)(opts);
         }
         else {
             throw new Error(`turnOff not implemented on ${core.os} ${core.arch}`);
@@ -142,7 +159,7 @@ ${s}
         const args = ['run', '-c', cnf];
         if (!opts.environment.port) {
             console.log('serve:', name, ...args);
-            if (core.os === 'linux') {
+            if (core.os === 'linux' || isWindows) {
                 try {
                     const s = JSON.stringify(this._servers(opts.fileds.address));
                     console.log('address:', s);

@@ -1,2 +1,0 @@
-xray-webui web
-@pause

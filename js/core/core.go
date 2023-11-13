@@ -5,9 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"os"
 	"os/exec"
 	"runtime"
 	"sync"
+	"time"
 
 	"github.com/dop251/goja"
 	"github.com/zuiwuchang/xray_webui/js/args"
@@ -41,6 +43,15 @@ func (n *_Native) register(o *goja.Object) {
 	o.Set(`print`, n.print)
 	o.Set(`println`, n.println)
 	o.Set(`lookupHost`, net.LookupHost)
+	o.Set(`sleep`, func(val time.Duration) {
+		if val > 0 {
+			time.Sleep(time.Millisecond * val)
+		}
+	})
+	o.Set(`interfaces`, n.interfaces)
+	o.Set(`writeTextFile`, func(name, text string) error {
+		return os.WriteFile(name, utils.StringToBytes(text), 0666)
+	})
 	n.registerStorage(o)
 }
 func (n *_Native) registerStorage(o *goja.Object) {
@@ -125,6 +136,29 @@ func (n *_Native) print(call goja.FunctionCall) goja.Value {
 }
 func (n *_Native) println(call goja.FunctionCall) goja.Value {
 	return n.printAny(call, true)
+}
+
+func (n *_Native) interfaces(call goja.FunctionCall) goja.Value {
+	interfaces, e := net.Interfaces()
+	if e != nil {
+		panic(n.runtime.NewGoError(e))
+	}
+	items := make([]any, len(interfaces))
+	for i, item := range interfaces {
+		o := n.runtime.NewObject()
+		o.Set(`name`, item.Name)
+		addrs, e := item.Addrs()
+		if e != nil {
+			panic(n.runtime.NewGoError(e))
+		}
+		strs := make([]string, len(addrs))
+		for j := 0; j < len(addrs); j++ {
+			strs[j] = addrs[j].String()
+		}
+		o.Set(`addrs`, strs)
+		items[i] = o
+	}
+	return n.runtime.NewArray(items...)
 }
 func (n *_Native) printAny(call goja.FunctionCall, ln bool) goja.Value {
 	count := len(call.Arguments)

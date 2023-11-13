@@ -13,7 +13,7 @@ local level = def.Level;
     Compress: true,
     
     // 如果爲 true 輸入代碼所在位置
-    Source: true,
+    // Source: true,
 
     // 日誌等級，默認爲 info
     // * debug 

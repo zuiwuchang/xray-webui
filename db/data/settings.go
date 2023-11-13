@@ -160,10 +160,21 @@ local accounts = [
 		tproxy: true,
 		// tproxy mark
 		mark: 99,
-		/**
-		* 只有在 linux 下使用 redirect 模式時有效，如果設置會攔截連接 53 端口的 udp/tcp 重定向到此值
-		*/
+		// 只有在 linux 下使用 redirect 模式時有效，如果設置會攔截連接 53 端口的 udp/tcp 重定向到此值
 		// dns: '127.0.0.1:10053',
+		// 目前在 windows 下使用 tun2socks 實現透明代理，這裏是需要提供的一些網卡相關設定
+		tun2socks: {
+			// socks5 代理地址 ip:port，默認爲 127.0.0.1:${userdata.proxy.port}
+			// socks5: '192.168.1.1:1080',
+			// 系統默認上網網關 ip
+			gateway: '192.168.1.1',
+			// 虛擬網卡使用的 dns 服務器 ip 地址，不能帶端口 
+			dns: '8.8.8.8',
+			// tun2socks 虛擬網卡 ip
+			addr: '192.168.123.1',
+			// tun2socks 虛擬網卡 子網掩碼
+			mask: '255.255.255.0',
+		}
 	},
 	routing: {
 		// 爲 bt 設置出棧 tag
