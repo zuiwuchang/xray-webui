@@ -90,6 +90,7 @@ func (vm *Runtime) Check() (e error) {
 		return
 	}
 	names := []string{
+		`version`,
 		`firewall`,
 		`turnOn`,
 		`turnOff`,
@@ -218,6 +219,20 @@ func (vm *Runtime) turnMetadata(rawURL string, u *url.URL, name string, self goj
 }
 func (vm *Runtime) Firewall() (s string, e error) {
 	self, f, destroy, e := vm.assertFunction(`firewall`)
+	if e != nil {
+		return
+	} else if destroy != nil {
+		defer destroy(self)
+	}
+	val, e := f(self)
+	if e != nil {
+		return
+	}
+	s = val.ToString().String()
+	return
+}
+func (vm *Runtime) Version() (s string, e error) {
+	self, f, destroy, e := vm.assertFunction(`version`)
 	if e != nil {
 		return
 	} else if destroy != nil {

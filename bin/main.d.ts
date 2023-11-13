@@ -432,6 +432,11 @@ declare module 'xray/webui' {
         destroy?: () => void
 
         /**
+         * 返回底層 xray 版本
+         */
+        version(): string
+
+        /**
          * 返回透明代理設定
          */
         firewall(): string
