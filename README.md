@@ -80,7 +80,7 @@ xray-webui-service.exe uninstall
 
 此外你應該關注 xray 的更新，當 xray 更新後下載最新的 xray 解壓到主程序所在位置的 xray 檔案夾即可。
 
-此外當 xray 支持了新特性或協議時，腳本可能會更新，你可以下載最新腳本覆蓋掉主程序所在位置的 js 檔案夾即可
+此外當 xray 支持了新特性或協議時，腳本可能會更新，你可以[下載](https://github.com/zuiwuchang/xray-webui/releases/tag/scripts)最新腳本覆蓋掉主程序所在位置的 js 檔案夾即可
 
 
 # 腳本
