@@ -19,7 +19,7 @@ Index:
     * [windows](#windows-tun2socks)
     * [mac](#mac)
 
-![](view.gif)
+![](preview.gif)
 
 # 安裝
 
