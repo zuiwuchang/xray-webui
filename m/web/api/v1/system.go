@@ -3,6 +3,7 @@ package v1
 import (
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -17,6 +18,8 @@ type System struct {
 	web.Helper
 	maxage  int
 	startAt time.Time
+	rw      sync.RWMutex
+	core    string
 }
 
 func (h *System) Register(router *gin.RouterGroup) {
@@ -42,12 +45,38 @@ func (h *System) Title(c *gin.Context) {
 		}, nil
 	})
 }
+func (h *System) getCore() (s string) {
+	h.rw.RLock()
+	s = h.core
+	h.rw.RUnlock()
+	if s != `` {
+		return
+	}
+
+	h.rw.Lock()
+	defer h.rw.Unlock()
+	s = h.core
+	if s != `` {
+		return
+	}
+
+	runtime, e := js.New(configure.Default().System.Script)
+	if e != nil {
+		return
+	}
+	s, _ = runtime.Version()
+	if s != `` {
+		h.core = s
+	}
+	return
+}
 func (h *System) Version(c *gin.Context) {
 	h.SetHTTPCacheMaxAge(c, h.maxage)
 	h.ServeLazyJSON(c, ``, h.startAt, func() (any, error) {
 		return map[string]any{
 			`platform`: version.Platform,
 			`version`:  version.Version,
+			`core`:     h.getCore(),
 			`commit`:   version.Commit,
 			`date`:     version.Date,
 			`db`:       version.DB,

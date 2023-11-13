@@ -9,6 +9,8 @@ interface VersionResponse {
   platform: string
   // 程式版本
   version: string
+  // xray 版本信息
+  core: string
   // git 提交號
   commit: string
   // 編譯日期 unix

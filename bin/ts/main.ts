@@ -19,6 +19,25 @@ export function create(): Provider {
     return new myProvider()
 }
 class myProvider implements Provider {
+    version(): string {
+        const isWindows = core.os == "windows"
+        const separator = isWindows ? '\\' : '/'
+        const dir = `${core.root}${separator}xray`
+        const name = isWindows ? 'xray.exe' : 'xray'
+        const args = ['version']
+        const s = core.exec({
+            name: `${dir}${separator}${name}`,
+            args: args,
+        })
+        const strs = s.split("\n")
+        for (let line of strs) {
+            line = line.trim()
+            if (line.startsWith('Xray')) {
+                return line
+            }
+        }
+        return ''
+    }
     /**
      * 返回透明代理設定
      */

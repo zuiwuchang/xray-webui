@@ -10,6 +10,7 @@
                     <li>{{version.platform}}</li>
                     <li>{{version.date}} version={{version.version}} db={{version.db}}</li>
                     <li>{{version.commit}}</li>
+                    <li *ngIf="version.core">{{version.core}}</li>
                 </ng-container>
                 <ng-container *ngIf="started">
                     <li>start at {{startat}}, started for {{started}}</li>
