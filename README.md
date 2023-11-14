@@ -9,6 +9,7 @@ xray-webui 支持了 es6 [腳本](#腳本)，你可以通過修改腳本來支�
 
 Index:
 * [安裝](#安裝)
+* [運行](#運行)
 * [更新](#更新)
 * [設定](#設定)
 * [腳本](#腳本)
@@ -69,11 +70,19 @@ xray-webui-service.exe uninstall
 服務安裝成功的化會在系統重啓後自動運行，如果要立刻運行你可以在 windows 服務管理界面打開或關閉 xray-webui-service 服務
 
 
-# 設定
+# 運行
 
-設定檔是一個 [jsonnet](https://jsonnet.org/)，如果你不理解 jsonnet 你可以簡單的把它看作是一個比較容易書寫的 json。默認的設定檔都在主程序所在位置的 etc 檔案夾下
+使用下述指令運行程式
 
-通常你只需要修改 ./etc/cnf/http.libsonnet 中的 Addr 來修改 webui 的監聽端口，以及 Accounts 來替換掉默認的管理用戶名密碼就好
+```
+xray-webui web
+```
+
+你可以使用 -h 參數查看更詳細的使用方法
+
+```
+xray-webui web -h
+```
 
 # 更新
 
@@ -83,6 +92,11 @@ xray-webui-service.exe uninstall
 
 此外當 xray 支持了新特性或協議時，腳本可能會更新，你可以[下載](https://github.com/zuiwuchang/xray-webui/releases/tag/scripts)最新腳本覆蓋掉主程序所在位置的 js 檔案夾即可
 
+# 設定
+
+設定檔是一個 [jsonnet](https://jsonnet.org/)，如果你不理解 jsonnet 你可以簡單的把它看作是一個比較容易書寫的 json。默認的設定檔都在主程序所在位置的 etc 檔案夾下
+
+通常你只需要修改 ./etc/cnf/http.libsonnet 中的 Addr 來修改 webui 的監聽端口，以及 Accounts 來替換掉默認的管理用戶名密碼就好
 
 # 腳本
 
