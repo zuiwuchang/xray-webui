@@ -12,6 +12,7 @@ RUN set -eux;  \
 
 WORKDIR /opt/xray-webui
 ENTRYPOINT ["docker-entrypoint.sh"]
+VOLUME /data
 
 EXPOSE 1080
 EXPOSE 8118
