@@ -8,6 +8,7 @@ Type=simple
 ExecStart=/opt/xray-webui/xray-webui web
 KillMode=control-group
 Restart=on-failure
+LimitNOFILE=100000
  
 [Install]
 WantedBy=multi-user.target
