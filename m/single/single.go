@@ -138,21 +138,29 @@ func (s *_Server) Run() {
 				info = nil
 			}
 		case req := <-s.start:
-			e = s.doStart(req)
+			e = s.doStop()
 			if e == nil {
-				close(req.ch)
-				slog.Info(`create proxy process`,
-					`name`, req.info.Name,
-					`url`, req.info.URL,
-					`strategy`, req.info.Strategy,
-				)
-				info = req.info
-				// 廣播新的廣播進程
-				s.sendStart(req.info)
-				// 記錄最後啓動進程
-				e = m.PutLast(req.info)
-				if e != nil {
-					slog.Warn(`save last fail`, log.Error, e)
+				e = s.doStart(req)
+				if e == nil {
+					close(req.ch)
+					slog.Info(`create proxy process`,
+						`name`, req.info.Name,
+						`url`, req.info.URL,
+						`strategy`, req.info.Strategy,
+					)
+					info = req.info
+					// 廣播新的廣播進程
+					s.sendStart(req.info)
+					// 記錄最後啓動進程
+					e = m.PutLast(req.info)
+					if e != nil {
+						slog.Warn(`save last fail`, log.Error, e)
+					}
+				} else {
+					select {
+					case req.ch <- e:
+					case <-req.ctx.Done():
+					}
 				}
 			} else {
 				select {
