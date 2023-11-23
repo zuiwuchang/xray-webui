@@ -20,6 +20,7 @@ Index:
     * [windows](#windows-tun2socks)
     * [mac](#mac)
 * [docker](#docker)
+* [代理網關](#代理網關)
 
 ![](preview.gif)
 
@@ -279,7 +280,7 @@ services:
 
   # xray 和 webui 用於爲容器提供透明代理
   xray:
-    image: king011/xray-webui:v0.0.2
+    image: king011/xray-webui:v0.0.4
     restart: always
     cap_add:
       - NET_ADMIN
@@ -294,3 +295,52 @@ services:
 ```
 
 上面的設定首先創建了一個 code 服務，它使用 linuxserver 打包的 code-server 環境用於提供代碼編寫環境。xray 服務則是本項目的 image，cap_add 是設置 iptables 必須的容器權限， network_mode 指定了和 code 使用同一網路，這樣在 xray 服務中設置的 iptables 規則也會被 code 服務使用。
+
+# 代理網關
+
+使用 docker 的另外一個好處是可以在 linux 下使用 docker 方便的創建一個代理網關，這樣只需要把家裏的設備的網關設置爲它就能訪問到朝鮮之外的網路(例如將 android 電視的網關設置爲它，就可以在 android 上使用 youtube 等程式)
+
+首先需要宿主器是 linux 且爲 docker 使用 macvlan 模式聯網(這個模式依賴了linux 內核4.0以上)。
+
+下述假設網卡設備名稱是 **eth0**, 物理網卡所在的網路網關是 **192.168.1.1/24**
+
+1. 首先爲網卡啓用混雜模式。（macvlan 會在物理網卡中虛擬一個新 mac 地址的網卡，混雜模式網卡才能接收這個 mac 地址的網路數據）
+
+    ```
+    ip link set eth0 promisc on
+    ```
+
+    使用下述指令查看是否啓用了混雜模式
+
+    ```
+    ip link |egrep eth0 | egrep PROMISC
+    ```
+2. 爲 docker 創建一個 macvlan 網路，並且啓用一個帶透明代理的容器
+
+    ```
+    networks:
+      vlan:
+        driver: macvlan
+        driver_opts:
+          parent: eth0
+        ipam:
+          config:
+            - subnet: "192.168.1.0/24"
+              gateway: "192.168.1.1"
+    services:
+      xray:
+        image: king011/xray-webui:v0.0.4
+        restart: always
+        cap_add:
+          - NET_ADMIN
+          - NET_RAW
+        environment:
+          - XRAY_ADDR=:80
+        networks:
+          vlan:
+            ipv4_address: 192.168.1.20
+    ```
+
+    上述 compose 創建了 vlan 的 macvlan 網路，並且使用 xray-webui 容器創建了一個帶透明代理的網關。你可以訪問 http://192.168.1.20 來設置好透明代理，之後將要訪問網路的設置手動設置網關爲 192.168.1.20 即可讓設備透過 xray 容器訪問網路
+
+> 注意上述設定中，宿主機無法訪問到 192.168.1.20，故只能是局域網內宿主機之外的其它網卡設備可以通過設置網關到 192.168.1.20 來訪問網路。
