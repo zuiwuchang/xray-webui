@@ -43,5 +43,17 @@ class Rule {
     isValid() {
         return this.domain.length != 0 || this.ip.length != 0;
     }
+    /**
+     * 如果域名存在 返回 true 否則返回 false
+     */
+    hasDomain(s) {
+        return this.domain_.has(s);
+    }
+    /**
+     * 如果 IP 存在 返回 true 否則返回 false
+     */
+    hasIP(s) {
+        return this.ip_.has(s);
+    }
 }
 exports.Rule = Rule;

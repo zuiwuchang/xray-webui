@@ -92,59 +92,6 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
         return
     }
     const strategy = opts.strategy
-    let usual = false
-    // 代理訪問
-    let proxy: StrategyRule
-    // 直接連接
-    let direct: StrategyRule
-    switch (strategy.value) {
-        case 6: // 直接連接
-            usual = true
-        case 1:
-        case 2: // 全部代理
-            proxy = new StrategyRule().pushDomain(strategy.proxyDomain)
-                .pushIP(strategy.proxyIP)
-            direct = new StrategyRule().pushDomain(strategy.directDomain)
-                .pushIP(strategy.directIP)
-            break
-        case 3: // 代理公有 ip
-            proxy = new StrategyRule().pushDomain(strategy.proxyDomain)
-                .pushIP(strategy.proxyIP)
-            direct = new StrategyRule()
-                .pushIP([
-                    'geoip:private',
-                ]).pushDomain(strategy.directDomain)
-                .pushIP(strategy.directIP)
-            break
-        case 5: // 直連優先
-            usual = true
-        case 4: // 代理優先
-            // 添加默認 代理
-            proxy = new StrategyRule()
-                .pushDomain([
-                    'geosite:apple',
-                    'geosite:google',
-                    'geosite:microsoft',
-                    'geosite:facebook',
-                    'geosite:twitter',
-                    'geosite:telegram',
-                    'geosite:geolocation-!cn',
-                    'tld-!cn',
-                ])
-                .pushDomain(strategy.proxyDomain)
-                .pushIP(strategy.proxyIP)
-            direct = new StrategyRule()
-                .pushDomain([
-                    'geosite:cn',
-                ])
-                .pushIP([
-                    'geoip:cn',
-                    'geoip:private',
-                ])
-                .pushDomain(strategy.directDomain)
-                .pushIP(strategy.directIP)
-            break
-    }
     const tproxy = opts.userdata?.proxy?.tproxy ? true : false
     const rules: Array<Rule> = [
         // 攔截域名解析
@@ -164,9 +111,22 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
             outboundTag: 'out-proxy',
         },
     ]
+    // 代理訪問
+    let proxy = new StrategyRule().pushDomain(strategy.proxyDomain).pushIP(strategy.proxyIP)
+    // 直接連接
+    let direct = new StrategyRule().pushDomain(strategy.directDomain).pushIP(strategy.directIP)
     // 阻止訪問
-    const block = new StrategyRule().pushDomain(strategy.blockDomain).pushIP(strategy.blockIP)
+    let block = new StrategyRule().pushDomain(strategy.blockDomain).pushIP(strategy.blockIP)
     const routing = opts.userdata?.routing
+    if (routing) {
+        proxy.pushDomain(routing.proxyDomain!).pushIP(routing.proxyIP!)
+        direct.pushDomain(routing.directDomain!).pushIP(routing.directIP!)
+        block.pushDomain(routing.blockDomain!).pushIP(routing.blockIP!)
+    }
+    pushRules(rules, 'out-proxy', proxy)
+    pushRules(rules, 'out-freedom', direct)
+    pushRules(rules, 'out-blackhole', block)
+    // bt 下載
     if (routing) {
         const bittorrent = routing.bittorrent ?? ''
         if (bittorrent != '') {
@@ -176,33 +136,159 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
                 outboundTag: bittorrent,
             })
         }
-        proxy.pushDomain(routing.proxyDomain!)
-        proxy.pushIP(routing.proxyIP!)
-        direct.pushDomain(routing.directDomain!)
-        direct.pushIP(routing.directIP!)
-        block.pushDomain(routing.blockDomain!)
-        block.pushIP(routing.blockIP!)
     }
-    const sort = usual ? [block, direct, proxy] : [block, proxy, direct]
-    for (const o of sort) {
-        const tag = o == block ? 'out-blackhole' : (o == direct ? 'out-freedom' : 'out-proxy')
-        if (o.domain.length != 0) {
-            rules.push({
-                type: 'field',
-                domain: o.domain,
-                outboundTag: tag,
-            })
-        }
-        if (o.ip.length != 0) {
-            rules.push({
-                type: 'field',
-                ip: direct.ip,
-                outboundTag: tag,
-            })
-        }
+    switch (strategy.value) {
+        case 5: // 直連優先
+            pushStrategyRules(rules, proxy, direct, block,
+                'out-freedom',
+                [
+                    'geosite:cn',
+                ],
+                [
+                    'geoip:cn',
+                    'geoip:private',
+                ],
+            )
+            pushStrategyRules(rules, proxy, direct, block,
+                'out-proxy',
+                [
+                    'geosite:apple',
+                    'geosite:google',
+                    'geosite:microsoft',
+                    'geosite:facebook',
+                    'geosite:twitter',
+                    'geosite:telegram',
+                    'geosite:geolocation-!cn',
+                    'tld-!cn',
+                ],
+            )
+            break
+        case 6: // 直接連接
+            break
+        case 3: // 代理公有 ip
+            pushStrategyRules(rules, proxy, direct, block,
+                'out-freedom',
+                undefined,
+                [
+                    'geoip:private',
+                ],
+            )
+            break
+        case 2: // 全部代理
+            break
+        case 1: // 默認策略
+        case 4: // 代理優先
+        default:
+            pushStrategyRules(rules, proxy, direct, block,
+                'out-freedom',
+                undefined,
+                [
+                    'geoip:private',
+                ],
+            )
+            pushStrategyRules(rules, proxy, direct, block,
+                'out-proxy',
+                [
+                    'geosite:apple',
+                    'geosite:google',
+                    'geosite:microsoft',
+                    'geosite:facebook',
+                    'geosite:twitter',
+                    'geosite:telegram',
+                    'geosite:geolocation-!cn',
+                    'tld-!cn',
+                ],
+            )
+            pushStrategyRules(rules, proxy, direct, block,
+                'out-freedom',
+                [
+                    'geosite:cn',
+                ],
+                [
+                    'geoip:cn',
+                ],
+            )
+            break
     }
     return {
         domainStrategy: 'IPIfNonMatch',
         rules: rules,
     }
-} 
+}
+function pushRules(rules: Array<Rule>, tag: string, rule: StrategyRule) {
+    if (rule.isValid()) {
+        if (rule.domain.length != 0) {
+            rules.push({
+                type: 'field',
+                domain: rule.domain,
+                outboundTag: tag,
+            })
+        }
+        if (rule.ip.length != 0) {
+            rules.push({
+                type: 'field',
+                ip: rule.ip,
+                outboundTag: tag,
+            })
+        }
+    }
+}
+
+function pushStrategyRules(rules: Array<Rule>, proxy: StrategyRule, direct: StrategyRule, block: StrategyRule,
+    tag: string,
+    domain?: Array<string>,
+    ip?: Array<string>,
+) {
+    if (domain) {
+        pushDomain(rules, proxy, direct, block, tag, domain)
+    }
+    if (ip) {
+        pushIP(rules, proxy, direct, block, tag, ip)
+    }
+}
+function pushDomain(rules: Array<Rule>,
+    proxy: StrategyRule, direct: StrategyRule, block: StrategyRule,
+    tag: string, targets: Array<string>) {
+    const strs: Array<string> = []
+    for (const s of targets) {
+        if (proxy.hasDomain(s) ||
+            direct.hasDomain(s) ||
+            block.hasDomain(s)) {
+            continue
+        }
+        strs.push(s)
+    }
+    if (strs.length > 0) {
+        const rule = new StrategyRule().pushDomain(strs)
+        if (rule.isValid()) {
+            rules.push({
+                type: 'field',
+                domain: rule.domain,
+                outboundTag: tag,
+            })
+        }
+    }
+}
+function pushIP(rules: Array<Rule>,
+    proxy: StrategyRule, direct: StrategyRule, block: StrategyRule,
+    tag: string, targets: Array<string>) {
+    const strs: Array<string> = []
+    for (const s of targets) {
+        if (proxy.hasIP(s) ||
+            direct.hasIP(s) ||
+            block.hasIP(s)) {
+            continue
+        }
+        strs.push(s)
+    }
+    if (strs.length > 0) {
+        const rule = new StrategyRule().pushIP(strs)
+        if (rule.isValid()) {
+            rules.push({
+                type: 'field',
+                ip: rule.ip,
+                outboundTag: tag,
+            })
+        }
+    }
+}

@@ -39,4 +39,16 @@ export class Rule {
     isValid(): boolean {
         return this.domain.length != 0 || this.ip.length != 0
     }
+    /**
+     * 如果域名存在 返回 true 否則返回 false
+     */
+    hasDomain(s: string): boolean {
+        return this.domain_.has(s)
+    }
+    /**
+     * 如果 IP 存在 返回 true 否則返回 false
+     */
+    hasIP(s: string): boolean {
+        return this.ip_.has(s)
+    }
 }
