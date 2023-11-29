@@ -70,7 +70,7 @@ function generateRouting(opts) {
                 'geosite:twitter',
                 'geosite:telegram',
                 'geosite:geolocation-!cn',
-                'tld-!cn',
+                'geosite:tld-!cn',
             ]);
             break;
         case 6: // 直接連接
@@ -96,7 +96,7 @@ function generateRouting(opts) {
                 'geosite:twitter',
                 'geosite:telegram',
                 'geosite:geolocation-!cn',
-                'tld-!cn',
+                'geosite:tld-!cn',
             ]);
             pushStrategyRules(rules, proxy, direct, block, 'out-freedom', [
                 'geosite:cn',

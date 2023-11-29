@@ -197,7 +197,7 @@ local accounts = [
 			'geosite:twitter',
 			'geosite:telegram',
 			'geosite:geolocation-!cn',
-			'tld-!cn',
+			'geosite:tld-!cn',
 		],/**/
 
 		// 要直接訪問的 ip，忽略策略設定，這些 ip 將始終被直接訪問
@@ -220,8 +220,8 @@ local accounts = [
 		// 要禁止訪問的 域名，忽略策略設定，這些 域名 將始終被禁止訪問
 		/**/
 		blockDomain: [
-			'category-ads',
-			// 'category-ads-all',
+			'geosite:category-ads',
+			// 'geosite:category-ads-all',
 		],/**/
 	}
 }`

@@ -105,6 +105,7 @@ export function generateDNS(opts: ConfigureOptions<Userdata>, ips?: Array<string
     // 阻止訪問
     let block = new Rule().pushDomain(strategy.blockDomain)
     const routing = opts.userdata?.routing
+
     if (routing) {
         proxy.pushDomain(routing.proxyDomain!)
         direct.pushDomain(routing.directDomain!)
@@ -182,7 +183,7 @@ function pushProxy(servers: Array<string | Server>, proxy: Rule, direct: Rule, b
         'geosite:twitter',
         'geosite:telegram',
         'geosite:geolocation-!cn',
-        'tld-!cn',
+        'geosite:tld-!cn',
     ]) {
         if (proxy.hasDomain(s) ||
             direct.hasDomain(s) ||

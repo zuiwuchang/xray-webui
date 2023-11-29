@@ -26,6 +26,7 @@ function generateDNS(opts, ips) {
     // 阻止訪問
     let block = new rule_1.Rule().pushDomain(strategy.blockDomain);
     const routing = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.routing;
+    console.log(JSON.stringify(routing));
     if (routing) {
         proxy.pushDomain(routing.proxyDomain);
         direct.pushDomain(routing.directDomain);
@@ -104,7 +105,7 @@ function pushProxy(servers, proxy, direct, block) {
         'geosite:twitter',
         'geosite:telegram',
         'geosite:geolocation-!cn',
-        'tld-!cn',
+        'geosite:tld-!cn',
     ]) {
         if (proxy.hasDomain(s) ||
             direct.hasDomain(s) ||

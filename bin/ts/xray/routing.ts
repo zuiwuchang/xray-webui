@@ -159,7 +159,7 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
                     'geosite:twitter',
                     'geosite:telegram',
                     'geosite:geolocation-!cn',
-                    'tld-!cn',
+                    'geosite:tld-!cn',
                 ],
             )
             break
@@ -196,7 +196,7 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
                     'geosite:twitter',
                     'geosite:telegram',
                     'geosite:geolocation-!cn',
-                    'tld-!cn',
+                    'geosite:tld-!cn',
                 ],
             )
             pushStrategyRules(rules, proxy, direct, block,
