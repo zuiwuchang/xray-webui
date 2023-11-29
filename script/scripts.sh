@@ -51,5 +51,6 @@ if [[ "$output" == "" ]];then
     output="scripts-`date +%F`.tar.gz"
 fi
 tar -zcvf  "$output" js ts main.d.ts tsconfig.json
+sha256sum "$output" > "$output.sha256.txt"
 echo
 echo pack to "\"$output\"" successed
