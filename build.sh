@@ -23,6 +23,7 @@ function help(){
         echo "  view              view build helper"
     fi
     echo "  pack              pack release"
+    echo "  scripts           pack scripts"
     echo "  run               run project"
     echo "  docker            docker build helper"
     echo
@@ -43,6 +44,11 @@ case "$1" in
         shift
         export Command="$0 pack"
         "$BashDir/script/pack.sh" "$@"
+    ;;
+    scripts)
+        shift
+        export Command="$0 scripts"
+        "$BashDir/script/scripts.sh" "$@"
     ;;
     go)
         shift
