@@ -24,8 +24,23 @@ function generateRouting(opts) {
         },
         {
             type: 'field',
-            ip: ['8.8.8.8', '1.1.1.1'],
+            ip: [
+                // google
+                '8.8.8.8',
+                // cloudflare
+                '1.1.1.1',
+            ],
             outboundTag: 'out-proxy',
+        },
+        {
+            type: 'field',
+            ip: [
+                '119.29.29.29',
+                '223.5.5.5',
+                '127.0.0.1',
+                '::1', // ipv6 本機
+            ],
+            outboundTag: 'out-freedom',
         },
     ];
     // 代理訪問
@@ -36,9 +51,18 @@ function generateRouting(opts) {
     let block = new rule_1.Rule().pushDomain(strategy.blockDomain).pushIP(strategy.blockIP);
     const routing = (_d = opts.userdata) === null || _d === void 0 ? void 0 : _d.routing;
     if (routing) {
-        proxy.pushDomain(routing.proxyDomain).pushIP(routing.proxyIP);
-        direct.pushDomain(routing.directDomain).pushIP(routing.directIP);
         block.pushDomain(routing.blockDomain).pushIP(routing.blockIP);
+        switch (strategy.value) {
+            case 5: // 直連優先
+            case 6: // 直接連接
+                direct.pushDomain(routing.directDomain).pushIP(routing.directIP);
+                proxy.pushDomain(routing.proxyDomain).pushIP(routing.proxyIP);
+                break;
+            default:
+                proxy.pushDomain(routing.proxyDomain).pushIP(routing.proxyIP);
+                direct.pushDomain(routing.directDomain).pushIP(routing.directIP);
+                break;
+        }
     }
     pushRules(rules, 'out-proxy', proxy);
     pushRules(rules, 'out-freedom', direct);

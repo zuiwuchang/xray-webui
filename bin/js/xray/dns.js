@@ -26,11 +26,19 @@ function generateDNS(opts, ips) {
     // 阻止訪問
     let block = new rule_1.Rule().pushDomain(strategy.blockDomain);
     const routing = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.routing;
-    console.log(JSON.stringify(routing));
     if (routing) {
-        proxy.pushDomain(routing.proxyDomain);
-        direct.pushDomain(routing.directDomain);
         block.pushDomain(routing.blockDomain);
+        switch (strategy.value) {
+            case 5: // 直連優先
+            case 6: // 直接連接
+                direct.pushDomain(routing.directDomain);
+                proxy.pushDomain(routing.proxyDomain);
+                break;
+            default:
+                proxy.pushDomain(routing.proxyDomain);
+                direct.pushDomain(routing.directDomain);
+                break;
+        }
     }
     if (proxy.isValid()) {
         servers.push(...[

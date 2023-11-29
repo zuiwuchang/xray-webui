@@ -107,9 +107,18 @@ export function generateDNS(opts: ConfigureOptions<Userdata>, ips?: Array<string
     const routing = opts.userdata?.routing
 
     if (routing) {
-        proxy.pushDomain(routing.proxyDomain!)
-        direct.pushDomain(routing.directDomain!)
         block.pushDomain(routing.blockDomain!)
+        switch (strategy.value) {
+            case 5: // 直連優先
+            case 6: // 直接連接
+                direct.pushDomain(routing.directDomain!)
+                proxy.pushDomain(routing.proxyDomain!)
+                break
+            default:
+                proxy.pushDomain(routing.proxyDomain!)
+                direct.pushDomain(routing.directDomain!)
+                break
+        }
     }
     if (proxy.isValid()) {
         servers.push(...[
