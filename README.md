@@ -330,7 +330,7 @@ services:
 
 使用 docker 的另外一個好處是可以在 linux 下使用 docker 方便的創建一個代理網關，這樣只需要把家裏的設備的網關設置爲它就能訪問到朝鮮之外的網路(例如將 android 電視的網關設置爲它，就可以在 android 電視上使用 youtube 等程式)
 
-首先需要宿主器是 linux 且爲 docker 使用 macvlan 模式聯網(這個模式依賴了linux 內核4.0以上)。
+首先需要宿主器是 linux 且爲 docker 使用 macvlan 模式聯網(這個模式依賴了linux 內核4.0以上，此外 macvlan 不能使用無線網關，因爲 wifi 協議禁止了這一行爲)。
 
 下述假設網卡設備名稱是 **eth0**, 物理網卡所在的網路網關是 **192.168.1.1/24**
 
