@@ -148,6 +148,10 @@ export interface Provider {
     * @param opts 生成設定檔的原始參數
     */
     serve(cnf: string, opts: ConfigureOptions<Userdata>): ServeResult
+    /**
+    * 返回默認設定
+    */
+    getDefault?: () => Default
 }
 ```
 
@@ -156,6 +160,7 @@ export interface Provider {
 * **metadata** 返回了一個元信息，網頁 ui 會依據它爲各種協議生成輸入 ui，同時系統也會依據它的定義來解析與生成代理節點的訂閱信息
 * **configure** 這個函數應該爲 xray 生成設定檔案的內容，以供後續使用它來啓動 xray
 * **serve** 這個函數應該返回啓動 xray 的命令，cnf 是存儲了 configure 生成內容的檔案路徑
+* **getDefault** 從 v0.0.6 開始支持，如果提供了在用戶請求重置 /settings/general 頁面數據時會由這個函數返回響應內容
 
 一些系統支持設置透明代理(目前官方只維護了 linux windows 腳本)，你可以修改下述三個函數來自定義如何啓動與關閉你所在平臺的透明代理
 

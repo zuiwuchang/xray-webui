@@ -107,6 +107,22 @@ export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inboun
                 })
             }
         }
+        port = userdata?.dns?.port
+        if (isPort(port)) {
+            const dns = userdata!.dns!
+            inbounds.push({
+                protocol: 'dokodemo-door',
+                tag: 'in-dns',
+                listen: dns?.bind ?? '0.0.0.0',
+                port: port,
+                settings: {
+                    address: '8.8.8.8',
+                    port: 53,
+                    network: 'tcp,udp',
+                    followRedirect: true,
+                },
+            })
+        }
     }
     return inbounds
 }

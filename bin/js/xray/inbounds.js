@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.generateInbounds = void 0;
 const utils_1 = require("./utils");
 function generateInbounds(opts) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     const inbounds = [];
     let port = opts.environment.port;
     if ((0, utils_1.isPort)(port)) {
@@ -110,6 +110,22 @@ function generateInbounds(opts) {
                     }
                 });
             }
+        }
+        port = (_k = userdata === null || userdata === void 0 ? void 0 : userdata.dns) === null || _k === void 0 ? void 0 : _k.port;
+        if ((0, utils_1.isPort)(port)) {
+            const dns = userdata.dns;
+            inbounds.push({
+                protocol: 'dokodemo-door',
+                tag: 'in-dns',
+                listen: (_l = dns === null || dns === void 0 ? void 0 : dns.bind) !== null && _l !== void 0 ? _l : '0.0.0.0',
+                port: port,
+                settings: {
+                    address: '8.8.8.8',
+                    port: 53,
+                    network: 'tcp,udp',
+                    followRedirect: true,
+                },
+            });
         }
     }
     return inbounds;

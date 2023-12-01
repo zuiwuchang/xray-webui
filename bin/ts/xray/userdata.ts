@@ -19,6 +19,17 @@ export interface Socks {
      */
     accounts?: Array<Account>
 }
+export interface DNS {
+    /**
+     * 監聽地址
+     * @default '0.0.0.0'
+     */
+    bind?: string
+    /**
+     * 監聽端口，如果 < 1 則不啓用 dns 服務
+     */
+    port?: number
+}
 export interface HTTP {
     /**
      * 監聽地址
@@ -131,6 +142,10 @@ export interface Userdata {
      * http 代理設定
      */
     http?: HTTP
+    /**
+     * 提供無污染的 dns 服務
+     */
+    dns?: DNS
     /**
      * 透明代理設定
      */

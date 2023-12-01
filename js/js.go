@@ -139,6 +139,29 @@ func (vm *Runtime) assertFunction(name string) (self goja.Value, f, destroy goja
 	f = callable
 	return
 }
+func (vm *Runtime) findFunction(name string) (self goja.Value, f, destroy goja.Callable, e error) {
+	self, e = vm.create(goja.Undefined())
+	if e != nil {
+		return
+	}
+	o, ok := self.(*goja.Object)
+	if !ok {
+		e = errors.New(`script method create must  return Provider`)
+		return
+	}
+	val := o.Get(`destroy`)
+	callable, ok := goja.AssertFunction(val)
+	if ok {
+		destroy = callable
+	}
+
+	val = o.Get(name)
+	callable, ok = goja.AssertFunction(val)
+	if ok {
+		f = callable
+	}
+	return
+}
 func (vm *Runtime) TurnOn(rawURL string, u *url.URL) error {
 	return vm.turn(rawURL, u, `turnOn`)
 }
@@ -725,5 +748,24 @@ func (vm *Runtime) Start(ctx context.Context, info *data.Last) (cmd *exec.Cmd, e
 
 	// 運行進程
 	cmd = exec.Command(obj.Name, obj.Args...)
+	return
+}
+func (vm *Runtime) GetDefault() (text string, ok bool, e error) {
+	self, f, destroy, e := vm.assertFunction(`getDefault`)
+	if e != nil {
+		return
+	} else if destroy != nil {
+		defer destroy(self)
+	}
+	if f != nil {
+		var val goja.Value
+		val, e = f(self)
+		val, e = vm.stringify(vm.json, val)
+		if e != nil {
+			return
+		}
+		text = val.String()
+		ok = true
+	}
 	return
 }

@@ -13,8 +13,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/go-jsonnet"
+	"github.com/zuiwuchang/xray_webui/configure"
 	"github.com/zuiwuchang/xray_webui/db/data"
 	"github.com/zuiwuchang/xray_webui/db/manipulator"
+	"github.com/zuiwuchang/xray_webui/js"
 	"github.com/zuiwuchang/xray_webui/log"
 	"github.com/zuiwuchang/xray_webui/m/web"
 	"github.com/zuiwuchang/xray_webui/utils"
@@ -59,12 +61,30 @@ func (h *Settings) Register(router *gin.RouterGroup) {
 	r.POST(`element_import/:subscription`, h.ImportElement)
 }
 func (h *Settings) GetDefault(c *gin.Context) {
-	h.SetHTTPCacheMaxAge(c, h.maxage)
-	h.ServeLazyJSON(c, ``, h.general.Load().(time.Time), func() (any, error) {
+	// h.SetHTTPCacheMaxAge(c, h.maxage)
+	// h.ServeLazyJSON(c, ``, h.general.Load().(time.Time), func() (any, error) {
+	// 	var resp data.General
+	// 	resp.ResetDefault()
+	// 	return resp, nil
+	// })
+	vm, e := js.New(configure.Default().System.Script)
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	js, ok, e := vm.GetDefault()
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	if ok {
+		c.Writer.Header().Set(`Content-Type`, `application/json; charset=utf-8`)
+		c.String(http.StatusOK, js)
+	} else {
 		var resp data.General
 		resp.ResetDefault()
-		return resp, nil
-	})
+		c.JSON(http.StatusOK, &resp)
+	}
 }
 func (h *Settings) GetGeneral(c *gin.Context) {
 	h.SetHTTPCacheMaxAge(c, h.maxage)

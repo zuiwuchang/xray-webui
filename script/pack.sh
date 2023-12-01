@@ -55,5 +55,5 @@ for i in ${!Platforms[@]};do
     platform=${Platforms[i]}
     step=i+1
     echo "step $step/$steps"
-    "$BashDir/go.sh" -p "$pack" -P "$platform"
+    "$BashDir/go.sh" -p "$pack" -P "$platform" -u
 done

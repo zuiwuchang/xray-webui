@@ -92,10 +92,12 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
         return
     }
     const strategy = opts.strategy
-    const tproxy = opts.userdata?.proxy?.tproxy ? true : false
-    const rules: Array<Rule> = [
-        // 攔截域名解析
-        !tproxy || isWindows() ? {
+    const userdata = opts?.userdata
+
+    const rules: Array<Rule> = []
+    if (isPort(userdata?.proxy?.port)) {
+        const tproxy = userdata?.proxy?.tproxy ? true : false
+        rules.push(!tproxy || isWindows() ? {
             type: 'field',
             inboundTag: ['in-proxy'],
             outboundTag: 'out-proxy',
@@ -104,7 +106,17 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
             inboundTag: ['in-proxy'],
             port: 53,
             outboundTag: 'out-dns',
-        },
+        })
+    }
+    if (isPort(userdata?.dns?.port)) {
+        rules.push({
+            type: 'field',
+            inboundTag: ['in-dns'],
+            outboundTag: 'out-dns',
+        })
+    }
+    // 攔截域名解析
+    rules.push(
         {
             type: 'field',
             ip: [
@@ -125,7 +137,7 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
             ],
             outboundTag: 'out-freedom',
         },
-    ]
+    )
     // 代理訪問
     let proxy = new StrategyRule().pushDomain(strategy.proxyDomain).pushIP(strategy.proxyIP)
     // 直接連接

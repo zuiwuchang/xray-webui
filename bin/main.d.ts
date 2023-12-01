@@ -422,6 +422,35 @@ declare module 'xray/webui' {
          */
         userdata?: T
     }
+    export interface Default {
+        /**
+         * 測試請求的網址
+         */
+        url: string
+        /**
+         * 是否自動啓動 xray
+         */
+        run: boolean
+        /**
+         * 是否自動啓動透明代理
+         */
+        firewall: boolean
+        /**
+         * 策略
+         * 
+         * 1 默認的代理規則
+         * 2 全域代理
+         * 3 略過區域網路的代理(僅對公網ip使用代理)
+         * 4 代理優先(略過區域網路和西朝鮮的代理)
+         * 5 直連優先 (僅對非西朝鮮公網使用代理)
+         * 6 直接連接
+         */
+        strategy: 1 | 2 | 3 | 4 | 5 | 6
+        /**
+         * 用戶設定
+         */
+        userdata: string
+    }
     /**
      * 爲網頁 ui 提供了各種功能的具體實現
      */
@@ -465,5 +494,10 @@ declare module 'xray/webui' {
          * @param opts 生成設定檔的原始參數
          */
         serve(cnf: string, opts: ConfigureOptions<Userdata>): ServeResult
+
+        /**
+         * 返回默認設定
+         */
+        getDefault?: () => Default
     }
 }
