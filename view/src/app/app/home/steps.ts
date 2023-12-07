@@ -413,7 +413,9 @@ export class MetadataProvider {
                         if (!json) {
                             json = {}
                         }
-                        json[from.key ?? ''] = value
+                        if (value != '') {
+                            json[from.key ?? ''] = value
+                        }
                         break
                 }
             }
@@ -426,6 +428,15 @@ export class MetadataProvider {
             u.user = new Userinfo(Base64.encode(`${base64name}:${base64password}`))
         }
         if (query.length != 0) {
+            const deleted = new Array<string>()
+            for (const [k, _] of query.m) {
+                if (query.get(k) == '') {
+                    deleted.push(k)
+                }
+            }
+            for (const k of deleted) {
+                query.del(k)
+            }
             u.rawQuery = query.encode()
         }
         if (fragment != '') {

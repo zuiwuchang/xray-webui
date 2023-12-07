@@ -8,7 +8,10 @@ export interface GRPC {
      * 指定一個服務名稱，只需在出棧中配置
      */
     serviceName?: string
-
+    /**
+     * 不穩定的測試屬性
+     */
+    multiMode?: boolean
     /**
      * 設定 gRPC 的用戶代理，可能能防止某些 CDN 阻止 gRPC 流量
      */

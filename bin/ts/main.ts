@@ -112,7 +112,6 @@ ${s}
      * 返回 xray 設定
      */
     configure(opts: ConfigureOptions<Userdata>): ConfigureResult {
-        core.println(JSON.stringify(opts.fileds, undefined, "  "))
         let ips: undefined | Array<string>
         let ip: undefined | string
         const address = opts.fileds.address!

@@ -45,7 +45,7 @@ export const vmess: Metadata = {
             label: i18n.protocol,
             ui: 'select-editable',
             value: [
-                'tcp', 'ws', 'quic', 'kcp', 'http', 'grpc',
+                'tcp', 'ws', 'quic', 'kcp', 'http',
             ],
             class: 'col-12 md:col-4',
             from: {

@@ -162,8 +162,17 @@ export const vless: Metadata = {
             },
         },
         {
-            ui: 'placeholder',
-            class: 'p-0 col-fixed md:col-4',
+            key: 'mode',
+            label: i18n.grpcMode,
+            ui: 'select',
+            value: ['', 'gun', 'multi'],
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'mode',
+            },
+            // ui: 'placeholder',
+            // class: 'p-0 col-fixed md:col-4',
         },
         // row
         {
@@ -240,6 +249,10 @@ export interface VLessFileds {
 
     alpn?: string
     fingerprint?: string
+    /**
+     * grpc 模式
+     */
+    mode?: string
 
     publicKey?: string
     shortID?: string

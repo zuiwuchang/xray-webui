@@ -143,7 +143,6 @@ ${s}
      * 返回 xray 設定
      */
     configure(opts) {
-        core.println(JSON.stringify(opts.fileds, undefined, "  "));
         let ips;
         let ip;
         const address = opts.fileds.address;

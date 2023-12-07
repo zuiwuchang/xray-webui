@@ -281,7 +281,8 @@ class OutboundStream {
             case 'grpc':
                 result.network = 'grpc';
                 (result as GRPCStream).grpcSettings = {
-                    serviceName: this._serverName(),
+                    serviceName: this._serviceName(),
+                    multiMode: this._multiMode(),
                     idle_timeout: 40,
                 }
                 break
@@ -295,6 +296,19 @@ class OutboundStream {
             }
         }
         return result
+    }
+    private _multiMode(): boolean {
+        const fileds = this.opts.fileds
+        const val = fileds.mode ?? ''
+        return val == 'multi'
+    }
+    private _serviceName(): string {
+        const fileds = this.opts.fileds
+        const val = fileds.path ?? ''
+        if (val != '') {
+            return val
+        }
+        return ''
     }
     private _path(): string {
         const fileds = this.opts.fileds

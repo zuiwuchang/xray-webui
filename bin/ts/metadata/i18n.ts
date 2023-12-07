@@ -70,6 +70,9 @@ export const i18n = {
         'zh-Hans': '指纹',
         'default': 'Fingerprint',
     },
+    grpcMode: {
+        'default': 'grpc mode',
+    },
     encryption: {
         'zh-Hant': '加密方式',
         'zh-Hans': '加密方式',

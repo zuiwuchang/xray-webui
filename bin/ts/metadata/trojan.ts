@@ -57,11 +57,32 @@ export const trojan: Metadata = {
             key: 'host',
             label: i18n.host,
             ui: 'text',
-            class: 'col-12 md:col-6',
+            class: 'col-12 md:col-4',
             from: {
                 from: 'query',
                 key: 'host',
             },
+        },
+        {
+            // url path
+            key: 'path',
+            label: i18n.path,
+            ui: 'text',
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'path',
+            },
+            alias: [
+                {
+                    key: 'protocol',
+                    value: 'grpc',
+                    from: {
+                        from: 'query',
+                        key: 'serviceName',
+                    }
+                }
+            ],
         },
         {
             // 傳輸層加密
@@ -71,7 +92,7 @@ export const trojan: Metadata = {
             value: [
                 'xtls', 'tls', 'reality',
             ],
-            class: 'col-12 md:col-6',
+            class: 'col-12 md:col-4',
             from: {
                 from: 'query',
                 key: 'security',
@@ -84,7 +105,7 @@ export const trojan: Metadata = {
             key: 'userID',
             label: i18n.userID,
             ui: 'text',
-            class: 'col-12 md:col-6',
+            class: 'col-12 md:col-4',
             from: {
                 from: 'username',
             },
@@ -94,7 +115,7 @@ export const trojan: Metadata = {
             key: 'flow',
             label: i18n.flow,
             ui: 'select-editable',
-            class: 'col-12 md:col-6',
+            class: 'col-12 md:col-4',
             value: [
                 'none', 'xtls-rprx-vision', 'xtls-rprx-vision-udp443'
             ],
@@ -103,14 +124,17 @@ export const trojan: Metadata = {
                 key: 'flow',
             },
         },
-
+        {
+            ui: 'placeholder',
+            class: 'p-0 col-fixed md:col-4',
+        },
         // row
         {
             key: 'alpn',
             label: i18n.alpn,
             ui: 'select-editable',
             value: ['', 'h2', 'http/1.1', 'h2,http/1.1'],
-            class: 'col-12 md:col-6',
+            class: 'col-12 md:col-4',
             from: {
                 from: 'query',
                 key: 'alpn',
@@ -121,10 +145,21 @@ export const trojan: Metadata = {
             label: i18n.fingerprint,
             ui: 'select-editable',
             value: ['', 'chrome', 'firefox', 'safari', 'ios', 'android', 'edge', '360', 'qq', 'random', 'randomized'],
-            class: 'col-12 md:col-6',
+            class: 'col-12 md:col-4',
             from: {
                 from: 'query',
                 key: 'fp',
+            },
+        },
+        {
+            key: 'mode',
+            label: i18n.grpcMode,
+            ui: 'select',
+            value: ['', 'gun', 'multi'],
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'query',
+                key: 'mode',
             },
         },
     ],
@@ -148,6 +183,10 @@ export interface TrojanFileds {
      */
     host?: string
     /**
+     * url path，只在 grpc 時有效
+     */
+    path?: string
+    /**
      * 傳輸層加密
      */
     security?: string
@@ -162,4 +201,8 @@ export interface TrojanFileds {
 
     alpn?: string
     fingerprint?: string
+    /**
+     * grpc 模式
+     */
+    mode?: string
 }
