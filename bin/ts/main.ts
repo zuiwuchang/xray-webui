@@ -210,7 +210,7 @@ local accounts = [
         // level: 'none',         // 不記錄任何內容
 
         // 如果爲 true 啓用 dns 查詢日誌
-        // log: true,
+        // dns: true,
     },
     // socks 代理設定
     socks: {
