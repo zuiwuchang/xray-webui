@@ -317,8 +317,7 @@ func (vm *Runtime) Preview(rawURL string, u *url.URL, strategy uint32, env *Envi
 	e = errors.New(`unknow scheme: ` + u.Scheme)
 	return
 }
-
-func (vm *Runtime) getFileds(metadata Metadata, u *url.URL) (fileds map[string]string, e error) {
+func (vm *Runtime) getKeys(metadata Metadata, u *url.URL) (fileds map[string]string, e error) {
 	fileds = make(map[string]string)
 	var (
 		o struct {
@@ -445,6 +444,161 @@ func (vm *Runtime) getFileds(metadata Metadata, u *url.URL) (fileds map[string]s
 			// 	return
 		}
 		fileds[f.Key] = val
+	}
+	return
+}
+func (vm *Runtime) getFileds(metadata Metadata, u *url.URL) (fileds map[string]string, e error) {
+	keys, e := vm.getKeys(metadata, u)
+	if e != nil {
+		return
+	}
+	fileds = make(map[string]string)
+	var (
+		o struct {
+			ok   bool
+			keys map[string]any
+		}
+		base64 struct {
+			ok       bool
+			name     string
+			password string
+		}
+		values url.Values
+	)
+	// no alias
+	for _, f := range metadata.Fields {
+		if f.OnlyUI || f.From.From == `` || len(f.Alias) != 0 {
+			continue
+		}
+		fileds[f.Key] = keys[f.Key]
+	}
+	// alias
+	for _, f := range metadata.Fields {
+		if f.OnlyUI || f.From.From == `` || len(f.Alias) == 0 {
+			continue
+		}
+		setalias := false
+		for _, alias := range f.Alias {
+			found, exists := keys[alias.Key]
+			if !exists {
+				continue
+			}
+			if found == alias.Value {
+				setalias = true
+				var val string
+
+				switch alias.From.From {
+				case `username`:
+					if u.User != nil {
+						val, e = vm.decode(alias.From.Enc, u.User.Username())
+						if e != nil {
+							return
+						}
+					}
+				case `password`:
+					if u.User != nil {
+						password, _ := u.User.Password()
+						val, e = vm.decode(alias.From.Enc, password)
+						if e != nil {
+							return
+						}
+					}
+				case `base64-username`:
+					if !base64.ok {
+						base64.ok = true
+						if u.User != nil {
+							str, err := vm.decode(`base64`, u.User.Username())
+							if err != nil {
+								e = err
+								return
+							}
+							found := strings.LastIndex(str, `:`)
+							if found < 0 {
+								base64.name = str
+							} else {
+								base64.name = str[:found]
+								base64.password = str[found+1:]
+							}
+						}
+					}
+					val = base64.name
+				case `base64-password`:
+					if !base64.ok {
+						base64.ok = true
+						if u.User != nil {
+							str, err := vm.decode(`base64`, u.User.Username())
+							if err != nil {
+								e = err
+								return
+							}
+							found := strings.LastIndex(str, `:`)
+							if found < 0 {
+								base64.name = str
+							} else {
+								base64.name = str[:found]
+								base64.password = str[found+1:]
+							}
+						}
+					}
+					val = base64.password
+				case `host`:
+					val, e = vm.decode(alias.From.Enc, u.Hostname())
+					if e != nil {
+						return
+					}
+				case `port`:
+					val, e = vm.decode(alias.From.Enc, u.Port())
+					if e != nil {
+						return
+					}
+				case `path`:
+					val, e = vm.decode(alias.From.Enc, u.Path)
+					if e != nil {
+						return
+					}
+				case `query`:
+					if values == nil {
+						values = u.Query()
+					}
+					val, e = vm.decode(alias.From.Enc, values.Get(alias.From.Key))
+					if e != nil {
+						return
+					}
+				case `fragment`:
+					val, e = vm.decode(alias.From.Enc, u.Fragment)
+					if e != nil {
+						return
+					}
+				case `json`:
+					if !o.ok {
+						var str string
+						str, e = vm.decode("base64", u.Host)
+						if e != nil {
+							return
+						}
+						e = json.Unmarshal(utils.StringToBytes(str), &o.keys)
+						if e != nil {
+							return
+						}
+						o.ok = true
+					}
+					found := o.keys[alias.From.Key]
+					if found != nil {
+						val, e = vm.decode(alias.From.Enc, fmt.Sprint(found))
+						if e != nil {
+							return
+						}
+					}
+					// default:
+					// 	e = errors.New(`unknow filed from: ` + alias.From.From)
+					// 	return
+				}
+				fileds[f.Key] = val
+			}
+		}
+		if !setalias {
+			fileds[f.Key] = keys[f.Key]
+		}
 	}
 	return
 }

@@ -46,7 +46,7 @@ export const vless: Metadata = {
             label: i18n.protocol,
             ui: 'select-editable',
             value: [
-                'tcp', 'ws', 'quic', 'kcp', 'http',
+                'tcp', 'ws', 'quic', 'kcp', 'http', 'grpc',
             ],
             class: 'col-12 md:col-4',
             from: {
@@ -76,6 +76,16 @@ export const vless: Metadata = {
                 from: 'query',
                 key: 'path',
             },
+            alias: [
+                {
+                    key: 'protocol',
+                    value: 'grpc',
+                    from: {
+                        from: 'query',
+                        key: 'serviceName',
+                    }
+                }
+            ],
         },
         {
             // 傳輸層加密

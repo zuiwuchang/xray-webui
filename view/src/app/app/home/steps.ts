@@ -144,6 +144,21 @@ export interface Filed {
      * 來源
      */
     from?: From
+    /**
+     * 來源別名
+     */
+    alias?: Array<Alias>
+}
+/**
+ * 只有在 key 的的值與 value 相同時別名才生效
+ */
+export interface Alias {
+    key: string
+    value: string
+    /**
+     * form 別名
+     */
+    from: From
 }
 export interface Metadata {
     /**
@@ -189,51 +204,66 @@ export class MetadataProvider {
         }
         // this.keys_ = keys
     }
-    filed(md: Metadata, key: string): Filed | undefined {
-        for (const field of md.fields) {
-            if (field.key == key) {
-                return field
-            }
-        }
-        return undefined
-    }
-    get(url: URL, filed: Filed): string {
-        const from = filed.from
+    // filed(md: Metadata, key: string): Filed | undefined {
+    //     for (const field of md.fields) {
+    //         if (field.key == key) {
+    //             return field
+    //         }
+    //     }
+    //     return undefined
+    // }
+    // get(url: URL, filed: Filed | Alias): string {
+    //     const from = filed.from
+    //     if (!from) {
+    //         return ''
+    //     }
+    //     switch (from.from) {
+    //         case `username`:
+    //             return this.decode(from.enc, url.user?.username ?? '')
+    //         case `password`:
+    //             return this.decode(from.enc, url.user?.password ?? '')
+    //         case 'base64-username':
+    //             {
+    //                 const s = Base64.decode(url.user?.password ?? '')
+    //                 const i = s.lastIndexOf(":")
+    //                 return i >= 0 ? s.substring(0, i) : s
+    //             }
+    //         case 'base64-password':
+    //             {
+    //                 const s = Base64.decode(url.user?.password ?? '')
+    //                 const i = s.lastIndexOf(":")
+    //                 return i >= 0 ? s.substring(i + 1) : ''
+    //             }
+    //         case 'host':
+    //             return this.decode(from.enc, url.hostname())
+    //         case 'port':
+    //             return this.decode(from.enc, url.port() ?? '')
+    //         case 'query':
+    //             return this.decode(from.enc, url.query().get(from.key ?? ''))
+    //         case `path`:
+    //             return this.decode(from.enc, url.path)
+    //         case 'fragment':
+    //             return this.decode(from.enc, url.fragment)
+    //         case 'json':
+    //             const o: Record<string, string> = JSON.parse(this.decode('base64', url.host))
+    //             return o[from.key ?? ''] ?? ''
+    //     }
+    //     return ''
+    // }
+    private _getFieldString(keys: Map<string, { value?: any }>, field: Filed | Alias): string | undefined {
+        const from = field.from
         if (!from) {
-            return ''
+            return
         }
-        switch (from.from) {
-            case `username`:
-                return this.decode(from.enc, url.user?.username ?? '')
-            case `password`:
-                return this.decode(from.enc, url.user?.password ?? '')
-            case 'base64-username':
-                {
-                    const s = Base64.decode(url.user?.password ?? '')
-                    const i = s.lastIndexOf(":")
-                    return i >= 0 ? s.substring(0, i) : s
-                }
-            case 'base64-password':
-                {
-                    const s = Base64.decode(url.user?.password ?? '')
-                    const i = s.lastIndexOf(":")
-                    return i >= 0 ? s.substring(i + 1) : ''
-                }
-            case 'host':
-                return this.decode(from.enc, url.hostname())
-            case 'port':
-                return this.decode(from.enc, url.port() ?? '')
-            case 'query':
-                return this.decode(from.enc, url.query().get(from.key ?? ''))
-            case `path`:
-                return this.decode(from.enc, url.path)
-            case 'fragment':
-                return this.decode(from.enc, url.fragment)
-            case 'json':
-                const o: Record<string, string> = JSON.parse(this.decode('base64', url.host))
-                return o[from.key ?? ''] ?? ''
+        const found = keys.get(field.key)
+        if (!found) {
+            return
         }
-        return ''
+        const value = found.value
+        if (value === null || value === undefined) {
+            return
+        }
+        return `${value}`
     }
     getURL(md: Metadata, keys: Map<string, { value?: any }>): string {
         const u = new URL()
@@ -247,21 +277,16 @@ export class MetadataProvider {
         let host = ''
         let port = ''
         let fragment = ''
+        // no alias
         for (const field of md.fields) {
-            const from = field.from
-            if (!from) {
+            if (Array.isArray(field.alias) && field.alias.length != 0) {
                 continue
             }
-            const found = keys.get(field.key)
-            if (!found) {
+            const value = this._getFieldString(keys, field)
+            if (value === undefined) {
                 continue
             }
-            let value = found.value
-            if (value === null || value === undefined) {
-                continue
-            }
-            value = `${value}`
-
+            const from = field.from!
             switch (from.from) {
                 case 'username':
                     username = this.encode(from.enc, value)
@@ -298,6 +323,101 @@ export class MetadataProvider {
                     break
             }
         }
+        // alias
+        for (const field of md.fields) {
+            if (!Array.isArray(field.alias) || field.alias.length == 0) {
+                continue
+            }
+            const value = this._getFieldString(keys, field)
+            if (value === undefined) {
+                continue
+            }
+            let setalias = false
+            for (const alias of field.alias) {
+                let found = keys.get(alias.key)
+                if (!found) {
+                    continue
+                }
+                if (found.value == alias.value) {
+                    setalias = true
+                    const from = alias.from
+                    switch (from.from) {
+                        case 'username':
+                            username = this.encode(from.enc, value)
+                            break
+                        case 'password':
+                            userpassword = this.encode(from.enc, value)
+                            break
+                        case 'base64-username':
+                            base64name = this.encode(from.enc, value)
+                            break
+                        case 'base64-password':
+                            base64password = this.encode(from.enc, value)
+                            break
+                        case 'host':
+                            host = this.encode(from.enc, value)
+                            break
+                        case 'port':
+                            port = this.encode(from.enc, value)
+                            break
+                        case 'query':
+                            query.set(from.key ?? '', this.encode(from.enc, value))
+                            break
+                        case `path`:
+                            u.path = this.encode(from.enc, value)
+                            break
+                        case 'fragment':
+                            fragment = this.encode(from.enc, value)
+                            break
+                        case 'json':
+                            if (!json) {
+                                json = {}
+                            }
+                            json[from.key ?? ''] = value
+                            break
+                    }
+                    break
+                }
+            }
+            if (!setalias) {
+                const from = field.from!
+                switch (from.from) {
+                    case 'username':
+                        username = this.encode(from.enc, value)
+                        break
+                    case 'password':
+                        userpassword = this.encode(from.enc, value)
+                        break
+                    case 'base64-username':
+                        base64name = this.encode(from.enc, value)
+                        break
+                    case 'base64-password':
+                        base64password = this.encode(from.enc, value)
+                        break
+                    case 'host':
+                        host = this.encode(from.enc, value)
+                        break
+                    case 'port':
+                        port = this.encode(from.enc, value)
+                        break
+                    case 'query':
+                        query.set(from.key ?? '', this.encode(from.enc, value))
+                        break
+                    case `path`:
+                        u.path = this.encode(from.enc, value)
+                        break
+                    case 'fragment':
+                        fragment = this.encode(from.enc, value)
+                        break
+                    case 'json':
+                        if (!json) {
+                            json = {}
+                        }
+                        json[from.key ?? ''] = value
+                        break
+                }
+            }
+        }
         u.host = port == '' ? host : `${host}:${port}`
         if (username != '' || userpassword != '') {
             u.user = new Userinfo(username, userpassword)
@@ -316,26 +436,15 @@ export class MetadataProvider {
         }
         return u.toString()
     }
-    fileds(md: Metadata, url: URL, ...fileds: Array<string>): Map<string, string> {
-        const m = new Map<string, string>()
+    private _getKeys(md: Metadata, url: URL): Map<string, { value?: string }> {
+        const keys = new Map<string, { value?: string }>()
         let values: undefined | Values
         let json: undefined | Record<string, string>
-        let set: undefined | Set<string>
         let base64 = ''
         let base64i = -1
-        if (fileds.length > 0) {
-            set = new Set<string>()
-            for (const filed of fileds) {
-                set.add(filed)
-            }
-            console.log(set)
-        }
         for (const filed of md.fields) {
             const from = filed.from
             if (!from) {
-                continue
-            }
-            if (set && !set.has(filed.key ?? '')) {
                 continue
             }
             let value = ''
@@ -385,10 +494,177 @@ export class MetadataProvider {
                     value = json![from.key ?? ''] ?? ''
                     break
             }
-            m.set(filed.key, value)
+            keys.set(filed.key, { value: value })
+        }
+        return keys
+    }
+    fileds(md: Metadata, url: URL): Map<string, string> {
+        const keys = this._getKeys(md, url)
+        const m = new Map<string, string>()
+
+        // no alias
+        for (const filed of md.fields) {
+            if (Array.isArray(filed.alias) && filed.alias.length != 0) {
+                continue
+            }
+            const from = filed.from
+            if (!from) {
+                continue
+            }
+            m.set(filed.key, keys.get(filed.key)?.value ?? '')
+        }
+        // alias
+        let values: undefined | Values
+        let json: undefined | Record<string, string>
+        let base64 = ''
+        let base64i = -1
+        for (const field of md.fields) {
+            if (!Array.isArray(field.alias) || field.alias.length == 0) {
+                continue
+            }
+            const from = field.from
+            if (!from) {
+                continue
+            }
+            let setalias = false
+            for (const alias of field.alias) {
+                let found = keys.get(alias.key)
+                if (!found) {
+                    continue
+                }
+                if (found.value == alias.value) {
+                    setalias = true
+                    const from = alias.from
+                    let value = ''
+                    switch (from.from) {
+                        case 'username':
+                            value = this.decode(from.enc, url.user?.username ?? '')
+                            break
+                        case 'password':
+                            value = this.decode(from.enc, url.user?.password ?? '')
+                            break
+                        case 'base64-username':
+                            if (base64 == '') {
+                                base64 = this.decode('base64', url.user?.username ?? '')
+                                base64i = base64.lastIndexOf(':')
+                            }
+                            value = base64i >= 0 ? base64.substring(0, base64i) : base64
+                            break
+                        case 'base64-password':
+                            if (base64 == '') {
+                                base64 = this.decode('base64', url.user?.username ?? '')
+                                base64i = base64.lastIndexOf(':')
+                            }
+                            value = base64i >= 0 ? base64.substring(base64i + 1) : ''
+                            break
+                        case 'host':
+                            value = this.decode(from.enc, url.hostname())
+                            break
+                        case 'port':
+                            value = this.decode(from.enc, url.port() ?? '')
+                            break
+                        case 'path':
+                            value = this.decode(from.enc, url.path)
+                            break
+                        case 'query':
+                            if (!values) {
+                                values = url.query()
+                            }
+                            value = this.decode(from.enc, values.get(from.key ?? ''))
+                            break
+                        case 'fragment':
+                            value = this.decode(from.enc, url.fragment)
+                            break
+                        case 'json':
+                            if (!json) {
+                                json = JSON.parse(this.decode('base64', url.host))
+                            }
+                            value = json![from.key ?? ''] ?? ''
+                            break
+                    }
+                    m.set(field.key, value)
+                    break
+                }
+            }
+            if (!setalias) {
+                m.set(field.key, keys.get(field.key)?.value ?? '')
+            }
         }
         return m
     }
+    // fileds(md: Metadata, url: URL, ...fileds: Array<string>): Map<string, string> {
+    //     const m = new Map<string, string>()
+    //     let values: undefined | Values
+    //     let json: undefined | Record<string, string>
+    //     let set: undefined | Set<string>
+    //     let base64 = ''
+    //     let base64i = -1
+    //     if (fileds.length > 0) {
+    //         set = new Set<string>()
+    //         for (const filed of fileds) {
+    //             set.add(filed)
+    //         }
+    //         console.log(set)
+    //     }
+    //     for (const filed of md.fields) {
+    //         const from = filed.from
+    //         if (!from) {
+    //             continue
+    //         }
+    //         if (set && !set.has(filed.key ?? '')) {
+    //             continue
+    //         }
+    //         let value = ''
+    //         switch (from.from) {
+    //             case 'username':
+    //                 value = this.decode(from.enc, url.user?.username ?? '')
+    //                 break
+    //             case 'password':
+    //                 value = this.decode(from.enc, url.user?.password ?? '')
+    //                 break
+    //             case 'base64-username':
+    //                 if (base64 == '') {
+    //                     base64 = this.decode('base64', url.user?.username ?? '')
+    //                     base64i = base64.lastIndexOf(':')
+    //                 }
+    //                 value = base64i >= 0 ? base64.substring(0, base64i) : base64
+    //                 break
+    //             case 'base64-password':
+    //                 if (base64 == '') {
+    //                     base64 = this.decode('base64', url.user?.username ?? '')
+    //                     base64i = base64.lastIndexOf(':')
+    //                 }
+    //                 value = base64i >= 0 ? base64.substring(base64i + 1) : ''
+    //                 break
+    //             case 'host':
+    //                 value = this.decode(from.enc, url.hostname())
+    //                 break
+    //             case 'port':
+    //                 value = this.decode(from.enc, url.port() ?? '')
+    //                 break
+    //             case 'path':
+    //                 value = this.decode(from.enc, url.path)
+    //                 break
+    //             case 'query':
+    //                 if (!values) {
+    //                     values = url.query()
+    //                 }
+    //                 value = this.decode(from.enc, values.get(from.key ?? ''))
+    //                 break
+    //             case 'fragment':
+    //                 value = this.decode(from.enc, url.fragment)
+    //                 break
+    //             case 'json':
+    //                 if (!json) {
+    //                     json = JSON.parse(this.decode('base64', url.host))
+    //                 }
+    //                 value = json![from.key ?? ''] ?? ''
+    //                 break
+    //         }
+    //         m.set(filed.key, value)
+    //     }
+    //     return m
+    // }
 
     decode(enc: 'base64' | undefined, s: string): string {
         if (s === '') {

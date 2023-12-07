@@ -46,7 +46,7 @@ exports.vmess = {
             label: i18n_1.i18n.protocol,
             ui: 'select-editable',
             value: [
-                'tcp', 'ws', 'quic', 'kcp', 'http',
+                'tcp', 'ws', 'quic', 'kcp', 'http', 'grpc',
             ],
             class: 'col-12 md:col-4',
             from: {

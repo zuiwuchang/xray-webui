@@ -1166,6 +1166,8 @@ class DialogOfElement {
       for (const [key, value] of fields) {
         keys.set(key, { value: value })
       }
+      // alias
+      
       this.keys = keys
       this.metadata = metadata
     } catch (e) {

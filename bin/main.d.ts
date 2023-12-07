@@ -219,7 +219,17 @@ declare module 'xray/webui' {
      * * label['default'] 用戶顯示沒有匹配的語言文本
      */
     export type Text = Record<string, string>
-
+    /**
+     * 只有在 key 的的值與 value 相同時別名才生效
+     */
+    export interface Alias {
+        key: string
+        value: string
+        /**
+         * form 別名
+         */
+        from: From
+    }
     export interface From {
         /**
          * 數據來源自 url 中哪個部分
@@ -271,7 +281,10 @@ declare module 'xray/webui' {
          * 來源
          */
         from?: From
-
+        /**
+         * 來源別名
+         */
+        alias?: Array<Alias>
         /**
          * 如果爲 true 表示只在 ui 頁面中有效
          */

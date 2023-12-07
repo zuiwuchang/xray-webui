@@ -15,9 +15,18 @@ type Filed struct {
 	// 存儲的鍵名稱，應該保證同一代理的多個 key 唯一
 	Key string `json:"key"`
 	// 來源自 url 中哪個部分
-	From From `json:"from"`
+	From  From    `json:"from"`
+	Alias []Alias `json:"alias"`
 	// 服務器忽略解析這個 filed
 	OnlyUI bool `json:"onlyUI"`
+}
+type Alias struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+	/**
+	 * form 別名
+	 */
+	From From `json:"from"`
 }
 type From struct {
 	// 來源自 url 中哪個部分

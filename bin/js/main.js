@@ -143,6 +143,7 @@ ${s}
      * 返回 xray 設定
      */
     configure(opts) {
+        core.println(JSON.stringify(opts.fileds, undefined, "  "));
         let ips;
         let ip;
         const address = opts.fileds.address;
@@ -244,7 +245,7 @@ local accounts = [
         // level: 'none',         // 不記錄任何內容
 
         // 如果爲 true 啓用 dns 查詢日誌
-        // log: true,
+        // dns: true,
     },
     // socks 代理設定
     socks: {

@@ -1,7 +1,7 @@
 Target="xray-webui"
 Docker="king011/xray-webui"
 Dir=$(cd "$(dirname $BASH_SOURCE)/.." && pwd)
-Version="v0.0.6"
+Version="v0.0.7"
 View=1
 Platforms=(
     darwin/amd64
