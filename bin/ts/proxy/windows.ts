@@ -166,6 +166,7 @@ export function turnOnWindows(opts: TurnOptions<Userdata>) {
             log: true,
         })
         // 添加 tun2socks 路徑
+        core.sleep(1000);
         core.exec({
             name: 'route',
             args: ['add', '0.0.0.0/0', addr],
