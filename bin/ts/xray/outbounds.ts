@@ -201,6 +201,9 @@ class OutboundStream {
         switch (security) {
             case '':
                 break
+            case 'none':
+                result.security = security;
+                break;
             case 'tls':
                 result.security = security
                 result.tlsSettings = {
@@ -210,7 +213,7 @@ class OutboundStream {
                 }
                 break
             case 'xtls':
-                result.security = 'xtls'
+                result.security = security
                 result.xtlsSettings = {
                     serverName: this._serverName(),
                     alpn: this._alpn(),
