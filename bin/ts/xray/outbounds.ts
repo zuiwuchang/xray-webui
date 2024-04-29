@@ -20,6 +20,7 @@ import { Socks } from "./outbounds/socks";
 import { Freedom } from "./outbounds/freedom";
 import { Blackhole } from "./outbounds/blackhole";
 import { DNS } from "./outbounds/dns";
+import { HttpupgradeStream } from "./transport/httpupgrade";
 
 export function generateOutbounds(opts: ConfigureOptions<Userdata>, ip?: string): Array<Outbounds> {
     const isport = isPort(opts.environment.port)
@@ -287,6 +288,13 @@ class OutboundStream {
                     serviceName: this._serviceName(),
                     multiMode: this._multiMode(),
                     idle_timeout: 40,
+                }
+                break
+            case 'httpupgrade':
+                result.network = 'httpupgrade';
+                (result as HttpupgradeStream).httpupgradeSettings = {
+                    host: this._serverName(),
+                    path: this._path(),
                 }
                 break
             default:

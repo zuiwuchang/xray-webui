@@ -274,6 +274,13 @@ class OutboundStream {
                     idle_timeout: 40,
                 };
                 break;
+            case 'httpupgrade':
+                result.network = 'httpupgrade';
+                result.httpupgradeSettings = {
+                    host: this._serverName(),
+                    path: this._path(),
+                };
+                break;
             default:
                 throw new Error(`stream not implemented protocol: ${protocol}`);
         }
