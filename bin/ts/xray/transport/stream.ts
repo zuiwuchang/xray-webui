@@ -8,7 +8,7 @@ export interface Stream {
      * 數據流使用的傳輸方式
      * @default 'tcp'
      */
-    network?: 'tcp' | 'kcp' | 'ws' | 'http' | 'httpupgrade' | 'domainsocket' | 'quic' | 'grpc'
+    network?: 'tcp' | 'kcp' | 'ws' | 'http' | 'httpupgrade' | 'splithttp' | 'domainsocket' | 'quic' | 'grpc'
     /**
      * 傳輸層如何加密
      * * 'none' 不加密
@@ -34,6 +34,7 @@ export interface Stream {
     // "dsSettings": {},
     // "grpcSettings": {},
     // "httpupgradeSettings": {},
+    // "splithttpSettings":{},
     /**
      * 透明代理相關設定
      */

@@ -45,7 +45,7 @@ export const vmess: Metadata = {
             label: i18n.protocol,
             ui: 'select-editable',
             value: [
-                'tcp', 'ws', 'quic', 'kcp', 'http',
+                'tcp', 'ws', 'splithttp', 'quic', 'kcp', 'http',
             ],
             class: 'col-12 md:col-4',
             from: {
@@ -130,7 +130,7 @@ export const vmess: Metadata = {
             key: 'alpn',
             label: i18n.alpn,
             ui: 'select-editable',
-            value: ['', 'h2', 'http/1.1', 'h2,http/1.1'],
+            value: ['', 'h3', 'h2', 'http/1.1', 'h3,h2,http/1.1', 'h3,h2', 'h2,http/1.1'],
             class: 'col-12 md:col-4',
             from: {
                 from: 'json',

@@ -281,6 +281,13 @@ class OutboundStream {
                     path: this._path(),
                 };
                 break;
+            case 'splithttp':
+                result.network = 'splithttp';
+                result.splithttpSettings = {
+                    host: this._serverName(),
+                    path: this._path(),
+                };
+                break;
             default:
                 throw new Error(`stream not implemented protocol: ${protocol}`);
         }

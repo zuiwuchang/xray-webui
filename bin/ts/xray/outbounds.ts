@@ -21,6 +21,7 @@ import { Freedom } from "./outbounds/freedom";
 import { Blackhole } from "./outbounds/blackhole";
 import { DNS } from "./outbounds/dns";
 import { HttpupgradeStream } from "./transport/httpupgrade";
+import { SplithttpStream } from "./transport/splithttp";
 
 export function generateOutbounds(opts: ConfigureOptions<Userdata>, ip?: string): Array<Outbounds> {
     const isport = isPort(opts.environment.port)
@@ -293,6 +294,13 @@ class OutboundStream {
             case 'httpupgrade':
                 result.network = 'httpupgrade';
                 (result as HttpupgradeStream).httpupgradeSettings = {
+                    host: this._serverName(),
+                    path: this._path(),
+                }
+                break
+            case 'splithttp':
+                result.network = 'splithttp';
+                (result as SplithttpStream).splithttpSettings = {
                     host: this._serverName(),
                     path: this._path(),
                 }
