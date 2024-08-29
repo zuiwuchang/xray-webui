@@ -273,6 +273,18 @@ class OutboundStream {
                     path: this._path(),
                 }
                 break
+            case 'http-grpc':
+                result.network = 'http';
+                (result as HttpStream).httpSettings = {
+                    method: 'PUT',
+                    host: [this._serverName()],
+                    read_idle_timeout: 40,
+                    path: this._path(),
+                    headers: {
+                        "Content-Type": ["application/grpc+proto"]
+                    }
+                }
+                break
             // case 'domainsocket':
             //     break
             case 'quic':
