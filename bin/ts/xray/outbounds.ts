@@ -112,7 +112,7 @@ function generateShadowsocks(opts: ConfigureOptions<Userdata>, ip?: string): Sha
                 {
                     address: ip ?? fileds.address!,
                     port: getPort(fileds.port),
-                    method: fileds.method! as any,
+                    method: fileds.encryption! as any,
                     password: fileds.password!,
                     level: 0,
                 },

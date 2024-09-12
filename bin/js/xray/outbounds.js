@@ -91,7 +91,7 @@ function generateShadowsocks(opts, ip) {
                 {
                     address: ip !== null && ip !== void 0 ? ip : fileds.address,
                     port: (0, utils_1.getPort)(fileds.port),
-                    method: fileds.method,
+                    method: fileds.encryption,
                     password: fileds.password,
                     level: 0,
                 },
