@@ -672,10 +672,10 @@ func (vm *Runtime) decode(enc, src string) (output string, e error) {
 		src = strings.TrimRight(src, "=")
 		var b []byte
 		var encoding *base64.Encoding
-		if strings.ContainsAny(src, "+/") {
-			encoding = base64.RawStdEncoding
-		} else {
+		if strings.ContainsAny(src, "-_") {
 			encoding = base64.RawURLEncoding
+		} else {
+			encoding = base64.RawStdEncoding
 		}
 		b, e = encoding.DecodeString(src)
 		if e != nil {

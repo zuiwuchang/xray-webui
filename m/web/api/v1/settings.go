@@ -422,14 +422,15 @@ func (h *Settings) update(ctx context.Context, url string) (result []string, e e
 		return
 	}
 	enc := strings.TrimRight(strings.TrimSpace(string(b)), "=")
-
-	b, e = base64.RawStdEncoding.DecodeString(enc)
+	var encoding *base64.Encoding
+	if strings.ContainsAny(enc, "-_") {
+		encoding = base64.RawURLEncoding
+	} else {
+		encoding = base64.RawStdEncoding
+	}
+	b, e = encoding.DecodeString(enc)
 	if e != nil {
-		b0, e0 := base64.RawURLEncoding.DecodeString(enc)
-		if e0 != nil {
-			return
-		}
-		b = b0
+		return
 	}
 	strs := strings.Split(string(b), "\n")
 	result = make([]string, 0, len(strs))
