@@ -671,13 +671,15 @@ func (vm *Runtime) decode(enc, src string) (output string, e error) {
 	case `base64`:
 		src = strings.TrimRight(src, "=")
 		var b []byte
-		b, e = base64.RawStdEncoding.DecodeString(src)
+		var encoding *base64.Encoding
+		if strings.ContainsAny(src, "+/") {
+			encoding = base64.RawStdEncoding
+		} else {
+			encoding = base64.RawURLEncoding
+		}
+		b, e = encoding.DecodeString(src)
 		if e != nil {
-			b0, e0 := base64.RawURLEncoding.DecodeString(src)
-			if e0 != nil {
-				return
-			}
-			b = b0
+			return
 		}
 		output = utils.BytesToString(b)
 	default:

@@ -164,9 +164,7 @@
 
                                         </ng-template>
                                         <ng-template #noMetadataView>
-                                            <div class="flex-grow-1">
-                                                {{node.rawURL}}
-                                            </div>
+                                            <div class="flex-grow-1"> {{node.rawURL}}</div>
                                             <p-progressSpinner *ngIf="node.disabled"
                                                 [style]="{width: '1.75rem', height: '1.75rem'}" strokeWidth="5"
                                                 fill="var(--surface-ground)" animationDuration=".5s">

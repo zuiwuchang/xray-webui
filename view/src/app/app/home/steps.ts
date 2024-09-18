@@ -442,6 +442,7 @@ export class MetadataProvider {
         if (fragment != '') {
             u.fragment = fragment
         }
+
         if (json) {
             u.host = this.encode('base64', JSON.stringify(json))
         }
@@ -693,7 +694,7 @@ export class MetadataProvider {
         }
         switch (enc) {
             case 'base64':
-                return Base64.encode(s)
+                return Base64.encodeURI(s)
         }
         return s
     }

@@ -1167,7 +1167,7 @@ class DialogOfElement {
         keys.set(key, { value: value })
       }
       // alias
-      
+
       this.keys = keys
       this.metadata = metadata
     } catch (e) {

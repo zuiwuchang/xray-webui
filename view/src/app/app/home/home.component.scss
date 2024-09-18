@@ -2,3 +2,9 @@ textarea {
     width: 100%;
     resize: none;
 }
+
+.nodeinfo {
+    max-width: 100%;
+    text-overflow: clip;
+    overflow: hidden;
+}

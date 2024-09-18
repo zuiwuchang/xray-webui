@@ -47,7 +47,7 @@ exports.vless = {
             label: i18n_1.i18n.protocol,
             ui: 'select-editable',
             value: [
-                'tcp', 'ws', 'splithttp', 'quic', 'kcp', 'http', 'grpc', 'http-grpc',
+                'tcp', 'ws', 'httpupgrade', 'splithttp', 'quic', 'kcp', 'http', 'grpc', 'http-grpc',
             ],
             class: 'col-12 md:col-4',
             from: {
