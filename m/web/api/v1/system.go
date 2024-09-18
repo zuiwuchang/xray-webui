@@ -18,7 +18,7 @@ type System struct {
 	web.Helper
 	maxage  int
 	startAt time.Time
-	rw      sync.RWMutex
+	mutex   sync.RWMutex
 	core    string
 }
 
@@ -46,22 +46,12 @@ func (h *System) Title(c *gin.Context) {
 	})
 }
 func (h *System) getCore() (s string) {
-	h.rw.RLock()
-	s = h.core
-	h.rw.RUnlock()
-	if s != `` {
-		return
-	}
-
-	h.rw.Lock()
-	defer h.rw.Unlock()
-	s = h.core
-	if s != `` {
-		return
-	}
+	h.mutex.Lock()
+	defer h.mutex.Unlock()
 
 	runtime, e := js.New(configure.Default().System.Script)
 	if e != nil {
+		s = h.core
 		return
 	}
 	s, _ = runtime.Version()
@@ -70,6 +60,7 @@ func (h *System) getCore() (s string) {
 	}
 	return
 }
+
 func (h *System) Version(c *gin.Context) {
 	h.SetHTTPCacheMaxAge(c, h.maxage)
 	h.ServeLazyJSON(c, ``, h.startAt, func() (any, error) {
