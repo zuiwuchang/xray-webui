@@ -150,6 +150,20 @@ exports.vmess = {
             },
         },
         {
+            key: 'mode',
+            label: i18n_1.i18n.grpcMode,
+            ui: 'select',
+            value: ['', 'gun', 'multi'],
+            class: 'col-12 md:col-4',
+            from: {
+                from: 'json',
+                key: 'type',
+            },
+            // ui: 'placeholder',
+            // class: 'p-0 col-fixed md:col-4',
+        },
+        // row
+        {
             key: 'alterID',
             label: i18n_1.i18n.alterID,
             ui: 'number',

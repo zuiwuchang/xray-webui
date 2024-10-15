@@ -301,6 +301,8 @@ class OutboundStream {
                     serviceName: this._serviceName(),
                     multiMode: this._multiMode(),
                     idle_timeout: 40,
+                    initial_windows_size: 65536,
+                    permit_without_stream: true,
                 }
                 break
             case 'httpupgrade':
