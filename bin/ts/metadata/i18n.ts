@@ -71,7 +71,7 @@ export const i18n = {
         'default': 'Fingerprint',
     },
     grpcMode: {
-        'default': 'grpc mode',
+        'default': 'mode',
     },
     encryption: {
         'zh-Hant': '加密方式',
@@ -86,5 +86,13 @@ export const i18n = {
     },
     spiderX: {
         default: 'spiderX',
+    },
+    mode: {
+        'zh-Hant': 'xhttp 上行模式',
+        'zh-Hans': 'xhttp 上行模式',
+        'default': 'xhttp mode',
+    },
+    extra: {
+        default: 'extra',
     },
 }

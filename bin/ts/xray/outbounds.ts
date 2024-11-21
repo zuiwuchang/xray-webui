@@ -313,10 +313,14 @@ class OutboundStream {
                 }
                 break
             case 'splithttp':
-                result.network = 'splithttp';
-                (result as SplithttpStream).splithttpSettings = {
+            case 'xhttp':
+                result.network = 'xhttp';
+
+                (result as SplithttpStream).xhttpSettings = {
+                    mode: this._xhttpMode(),
                     host: this._serverName(),
                     path: this._path(),
+                    extra: this._xhttpExtra(),
                 }
                 break
             default:
@@ -329,6 +333,19 @@ class OutboundStream {
             }
         }
         return result
+    }
+    private _xhttpExtra(): any {
+        const fileds = this.opts.fileds
+        const val = fileds.extra ?? ''
+        if (val !== '') {
+            return JSON.parse(val)
+        }
+        return
+    }
+    private _xhttpMode(): string {
+        const fileds = this.opts.fileds
+        const val = fileds.mode ?? 'auto'
+        return val == '' ? 'auto' : val
     }
     private _multiMode(): boolean {
         const fileds = this.opts.fileds

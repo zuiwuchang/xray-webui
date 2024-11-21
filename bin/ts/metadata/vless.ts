@@ -165,7 +165,16 @@ export const vless: Metadata = {
             key: 'mode',
             label: i18n.grpcMode,
             ui: 'select',
-            value: ['', 'gun', 'multi'],
+            value: [
+                // grpc
+                '',
+                'gun',
+                'multi',
+                // xhttp
+                'auto',
+                'packet-up',
+                'stream-up',
+            ],
             class: 'col-12 md:col-4',
             from: {
                 from: 'query',
@@ -205,6 +214,18 @@ export const vless: Metadata = {
                 key: 'spx',
             },
         },
+        //
+        {
+            key: 'extra',
+            label: i18n.extra,
+            ui: 'text',
+            class: 'col-12',
+            from: {
+                from: 'query',
+                key: 'extra',
+            },
+        },
+
     ],
 }
 

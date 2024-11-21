@@ -5,6 +5,12 @@ import { Stream } from "./stream";
  */
 export interface SplithttpSettings {
     /**
+     * 上行模式
+     * @default "auto"
+     */
+    mode?: string
+
+    /**
      * http 請求路徑
      * @default '/'
      * 
@@ -36,12 +42,14 @@ export interface SplithttpSettings {
      * @default 10
      */
     maxConcurrentUploads?: number
+
+    extra?: any
 }
 
 /**
  * 完全有 http post/get 傳輸數據，可以利用 cdn 的 h3 來提速
  */
 export interface SplithttpStream extends Stream {
-    network: 'splithttp'
-    splithttpSettings?: SplithttpSettings
+    network: 'xhttp'
+    xhttpSettings?: SplithttpSettings
 }

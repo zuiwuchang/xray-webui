@@ -296,10 +296,13 @@ class OutboundStream {
                 };
                 break;
             case 'splithttp':
-                result.network = 'splithttp';
-                result.splithttpSettings = {
+            case 'xhttp':
+                result.network = 'xhttp';
+                result.xhttpSettings = {
+                    mode: this._xhttpMode(),
                     host: this._serverName(),
                     path: this._path(),
+                    extra: this._xhttpExtra(),
                 };
                 break;
             default:
@@ -312,6 +315,21 @@ class OutboundStream {
             };
         }
         return result;
+    }
+    _xhttpExtra() {
+        var _a;
+        const fileds = this.opts.fileds;
+        const val = (_a = fileds.extra) !== null && _a !== void 0 ? _a : '';
+        if (val !== '') {
+            return JSON.parse(val);
+        }
+        return;
+    }
+    _xhttpMode() {
+        var _a;
+        const fileds = this.opts.fileds;
+        const val = (_a = fileds.mode) !== null && _a !== void 0 ? _a : 'auto';
+        return val == '' ? 'auto' : val;
     }
     _multiMode() {
         var _a;

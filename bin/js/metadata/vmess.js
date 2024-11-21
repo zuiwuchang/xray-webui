@@ -159,8 +159,6 @@ exports.vmess = {
                 from: 'json',
                 key: 'type',
             },
-            // ui: 'placeholder',
-            // class: 'p-0 col-fixed md:col-4',
         },
         // row
         {
