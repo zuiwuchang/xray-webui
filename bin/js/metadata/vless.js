@@ -47,7 +47,7 @@ exports.vless = {
             label: i18n_1.i18n.protocol,
             ui: 'select-editable',
             value: [
-                'tcp', 'ws', 'httpupgrade', 'splithttp', 'quic', 'kcp', 'http', 'grpc', 'http-grpc',
+                'tcp', 'ws', 'httpupgrade', 'xhttp', 'quic', 'kcp', 'http', 'grpc', 'http-grpc',
             ],
             class: 'col-12 md:col-4',
             from: {
@@ -164,7 +164,7 @@ exports.vless = {
         {
             key: 'mode',
             label: i18n_1.i18n.grpcMode,
-            ui: 'select',
+            ui: 'select-editable',
             value: [
                 // grpc
                 '',
@@ -174,6 +174,7 @@ exports.vless = {
                 'auto',
                 'packet-up',
                 'stream-up',
+                'stream-one',
             ],
             class: 'col-12 md:col-4',
             from: {

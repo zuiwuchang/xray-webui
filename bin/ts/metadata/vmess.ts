@@ -45,7 +45,7 @@ export const vmess: Metadata = {
             label: i18n.protocol,
             ui: 'select-editable',
             value: [
-                'tcp', 'ws', 'httpupgrade', 'splithttp', 'quic', 'kcp', 'http', 'grpc', 'http-grpc',
+                'tcp', 'ws', 'httpupgrade', 'xhttp', 'quic', 'kcp', 'http', 'grpc', 'http-grpc',
             ],
             class: 'col-12 md:col-4',
             from: {
@@ -151,8 +151,18 @@ export const vmess: Metadata = {
         {
             key: 'mode',
             label: i18n.grpcMode,
-            ui: 'select',
-            value: ['', 'gun', 'multi'],
+            ui: 'select-editable',
+            value: [
+                // grpc
+                '',
+                'gun',
+                'multi',
+                // xhttp
+                'auto',
+                'packet-up',
+                'stream-up',
+                'stream-one',
+            ],
             class: 'col-12 md:col-4',
             from: {
                 from: 'json',
@@ -170,7 +180,17 @@ export const vmess: Metadata = {
                 key: 'aid',
             },
         },
-
+        //
+        {
+            key: 'extra',
+            label: i18n.extra,
+            ui: 'text',
+            class: 'col-12',
+            from: {
+                from: 'query',
+                key: 'extra',
+            },
+        },
     ],
 }
 export interface VMessFileds {
