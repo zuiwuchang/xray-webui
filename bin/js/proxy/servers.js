@@ -8,7 +8,11 @@ function getServers() {
     if (str) {
         const o = JSON.parse(str);
         if (Array.isArray(o)) {
-            servers.push(...o);
+            for (const v of o) {
+                if (v.indexOf(':') < 0) {
+                    servers.push(v);
+                }
+            }
         }
     }
     return servers;

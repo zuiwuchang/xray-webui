@@ -34,6 +34,7 @@ function turnOnLinux(opts) {
         throw new Error('proxy port invalid');
     }
     const servers = (0, servers_1.getServers)();
+    console.log('servers', servers);
     let message;
     const strs = [
         `#!/bin/bash

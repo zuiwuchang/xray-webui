@@ -9,6 +9,7 @@ export function turnOnLinux(opts: TurnOptions<Userdata>) {
         throw new Error('proxy port invalid')
     }
     const servers = getServers()
+    console.log('servers', servers)
     let message: string
     const strs: Array<string> = [
         `#!/bin/bash
