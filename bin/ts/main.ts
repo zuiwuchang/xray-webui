@@ -200,6 +200,26 @@ local accounts = [
     },
 ];
 {
+    // 一些全局的策略
+    strategy: {
+        // 內置 dns 設置，這只會對需要代理 域名查詢 生效
+        dns: {
+            // network: 'udp', // 使用 udp 查詢代理 dns
+            // network: 'tcp', // 使用 tcp 查詢代理 dns
+            network: 'https', // 使用 https 查詢代理 dns
+
+            // queryStrategy: 'ip', // 同時查詢 A 和 AAAA 記錄
+            queryStrategy: 'v4', // 只查詢 A 記錄
+            // queryStrategy: 'v6', // 只查詢 AAAA 記錄
+        },
+        // 如何復用 tcp 連接，只有傳輸層爲 tcp ws httpupgrade 時才有效
+        mux: {
+            enabled: true, // 必須設置爲 true 才會啓用
+            concurrency: 128, // 單個 tcp 最多復用次數，128爲最大值
+            xudpConcurrency: 1024, // 爲 udp 啓用單獨的連接復用，單個 tcp 最大復用 1024 次
+            xudpProxyUDP443: 'reject', // 拒絕 http3，通常瀏覽器會回退到 http2
+        }
+    },
     // 日誌設定
     log: {
         // 要記錄的日誌等級

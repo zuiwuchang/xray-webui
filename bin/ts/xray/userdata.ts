@@ -131,6 +131,10 @@ export interface Proxy {
 }
 export interface Userdata {
     /**
+     * 一些全局的策略
+     */
+    strategy?: Strategy
+    /**
      * xray 日誌設定
      */
     log?: Log
@@ -202,4 +206,31 @@ export interface Log {
      * 如果爲 true 啓用 dns 查詢日誌
      */
     dns?: boolean
+}
+export interface Strategy {
+    /**
+     * 內置 dns 設置，這只會對需要代理 域名查詢 生效
+     * {@link https://xtls.github.io/config/dns.html}
+     */
+    dns?: {
+        /**
+         * 使用什麼協議查詢 dns
+         * 
+         */
+        network?: 'udp' | 'tcp' | 'https',
+        /**
+         * 要查詢的記錄類型
+         */
+        queryStrategy?: 'ip' | 'v4' | 'v6',
+    },
+    /**
+     * 如何復用 tcp 連接，只有傳輸層爲 tcp ws httpupgrade 時才有效
+     * {@link https://xtls.github.io/config/outbound.html#muxobject}
+     */
+    mux?: {
+        enabled: true // 必須設置爲 true 才會啓用
+        concurrency: number // 單個 tcp 最多復用次數，128爲最大值
+        xudpConcurrency: number
+        xudpProxyUDP443: string
+    },
 }

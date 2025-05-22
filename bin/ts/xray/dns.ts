@@ -105,6 +105,8 @@ export function generateDNS(opts: ConfigureOptions<Userdata>, ips?: Array<string
     // 阻止訪問
     let block = new Rule().pushDomain(strategy.blockDomain)
     const routing = opts.userdata?.routing
+    const dns = opts?.userdata?.strategy?.dns
+    const network = dns?.network
 
     if (routing) {
         block.pushDomain(routing.blockDomain!)
@@ -123,12 +125,12 @@ export function generateDNS(opts: ConfigureOptions<Userdata>, ips?: Array<string
     if (proxy.isValid()) {
         servers.push(...[
             {
-                address: 'https://8.8.8.8/dns-query', // google
+                address: generateServer(network, '8.8.8.8'), // google
                 port: 53,
                 domains: proxy.domain,
             },
             {
-                address: 'https://1.1.1.1/dns-query', // cloudflare
+                address: generateServer(network, '1.1.1.1'), // cloudflare
                 port: 53,
                 domains: proxy.domain,
             },
@@ -161,28 +163,53 @@ export function generateDNS(opts: ConfigureOptions<Userdata>, ips?: Array<string
     switch (strategy.value) {
         case 5: // 直連優先
             pushDirect(servers, proxy, direct, block)
-            pushProxy(servers, proxy, direct, block)
+            pushProxy(servers, proxy, direct, block, network)
         case 6: // 直接連接
             pushDirectDefault(servers)
             break
         case 2: // 全部代理
-            pushProxyDefult(servers)
+            pushProxyDefult(servers, network)
             break
         case 1: // 默認策略
         case 4: // 代理優先
-            pushProxy(servers, proxy, direct, block)
+            pushProxy(servers, proxy, direct, block, network)
             pushDirect(servers, proxy, direct, block)
         case 3: // 代理公有 ip
         default:
-            pushProxyDefult(servers)
+            pushProxyDefult(servers, network)
             break
     }
     return {
         hosts: hosts,
         servers: servers,
+        queryStrategy: queryStrategy(dns?.queryStrategy)
     }
 }
-function pushProxy(servers: Array<string | Server>, proxy: Rule, direct: Rule, block: Rule) {
+function generateServer(network: string | undefined, address: string) {
+    switch (network) {
+        case 'tcp':
+            return `tcp://${address}`
+        case 'https':
+            return `https://${address}/dns-query`
+    }
+    return address
+}
+function queryStrategy(queryStrategy?: string) {
+    switch (queryStrategy) {
+        // case 'ip':
+        // case 'UseIP':
+        // return 'UseIP'
+
+        case 'v4':
+        case 'UseIPv4':
+            return 'UseIPv4'
+        case 'v6':
+        case 'UseIPv6':
+            return 'UseIPv6'
+    }
+    return 'UseIP'
+}
+function pushProxy(servers: Array<string | Server>, proxy: Rule, direct: Rule, block: Rule, network: string | undefined) {
     const rules: Array<string> = []
     for (const s of [
         'geosite:apple',
@@ -206,12 +233,12 @@ function pushProxy(servers: Array<string | Server>, proxy: Rule, direct: Rule, b
         if (rule.isValid()) {
             servers.push(...[
                 {
-                    address: 'https://8.8.8.8/dns-query', // google
+                    address: generateServer(network, '8.8.8.8'), // google
                     port: 53,
                     domains: rule.domain,
                 },
                 {
-                    address: 'https://1.1.1.1/dns-query', // cloudflare
+                    address: generateServer(network, '1.1.1.1'), // cloudflare
                     port: 53,
                     domains: rule.domain,
                 },
@@ -249,11 +276,11 @@ function pushDirect(servers: Array<string | Server>, proxy: Rule, direct: Rule, 
         }
     }
 }
-function pushProxyDefult(servers: Array<string | Server>) {
+function pushProxyDefult(servers: Array<string | Server>, network: string | undefined) {
     // 未匹配域名 使用非西朝 dns
     servers.push(...[
-        'https://8.8.8.8/dns-query', // google
-        'https://1.1.1.1/dns-query', // cloudflare
+        generateServer(network, '8.8.8.8'), // google
+        generateServer(network, '1.1.1.1'), // cloudflare
     ])
 }
 function pushDirectDefault(servers: Array<string | Server>) {

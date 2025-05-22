@@ -63,20 +63,40 @@ export function generateOutbounds(opts: ConfigureOptions<Userdata>, ip?: string)
     return opts.strategy.value < 5 ? [outbound, freedom, blackhole, dns] : [freedom, outbound, blackhole, dns]
 }
 function generateOutbound(opts: ConfigureOptions<Userdata>, ip?: string): Outbounds {
+    let outbound: Outbounds
     switch (opts.environment.scheme) {
         case 'vless':
-            return generateVLess(opts, ip)
+            outbound = generateVLess(opts, ip)
+            break
         case 'vmess':
-            return generateVMess(opts, ip)
+            outbound = generateVMess(opts, ip)
+            break
         case 'trojan':
-            return generateTrojan(opts, ip)
+            outbound = generateTrojan(opts, ip)
+            break
         case 'ss':
-            return generateShadowsocks(opts, ip)
+            outbound = generateShadowsocks(opts, ip)
+            break
         case 'socks':
             return generateSocks(opts, ip)
         default:
             throw new Error(`unknow scheme: ${opts.environment.scheme}`)
     }
+
+    const protocol = opts.fileds.protocol ?? ''
+    switch (protocol) {
+        case '':
+        case 'tcp':
+        case 'raw':
+        case 'ws':
+        case 'httpupgrade':
+            const mux = opts.userdata?.strategy?.mux
+            if (mux && mux.enabled) {
+                outbound.mux = mux as any
+            }
+            break
+    }
+    return outbound
 }
 function generateSocks(opts: ConfigureOptions<Userdata>, ip?: string): Socks {
     const fileds = opts.fileds
@@ -238,6 +258,7 @@ class OutboundStream {
         const protocol = fileds.protocol ?? ''
         switch (protocol) {
             case '':
+            case 'raw':
             case 'tcp':
                 result.network = 'tcp';
                 (result as TCPStream).tcpSettings = {

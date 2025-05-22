@@ -41,20 +41,40 @@ function generateOutbounds(opts, ip) {
 }
 exports.generateOutbounds = generateOutbounds;
 function generateOutbound(opts, ip) {
+    var _a, _b, _c;
+    let outbound;
     switch (opts.environment.scheme) {
         case 'vless':
-            return generateVLess(opts, ip);
+            outbound = generateVLess(opts, ip);
+            break;
         case 'vmess':
-            return generateVMess(opts, ip);
+            outbound = generateVMess(opts, ip);
+            break;
         case 'trojan':
-            return generateTrojan(opts, ip);
+            outbound = generateTrojan(opts, ip);
+            break;
         case 'ss':
-            return generateShadowsocks(opts, ip);
+            outbound = generateShadowsocks(opts, ip);
+            break;
         case 'socks':
             return generateSocks(opts, ip);
         default:
             throw new Error(`unknow scheme: ${opts.environment.scheme}`);
     }
+    const protocol = (_a = opts.fileds.protocol) !== null && _a !== void 0 ? _a : '';
+    switch (protocol) {
+        case '':
+        case 'tcp':
+        case 'raw':
+        case 'ws':
+        case 'httpupgrade':
+            const mux = (_c = (_b = opts.userdata) === null || _b === void 0 ? void 0 : _b.strategy) === null || _c === void 0 ? void 0 : _c.mux;
+            if (mux && mux.enabled) {
+                outbound.mux = mux;
+            }
+            break;
+    }
+    return outbound;
 }
 function generateSocks(opts, ip) {
     var _a, _b;
@@ -221,6 +241,7 @@ class OutboundStream {
         const protocol = (_f = fileds.protocol) !== null && _f !== void 0 ? _f : '';
         switch (protocol) {
             case '':
+            case 'raw':
             case 'tcp':
                 result.network = 'tcp';
                 result.tcpSettings = {
