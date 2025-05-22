@@ -43,12 +43,12 @@ function generateDNS(opts, ips) {
     if (proxy.isValid()) {
         servers.push(...[
             {
-                address: '8.8.8.8',
+                address: 'https://8.8.8.8/dns-query',
                 port: 53,
                 domains: proxy.domain,
             },
             {
-                address: '1.1.1.1',
+                address: 'https://1.1.1.1/dns-query',
                 port: 53,
                 domains: proxy.domain,
             },
@@ -127,12 +127,12 @@ function pushProxy(servers, proxy, direct, block) {
         if (rule.isValid()) {
             servers.push(...[
                 {
-                    address: '8.8.8.8',
+                    address: 'https://8.8.8.8/dns-query',
                     port: 53,
                     domains: rule.domain,
                 },
                 {
-                    address: '1.1.1.1',
+                    address: 'https://1.1.1.1/dns-query',
                     port: 53,
                     domains: rule.domain,
                 },
@@ -173,8 +173,8 @@ function pushDirect(servers, proxy, direct, block) {
 function pushProxyDefult(servers) {
     // 未匹配域名 使用非西朝 dns
     servers.push(...[
-        '8.8.8.8',
-        '1.1.1.1', // cloudflare
+        'https://8.8.8.8/dns-query',
+        'https://1.1.1.1/dns-query', // cloudflare
     ]);
 }
 function pushDirectDefault(servers) {

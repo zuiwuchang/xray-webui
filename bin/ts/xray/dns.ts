@@ -123,12 +123,12 @@ export function generateDNS(opts: ConfigureOptions<Userdata>, ips?: Array<string
     if (proxy.isValid()) {
         servers.push(...[
             {
-                address: '8.8.8.8', // google
+                address: 'https://8.8.8.8/dns-query', // google
                 port: 53,
                 domains: proxy.domain,
             },
             {
-                address: '1.1.1.1', // cloudflare
+                address: 'https://1.1.1.1/dns-query', // cloudflare
                 port: 53,
                 domains: proxy.domain,
             },
@@ -206,12 +206,12 @@ function pushProxy(servers: Array<string | Server>, proxy: Rule, direct: Rule, b
         if (rule.isValid()) {
             servers.push(...[
                 {
-                    address: '8.8.8.8', // google
+                    address: 'https://8.8.8.8/dns-query', // google
                     port: 53,
                     domains: rule.domain,
                 },
                 {
-                    address: '1.1.1.1', // cloudflare
+                    address: 'https://1.1.1.1/dns-query', // cloudflare
                     port: 53,
                     domains: rule.domain,
                 },
@@ -252,8 +252,8 @@ function pushDirect(servers: Array<string | Server>, proxy: Rule, direct: Rule, 
 function pushProxyDefult(servers: Array<string | Server>) {
     // 未匹配域名 使用非西朝 dns
     servers.push(...[
-        '8.8.8.8', // google
-        '1.1.1.1', // cloudflare
+        'https://8.8.8.8/dns-query', // google
+        'https://1.1.1.1/dns-query', // cloudflare
     ])
 }
 function pushDirectDefault(servers: Array<string | Server>) {

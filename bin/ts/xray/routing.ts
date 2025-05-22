@@ -247,7 +247,8 @@ export function generateRouting(opts: ConfigureOptions<Userdata>): Routing | und
             break
     }
     return {
-        domainStrategy: 'IPIfNonMatch',
+        // domainStrategy: 'IPIfNonMatch',
+        domainStrategy:'AsIs',
         rules: rules,
     }
 }

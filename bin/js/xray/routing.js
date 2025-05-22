@@ -138,7 +138,8 @@ function generateRouting(opts) {
             break;
     }
     return {
-        domainStrategy: 'IPIfNonMatch',
+        // domainStrategy: 'IPIfNonMatch',
+        domainStrategy: 'AsIs',
         rules: rules,
     };
 }
