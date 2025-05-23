@@ -232,6 +232,7 @@ class OutboundStream {
                     serverName: this._serverName(),
                     alpn: this._alpn(),
                     fingerprint: this._fingerprint(),
+                    allowInsecure: this.opts.userdata?.strategy?.allowInsecure ? true : false,
                 }
                 break
             case 'xtls':
@@ -240,6 +241,7 @@ class OutboundStream {
                     serverName: this._serverName(),
                     alpn: this._alpn(),
                     fingerprint: this._fingerprint(),
+                    allowInsecure: this.opts.userdata?.strategy?.allowInsecure ? true : false,
                 }
                 break
             case 'reality':
@@ -351,6 +353,11 @@ class OutboundStream {
         if (opts.userdata?.proxy?.tproxy && isLinux() && !isPort(opts.environment.port)) {
             result.sockopt = {
                 mark: opts?.userdata?.proxy?.mark ?? 99,
+                domainStrategy: "UseIP",
+            }
+        } else {
+            result.sockopt = {
+                domainStrategy: "UseIP",
             }
         }
         return result

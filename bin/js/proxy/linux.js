@@ -23,18 +23,35 @@ var __importStar = (this && this.__importStar) || function (mod) {
     return result;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.turnOffLinux = exports.turnOnLinux = void 0;
+exports.turnStateLinux = exports.turnOffLinux = exports.turnOnLinux = void 0;
 const core = __importStar(require("xray/core"));
 const utils_1 = require("../xray/utils");
 const servers_1 = require("./servers");
 function turnOnLinux(opts) {
+    var _a, _b;
+    switch ((_b = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.strategy) === null || _b === void 0 ? void 0 : _b.proxy) {
+        case 'v6':
+            turnOnV6(opts);
+            break;
+        case 'v4v6':
+            turnOnV4(opts);
+            turnOnV6(opts);
+            break;
+        case 'v4':
+        default:
+            turnOnV4(opts);
+            break;
+    }
+}
+exports.turnOnLinux = turnOnLinux;
+function turnOnV4(opts) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     const port = (_c = (_b = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.proxy) === null || _b === void 0 ? void 0 : _b.port) !== null && _c !== void 0 ? _c : 0;
     if (!(0, utils_1.isPort)(port)) {
         throw new Error('proxy port invalid');
     }
-    const servers = (0, servers_1.getServers)();
-    console.log('servers', servers);
+    const servers = (0, servers_1.getServers)().filter((s) => s.includes('.'));
+    console.log('v4 servers', servers);
     let message;
     const strs = [
         `#!/bin/bash
@@ -157,8 +174,167 @@ iptables -t nat -A OUTPUT -p tcp -m tcp --dport 53 -j DNAT --to-destination ${dn
     });
     console.log(message);
 }
-exports.turnOnLinux = turnOnLinux;
+function turnOnV6(opts) {
+    var _a, _b, _c, _d, _e, _f, _g, _h;
+    const port = (_c = (_b = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.proxy) === null || _b === void 0 ? void 0 : _b.port) !== null && _c !== void 0 ? _c : 0;
+    if (!(0, utils_1.isPort)(port)) {
+        throw new Error('proxy port invalid');
+    }
+    const servers = (0, servers_1.getServers)().filter((s) => s.includes(':'));
+    console.log('v6 servers', servers);
+    let message;
+    const strs = [
+        `#!/bin/bash
+set -e
+
+PROXY_PORT=${port}
+# https://www.iana.org/assignments/iana-ipv6-special-registry/iana-ipv6-special-registry.xhtml
+Whitelist=(
+    ::1/128
+    fe80::/10
+)
+`
+    ];
+    const mark = (_f = (_e = (_d = opts.userdata) === null || _d === void 0 ? void 0 : _d.proxy) === null || _e === void 0 ? void 0 : _e.mark) !== null && _f !== void 0 ? _f : 99;
+    if ((_h = (_g = opts.userdata) === null || _g === void 0 ? void 0 : _g.proxy) === null || _h === void 0 ? void 0 : _h.tproxy) {
+        strs.push(`# 添加路由表 106
+if [[ \`ip -6 rule list  | egrep '0x1 lookup 106'\` == "" ]];then
+    ip -6 rule add fwmark 1 table 106
+fi
+# 爲路由表 106 設定規則
+if [[ \`ip -6 route list table 106 | egrep 'dev lo'\` == "" ]];then
+    ip -6 route add local ::/0 dev lo table 106
+fi
+
+# 已經設置過直接返回
+if [[ \`ip6tables-save |egrep '\\-A OUTPUT \\-p udp \\-j XRAY6_SELF'\` != "" ]];then
+    exit 0
+fi
+
+# 創建鏈
+ip6tables -t mangle -N XRAY6
+ip6tables -t mangle -N XRAY6_SELF
+ip6tables -t mangle -N XRAY6_DIVERT
+
+# 放行私有地址與廣播地址
+for whitelist in "\${Whitelist[@]}"
+do
+    ip6tables -t mangle -A XRAY6 -d "$whitelist" -j RETURN
+    ip6tables -t mangle -A XRAY6_SELF -d "$whitelist" -j RETURN
+done
+`);
+        if (servers.length > 0) {
+            strs.push("# 放行服務器地址");
+            for (const s of servers) {
+                strs.push(`ip6tables -t mangle -A XRAY6 -d "${s}" -j RETURN
+ip6tables -t mangle -A XRAY6_SELF -d "${s}" -j RETURN`);
+            }
+        }
+        strs.push(`
+# 可選的配置避免已有連接的包二次通過 tproxy 從而提升一些性能
+ip6tables -t mangle -A XRAY6_DIVERT -j MARK --set-mark 1
+ip6tables -t mangle -A XRAY6_DIVERT -j ACCEPT
+ip6tables -t mangle -I PREROUTING -p tcp -m socket -j XRAY6_DIVERT
+
+# 代理局域網設備 
+ip6tables -t mangle -A XRAY6 -p tcp -j TPROXY --on-port "$PROXY_PORT" --tproxy-mark 1 # tcp 到 tproxy 代理端口
+ip6tables -t mangle -A XRAY6 -p udp -j TPROXY --on-port "$PROXY_PORT" --tproxy-mark 1 # udp 到 tproxy 代理端口
+ip6tables -t mangle -A PREROUTING -j XRAY6 # 流量都重定向到 XRAY 鏈
+
+# 代理本機
+ip6tables -t mangle -A XRAY6_SELF -m mark --mark ${mark} -j RETURN # 放行所有 mark ${mark} 的流量
+ip6tables -t mangle -A XRAY6_SELF -j MARK --set-mark 1 # 爲流量設置 mark 1
+ip6tables -t mangle -A OUTPUT -p tcp -j XRAY6_SELF # tcp 到 XRAY_SELF 鏈
+ip6tables -t mangle -A OUTPUT -p udp -j XRAY6_SELF # udp 到 XRAY_SELF 鏈
+`);
+        message = ' turn on tproxy success';
+    }
+    else {
+        message = ' turn on redirect success';
+    }
+    core.exec({
+        name: 'bash',
+        args: ['-c', strs.join("\n")]
+    });
+    console.log(message);
+}
 function turnOffLinux(opts) {
+    var _a, _b;
+    switch ((_b = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.strategy) === null || _b === void 0 ? void 0 : _b.proxy) {
+        case 'v6':
+            turnOffV6(opts);
+            break;
+        case 'v4v6':
+            turnOffV4(opts);
+            turnOffV6(opts);
+            break;
+        case 'v4':
+        default:
+            turnOffV4(opts);
+            break;
+    }
+}
+exports.turnOffLinux = turnOffLinux;
+function turnOffV6(opts) {
+    var _a, _b;
+    const strs = [];
+    let message;
+    if ((_b = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.proxy) === null || _b === void 0 ? void 0 : _b.tproxy) {
+        strs.push(`#!/bin/bash
+set -e
+
+# 清空 XRAY_DIVERT
+if [[ \`ip6tables-save | egrep '\\-A PREROUTING \\-p tcp \\-m socket \\-j XRAY6_DIVERT'\` != "" ]];then
+    ip6tables -t mangle -D PREROUTING -p tcp -m socket -j XRAY6_DIVERT
+fi
+if [[ \`ip6tables-save | egrep XRAY6_DIVERT\` != "" ]];then
+    ip6tables -t mangle -F XRAY6_DIVERT
+    ip6tables -t mangle -X XRAY6_DIVERT
+fi
+
+# 清空 XRAY_SELF 
+if [[ \`ip6tables-save | egrep '\\-A OUTPUT \\-p tcp \\-j XRAY6_SELF'\` != "" ]];then
+    ip6tables -t mangle -D OUTPUT -p tcp -j XRAY6_SELF
+fi
+if [[ \`ip6tables-save | egrep '\\-A OUTPUT \\-p udp \\-j XRAY6_SELF'\` != "" ]];then
+    ip6tables -t mangle -D OUTPUT -p udp -j XRAY6_SELF
+fi
+if [[ \`ip6tables-save | egrep XRAY6_SELF\` != "" ]];then
+    ip6tables -t mangle -F XRAY6_SELF
+    ip6tables -t mangle -X XRAY6_SELF
+fi
+
+# 清空 XRAY 
+if [[ \`ip6tables-save | egrep '\\-A PREROUTING \\-j XRAY6'\` != "" ]];then
+    ip6tables -t mangle -D PREROUTING -j XRAY6
+fi
+if [[ \`ip6tables-save | egrep XRAY6\` != "" ]];then
+    ip6tables -t mangle -F XRAY6
+    ip6tables -t mangle -X XRAY6
+fi
+
+# 刪除 路由規則
+if [[ \`ip -6 route list table 106 | egrep 'dev lo'\` != "" ]];then
+    ip -6 route del local ::/0 dev lo table 106
+fi
+# 刪除 路由表
+if [[ \`ip -6 rule list  | egrep '0x1 lookup 106'\` != "" ]];then
+    ip -6 rule del fwmark 1 table 106
+fi
+`);
+        message = ' turn off tproxy success';
+    }
+    else {
+        message = ' turn off redirect success';
+    }
+    core.exec({
+        name: 'bash',
+        args: ['-c', strs.join("\n")],
+        log: true,
+    });
+    console.log(message);
+}
+function turnOffV4(opts) {
     var _a, _b, _c, _d, _e;
     const strs = [];
     let message;
@@ -237,4 +413,30 @@ fi`);
     });
     console.log(message);
 }
-exports.turnOffLinux = turnOffLinux;
+function turnStateLinux() {
+    const str = `#!/bin/bash
+set -e
+if [ -f /sbin/ip6tables-save ];then
+    echo '--- v6 state ---'
+    ip6tables-save
+    echo ''
+fi
+
+if [ -f /sbin/iptables-save ];then
+    echo '--- v4 state ---'
+    iptables-save
+fi
+`;
+    const { output, error, code } = core.exec({
+        name: 'bash',
+        args: ['-c', str],
+        safe: true,
+    });
+    if (error) {
+        return ` code : ${code}\nerror : ${error}\noutput: ${output}`;
+    }
+    else {
+        return `${output}`;
+    }
+}
+exports.turnStateLinux = turnStateLinux;

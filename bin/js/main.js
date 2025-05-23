@@ -68,16 +68,7 @@ class myProvider {
     firewall() {
         let s;
         if ((0, utils_1.isLinux)()) {
-            const { output, error, code } = core.exec({
-                name: 'iptables-save',
-                safe: true,
-            });
-            if (error) {
-                s = ` code : ${code}\nerror : ${error}\noutput: ${output}`;
-            }
-            else {
-                s = `${output}`;
-            }
+            s = (0, linux_1.turnStateLinux)();
         }
         else if ((0, utils_1.isWindows)()) {
             const { output, error, code } = core.exec({
@@ -143,6 +134,7 @@ ${s}
      * 返回 xray 設定
      */
     configure(opts) {
+        var _a, _b;
         let ips;
         let ip;
         const address = opts.fileds.address;
@@ -153,7 +145,33 @@ ${s}
                 ips: arrs,
             }));
             ips = arrs;
-            ip = arrs[0];
+            const connectIP = (_b = (_a = opts.userdata) === null || _a === void 0 ? void 0 : _a.strategy) === null || _b === void 0 ? void 0 : _b.connectIP;
+            if (!connectIP || arrs.length == 1) {
+                ip = arrs[0];
+            }
+            else {
+                switch (connectIP) {
+                    case "first":
+                        ip = arrs[0];
+                        break;
+                    case "v6":
+                        ip = v6(arrs);
+                        break;
+                    case "v4random":
+                        ip = v4random(arrs);
+                        break;
+                    case "v6random":
+                        ip = v6random(arrs);
+                        break;
+                    case "random":
+                        ip = arrs[Math.floor(Math.random() * arrs.length)];
+                        break;
+                    case "v4":
+                    default:
+                        ip = v4(arrs);
+                        break;
+                }
+            }
         }
         const o = {
             log: (0, log_1.generateLog)(opts),
@@ -234,7 +252,7 @@ local accounts = [
     },
 ];
 {
-    // 一些全局的策略
+    // 一些全局的策略，用於指導如何生成配置
     strategy: {
         // 內置 dns 設置，這只會對需要代理 域名查詢 生效
         dns: {
@@ -252,7 +270,23 @@ local accounts = [
             concurrency: 128, // 單個 tcp 最多復用次數，128爲最大值
             xudpConcurrency: 1024, // 爲 udp 啓用單獨的連接復用，單個 tcp 最大復用 1024 次
             xudpProxyUDP443: 'reject', // 拒絕 http3，通常瀏覽器會回退到 http2
-        }
+        },
+        // allowInsecure: true, // 如果爲 true 在進行 tls 握手時不會驗證證書有效性
+
+        // 只對linux有效，指定要對 v4 v6 哪個ip協議啓用透明代理
+        // 如果啓用 v6，記得要將 strategy.dns.queryStrategy 也啓用 v6，另外也要確保服務器和本地都能支持 ipv6，並且服務器代理配置中啓用了 v6支持
+        proxy: 'v4', // 默認行爲，只對 ipv4 啓用透明代理
+        // proxy: 'v6', // 只對 ipv6 啓用透明代理
+        // proxy: 'v4v6', // 同時啓用對 v4 v6 的透明代理
+        
+
+        // 這個字段定義了，當使用域名連接服務器時，域名被解析爲多個ip時如何選擇連接的 ip
+        // connectIP: 'first', // 使用解析到的第一個 ip，這是2025-05-23之前腳本的默認行爲
+        connectIP: 'v4', // 這是2025-05-23之後腳本的默認行爲，使用解析到的第一個 v4 地址，如果沒有 v4 地址則使用解析到的第一個 ip
+        // connectIP: 'v6', // 使用解析到的第一個 v6 地址，如果沒有 v6 地址則使用解析到的第一個 ip
+        // connectIP: 'v4random', // 使用解析到的一個隨機 v4 地址，如果沒有 v4 地址則使用解析到的第一個 ip
+        // connectIP: 'v6random', // 使用解析到的一個隨機 v6 地址，如果沒有 v6 地址則使用解析到的第一個 ip
+        // connectIP: 'random', // 使用解析到的一個隨機地址
     },
     // 日誌設定
     log: {
@@ -361,7 +395,7 @@ local accounts = [
             // 'geoip:cn',
         ],/**/
         // 要禁止訪問的 域名，忽略策略設定，這些 域名 將始終被禁止訪問
-        /**/
+        /**
         blockDomain: [
             'geosite:category-ads',
             // 'geosite:category-ads-all',
@@ -370,4 +404,44 @@ local accounts = [
 }`,
         };
     }
+}
+function v4(ips) {
+    for (const ip of ips) {
+        if (ip.includes('.')) {
+            return ip;
+        }
+    }
+    return ips[0];
+}
+function v6(ips) {
+    for (const ip of ips) {
+        if (ip.includes(':')) {
+            return ip;
+        }
+    }
+    return ips[0];
+}
+function v4random(ips) {
+    const arrs = ips.filter((v) => v.includes('.'));
+    switch (arrs.length) {
+        case 0:
+            break;
+        case 1:
+            return arrs[0];
+        default:
+            return arrs[Math.floor(Math.random() * arrs.length)];
+    }
+    return ips[0];
+}
+function v6random(ips) {
+    const arrs = ips.filter((v) => v.includes(':'));
+    switch (arrs.length) {
+        case 0:
+            break;
+        case 1:
+            return arrs[0];
+        default:
+            return arrs[Math.floor(Math.random() * arrs.length)];
+    }
+    return ips[0];
 }

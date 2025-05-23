@@ -199,7 +199,7 @@ class OutboundStream {
         this.opts = opts;
     }
     generate() {
-        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q;
         const fileds = this.opts.fileds;
         const result = {};
         const security = (_a = fileds.security) !== null && _a !== void 0 ? _a : '';
@@ -215,6 +215,7 @@ class OutboundStream {
                     serverName: this._serverName(),
                     alpn: this._alpn(),
                     fingerprint: this._fingerprint(),
+                    allowInsecure: ((_c = (_b = this.opts.userdata) === null || _b === void 0 ? void 0 : _b.strategy) === null || _c === void 0 ? void 0 : _c.allowInsecure) ? true : false,
                 };
                 break;
             case 'xtls':
@@ -223,22 +224,23 @@ class OutboundStream {
                     serverName: this._serverName(),
                     alpn: this._alpn(),
                     fingerprint: this._fingerprint(),
+                    allowInsecure: ((_e = (_d = this.opts.userdata) === null || _d === void 0 ? void 0 : _d.strategy) === null || _e === void 0 ? void 0 : _e.allowInsecure) ? true : false,
                 };
                 break;
             case 'reality':
                 result.security = security;
                 result.realitySettings = {
                     serverName: this._serverName(),
-                    fingerprint: (_b = this._fingerprint()) !== null && _b !== void 0 ? _b : 'random',
-                    publicKey: (_c = fileds.publicKey) !== null && _c !== void 0 ? _c : '',
-                    shortID: (_d = fileds.shortID) !== null && _d !== void 0 ? _d : '',
-                    spiderX: (_e = fileds.spiderX) !== null && _e !== void 0 ? _e : '',
+                    fingerprint: (_f = this._fingerprint()) !== null && _f !== void 0 ? _f : 'random',
+                    publicKey: (_g = fileds.publicKey) !== null && _g !== void 0 ? _g : '',
+                    shortID: (_h = fileds.shortID) !== null && _h !== void 0 ? _h : '',
+                    spiderX: (_j = fileds.spiderX) !== null && _j !== void 0 ? _j : '',
                 };
                 break;
             default:
                 throw new Error(`stream not implemented security: ${security}`);
         }
-        const protocol = (_f = fileds.protocol) !== null && _f !== void 0 ? _f : '';
+        const protocol = (_k = fileds.protocol) !== null && _k !== void 0 ? _k : '';
         switch (protocol) {
             case '':
             case 'raw':
@@ -330,9 +332,15 @@ class OutboundStream {
                 throw new Error(`stream not implemented protocol: ${protocol}`);
         }
         const opts = this.opts;
-        if (((_h = (_g = opts.userdata) === null || _g === void 0 ? void 0 : _g.proxy) === null || _h === void 0 ? void 0 : _h.tproxy) && (0, utils_1.isLinux)() && !(0, utils_1.isPort)(opts.environment.port)) {
+        if (((_m = (_l = opts.userdata) === null || _l === void 0 ? void 0 : _l.proxy) === null || _m === void 0 ? void 0 : _m.tproxy) && (0, utils_1.isLinux)() && !(0, utils_1.isPort)(opts.environment.port)) {
             result.sockopt = {
-                mark: (_l = (_k = (_j = opts === null || opts === void 0 ? void 0 : opts.userdata) === null || _j === void 0 ? void 0 : _j.proxy) === null || _k === void 0 ? void 0 : _k.mark) !== null && _l !== void 0 ? _l : 99,
+                mark: (_q = (_p = (_o = opts === null || opts === void 0 ? void 0 : opts.userdata) === null || _o === void 0 ? void 0 : _o.proxy) === null || _p === void 0 ? void 0 : _p.mark) !== null && _q !== void 0 ? _q : 99,
+                domainStrategy: "UseIP",
+            };
+        }
+        else {
+            result.sockopt = {
+                domainStrategy: "UseIP",
             };
         }
         return result;

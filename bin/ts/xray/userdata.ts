@@ -233,4 +233,18 @@ export interface Strategy {
         xudpConcurrency: number
         xudpProxyUDP443: string
     },
+    /**
+     * 如果爲 true 在進行 tls 握手時不會驗證證書有效性
+     */
+    allowInsecure?: boolean
+
+    /**
+     * 只對linux有效，指定要對 v4 v6 哪個ip協議啓用透明代理
+     */
+    proxy?: 'v4' | 'v6' | 'v4v6'
+
+    /**
+     * 定義了當域名存在多個 ip 時，如何選擇 ip 連接服務器
+     */
+    connectIP?: 'first' | 'v4' | 'v6' | 'v4random' | 'v6random' | 'random'
 }
