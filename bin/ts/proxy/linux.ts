@@ -221,7 +221,38 @@ ip6tables -t mangle -A OUTPUT -p udp -j XRAY6_SELF # udp 到 XRAY_SELF 鏈
 `)
         message = ' turn on tproxy success'
     } else {
+        strs.push(`# 已經設置過直接返回
+if [[ \`ip6tables-save |egrep '\\-A OUTPUT \\-p udp \\-j XRAY6_REDIRECT'\` != "" ]];then
+    exit 0
+fi
 
+# 設置 tcp
+ip6tables -t nat -N XRAY6_REDIRECT
+# 放行私有地址與廣播地址
+for whitelist in "\${Whitelist[@]}"
+do
+    ip6tables -t nat -A XRAY6_REDIRECT -d "$whitelist" -j RETURN
+done
+`)
+        if (servers.length > 0) {
+            strs.push("# 放行服務器地址")
+            for (const s of servers) {
+                strs.push(`ip6tables -t nat -A XRAY6_REDIRECT -d "${s}" -j RETURN`)
+            }
+        }
+        strs.push(`ip6tables -t nat -A XRAY6_REDIRECT -m mark --mark ${mark} -j RETURN # 放行所有 mark ${mark} 的流量
+        
+ip6tables -t nat -A XRAY6_REDIRECT -p tcp -j REDIRECT --to-ports "$PROXY_PORT" # tcp 到 tproxy 代理端口
+ip6tables -t nat -A PREROUTING -p tcp -j XRAY6_REDIRECT # 對局域網設備進行代理
+ip6tables -t nat -A OUTPUT -p tcp -j XRAY6_REDIRECT # 對本機進行代理
+`)
+        const dns = opts.userdata?.proxy?.dns6 ?? ''
+        if (dns != '') {
+            strs.push(`
+ip6tables -t nat -A OUTPUT -p udp -m udp --dport 53 -j DNAT --to-destination ${dns}
+ip6tables -t nat -A OUTPUT -p tcp -m tcp --dport 53 -j DNAT --to-destination ${dns}
+`)
+        }
         message = ' turn on redirect success'
     }
     core.exec({
@@ -293,7 +324,26 @@ fi
 `)
         message = ' turn off tproxy success'
     } else {
+        strs.push(`#!/bin/bash`)
+        const dns = opts.userdata?.proxy?.dns6 ?? ''
+        if (dns != '') {
+            strs.push(`ip6tables -t nat -D OUTPUT -p udp -m udp --dport 53 -j DNAT --to-destination ${dns}
+ip6tables -t nat -D OUTPUT -p tcp -m tcp --dport 53 -j DNAT --to-destination ${dns}
+`)
+        }
+        strs.push(`set -e
 
+# 清空 XRAY
+if ip6tables-save | grep -wq '\\-A PREROUTING \\-p tcp \\-j XRAY6_REDIRECT'; then
+    ip6tables -t nat -D PREROUTING -p tcp -j XRAY6_REDIRECT
+fi
+if ip6tables-save | grep -wq '\\-A OUTPUT \\-p tcp \\-j XRAY6_REDIRECT'; then
+    ip6tables -t nat -D OUTPUT -p tcp -j XRAY6_REDIRECT
+fi
+if ip6tables-save | grep -wq 'XRAY6_REDIRECT'; then
+    ip6tables -t nat -F XRAY6_REDIRECT
+    ip6tables -t nat -X XRAY6_REDIRECT
+fi`)
         message = ' turn off redirect success'
     }
     core.exec({

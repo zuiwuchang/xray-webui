@@ -83,9 +83,13 @@ export interface Proxy {
     mark?: number
 
     /**
-     * 只有在 linux 下使用 redirect 模式時有效，如果設置會攔截連接 53 端口的 udp/tcp 重定向到此值
+     * 只有在 linux 下使用 redirect 模式設置 v4 透明代理時有效，如果設置會攔截連接 53 端口的 udp/tcp 重定向到此值
      */
     dns?: string
+    /**
+     * 只有在 linux 下使用 redirect 模式設置 v6 透明代理時有效，如果設置會攔截連接 53 端口的 udp/tcp 重定向到此值
+     */
+    dns6?: string
     /**
      * 目前在 windows 下使用 tun2socks 實現透明代理，這裏是需要提供的一些網卡相關設定
      */
