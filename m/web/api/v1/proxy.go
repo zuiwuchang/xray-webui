@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/url"
 	"time"
@@ -30,6 +31,8 @@ func (h Proxy) Register(router *gin.RouterGroup) {
 	r.POST(`start/:subscription/:id`, h.Start)
 	r.DELETE(``, h.Stop)
 	r.GET(`listen`, h.CheckWebsocket, h.Listen)
+
+	r.POST(`test_tcp_once`, h.TestTcpOnce)
 }
 func (h Proxy) Test(c *gin.Context) {
 	ws, e := h.Websocket(c, nil)
@@ -138,6 +141,34 @@ func (h Proxy) TestOnce(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, map[string]any{
 		`result`: (int64)(duration / time.Millisecond),
+	})
+}
+func (h Proxy) TestTcpOnce(c *gin.Context) {
+	var o struct {
+		Remote string `json:"remote"`
+	}
+	e := h.Bind(c, &o)
+	if e != nil {
+		return
+	}
+
+	ctx := c.Request.Context()
+	e = ctx.Err()
+	if e != nil {
+		return
+	}
+
+	var dialer net.Dialer
+	at := time.Now()
+	conn, e := dialer.DialContext(ctx, `tcp`, o.Remote)
+	if e != nil {
+		c.String(http.StatusInternalServerError, e.Error())
+		return
+	}
+	conn.Close()
+	duration := time.Since(at)
+	c.JSON(http.StatusOK, map[string]any{
+		`result`: (int64)(duration/time.Millisecond) ,
 	})
 }
 func (h Proxy) Preview(c *gin.Context) {

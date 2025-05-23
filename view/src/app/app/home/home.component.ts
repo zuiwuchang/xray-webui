@@ -323,6 +323,122 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       })
     }
   }
+  onClickTestTCP(source: Source) {
+    if (this.disabled || source.disabled || source.data.length == 0) {
+      return
+    }
+    source.disabled = true
+    const scheme = window.location.protocol == 'https:' ? 'wss' : 'ws'
+    const url = `${scheme}://${window.location.host}/api/v1/proxy/test_tcp`
+    try {
+      const ws = new WebSocket(url)
+      this.ws_ = ws
+      let timer: any = setInterval(() => {
+        ws.send('{"what":-1}')
+      }, 1000 * 40)
+      const onclose = () => {
+        if (timer) {
+          clearInterval(timer)
+          timer = undefined
+        }
+        ws.close()
+        if (ws != this.ws_) {
+          return
+        }
+        this.ws_ = undefined
+
+        for (const data of source.data) {
+          data.disabled = false
+        }
+        source.disabled = false
+        this.toastService.add({
+          severity: 'error',
+          summary: this.translateService.instant(i18n.action.error),
+          detail: `WebSocket EOF`,
+        })
+      }
+      ws.onclose = () => onclose()
+      ws.onerror = () => onclose()
+
+      ws.onopen = () => {
+        if (ws != this.ws_) {
+          ws.close()
+          return
+        }
+        let i = source.data.length
+        ws.onmessage = (data) => {
+          if (ws != this.ws_) {
+            ws.close()
+            return
+          }
+          if (typeof data.data != "string") {
+            return
+          }
+          const resp: { code: number, error?: string, id?: string, duration?: number } = JSON.parse(data.data)
+          if (resp.code == 200) {
+            const id = resp.id!
+            for (const data of source.data) {
+              if (data.id == id) {
+                data.disabled = false
+                const err = resp.error
+                if (err) {
+                  data.error = err
+                } else {
+                  data.millisecond = resp.duration
+                }
+                break
+              }
+            }
+            if (i > 0) {
+              i--
+              if (!i) {
+                this.ws_ = undefined
+                for (const data of source.data) {
+                  data.disabled = false
+                }
+                source.disabled = false
+                ws.close()
+              }
+            }
+          } else {
+            if (this.isNotClosed) {
+              this.toastService.add({
+                severity: 'error',
+                summary: this.translateService.instant(i18n.action.error),
+                detail: resp.error!,
+              })
+            }
+            this.ws_ = undefined
+            for (const data of source.data) {
+              data.disabled = false
+            }
+            source.disabled = false
+            ws.close()
+          }
+        }
+        for (const data of source.data) {
+          data.disabled = true
+          data.error = undefined
+          data.millisecond = undefined
+        }
+        for (const data of source.data) {
+          ws.send(JSON.stringify({
+            what: 1,
+            id: `${data.id}`,
+            remote: data.remote,
+          }))
+        }
+      }
+    } catch (e) {
+      this.disabled = false
+      source.disabled = false
+      this.toastService.add({
+        severity: 'error',
+        summary: this.translateService.instant(i18n.action.error),
+        detail: `${e}`,
+      })
+    }
+  }
   onClickAdd(source: Source) {
     if (this.disabled) {
       return
@@ -576,6 +692,16 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
         },
       },
       {
+        label: 'TCP Ping',
+        icon: 'pi pi-directions',
+        command: () => {
+          if (!this.disabled && !source.disabled && !ele.disabled) {
+            this._testTCPOnce(source, ele)
+          }
+        },
+      },
+      { separator: true },
+      {
         label: translateService.instant(i18n.proxy.view),
         icon: 'pi pi-sync',
         command: () => {
@@ -740,18 +866,42 @@ export class HomeComponent extends Closed implements AfterViewInit, OnDestroy {
       dismissableMask: true,
     })
   }
+  private _testTCPOnce(source: Source, ele: Element) {
+    source.disabled = true
+    ele.disabled = true
+    ele.error = undefined
+    ele.millisecond = undefined
+    const delay = Delay.default(this)
+    console.log(ele)
+    this.httpClient.post<{ result: number }>(`/api/v1/proxy/test_tcp_once`, {
+      remote: ele.remote,
+    }).pipe(this.takeUntil()).subscribe({
+      next: (resp) => delay.do(() => {
+        ele.millisecond = resp.result
+        source.disabled = false
+        ele.disabled = false
+      }),
+      error: (e) => delay.do(() => {
+        source.disabled = false
+        ele.disabled = false
+        const err = getErrorString(e)
+        this.toastService.add({ severity: 'error', summary: this.translateService.instant(i18n.action.error), detail: err })
+        ele.error = err
+      }),
+    })
+  }
   private _testOnce(source: Source, ele: Element) {
     source.disabled = true
     ele.disabled = true
     ele.error = undefined
     ele.millisecond = undefined
     const delay = Delay.default(this)
+    console.log(ele)
     this.httpClient.post<{ result: number }>(`/api/v1/proxy/test_once`, {
       url: ele.rawURL,
     }).pipe(this.takeUntil()).subscribe({
       next: (resp) => delay.do(() => {
         ele.millisecond = resp.result
-
         source.disabled = false
         ele.disabled = false
       }),
@@ -1223,6 +1373,11 @@ class Element {
   name?: string
   describe?: string
   disabled = false
+
+  /**
+   * 遠程地址
+   */
+  remote?: string
   /**
    * 測試速度
    */
@@ -1281,22 +1436,20 @@ class Element {
     }
 
 
-    let host = fields.get('address') ?? ''
+    let remote = fields.get('address') ?? ''
     const port = fields.get('port') ?? ''
-    if (port !== '') {
-      if (host == '') {
-        host = port
-      } else {
-        host += `: ${port}`
-      }
+    if (remote.includes(':')) {
+      remote = `[${remote}]:${port}`
+    } else {
+      remote = `${remote}:${port}`
     }
+    this.remote = remote
+    describe.push(remote)
 
-    if (host != '') {
-      describe.push(host)
-    }
     this.describe = describe.join(' ')
 
     this.url = url
     this.metadata = md
   }
+
 }
