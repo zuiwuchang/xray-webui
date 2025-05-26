@@ -33,6 +33,7 @@ func (h Proxy) Register(router *gin.RouterGroup) {
 	r.GET(`listen`, h.CheckWebsocket, h.Listen)
 
 	r.POST(`test_tcp_once`, h.TestTcpOnce)
+	r.GET(`test_tcp`, h.CheckWebsocket, h.TestTcp)
 }
 func (h Proxy) Test(c *gin.Context) {
 	ws, e := h.Websocket(c, nil)
@@ -168,8 +169,50 @@ func (h Proxy) TestTcpOnce(c *gin.Context) {
 	conn.Close()
 	duration := time.Since(at)
 	c.JSON(http.StatusOK, map[string]any{
-		`result`: (int64)(duration/time.Millisecond) ,
+		`result`: (int64)(duration / time.Millisecond),
 	})
+}
+func (h Proxy) TestTcp(c *gin.Context) {
+	ws, e := h.Websocket(c, nil)
+	if e != nil {
+		return
+	}
+	defer ws.Close()
+	helper := js.NewTcpHelper()
+	go func() {
+		var req struct {
+			What   int    `json:"what"`
+			ID     string `json:"id"`
+			Remote string `json:"remote"`
+		}
+		var e error
+		for {
+			e = ws.ReadJSON(&req)
+			if e != nil {
+				break
+			}
+			if req.What == 1 {
+				// 添加任務
+				e = helper.Add(req.ID, req.Remote)
+				if e != nil {
+					break
+				}
+			}
+		}
+		helper.Close()
+	}()
+
+	for {
+		select {
+		case <-helper.Done():
+			return
+		case resp := <-helper.Message():
+			e = ws.WriteJSON(resp)
+			if e != nil {
+				return
+			}
+		}
+	}
 }
 func (h Proxy) Preview(c *gin.Context) {
 	var o struct {
