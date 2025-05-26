@@ -60,6 +60,9 @@ cp "$Dir/bin/xray-webui" "$Dir/docker/root/opt/xray-webui/"
 rm "$Dir/docker/root/opt/xray-webui/js" -rf
 cp "$Dir/bin/js" "$Dir/docker/root/opt/xray-webui/js"  -r
 
+upx "$Dir/docker/root/opt/xray-webui/xray-webui" 
+upx "$Dir/docker/root/opt/xray-webui/xray/xray" 
+
 args=(
     sudo docker build -t "\"$Docker:$Version\"" .
 )

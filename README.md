@@ -388,7 +388,7 @@ services:
 
   # xray 和 webui 用於爲容器提供透明代理
   xray:
-    image: king011/xray-webui:v0.0.4
+    image: king011/xray-webui:v0.0.9
     restart: always
     cap_add:
       - NET_ADMIN
@@ -444,7 +444,7 @@ android 電視的網關設置爲它，就可以在 android 電視上使用 youtu
              gateway: "192.168.1.1"
    services:
      xray:
-       image: king011/xray-webui:v0.0.4
+       image: king011/xray-webui:v0.0.9
        restart: always
        cap_add:
          - NET_ADMIN
