@@ -55,7 +55,7 @@ systemctl enable xray-webui.service
 systemctl start xray-webui.service
 
 # 關閉服務
-# systemctl start xray-webui.service
+# systemctl stop xray-webui.service
 
 # 查詢服務運行狀態
 systemctl status xray-webui.service
