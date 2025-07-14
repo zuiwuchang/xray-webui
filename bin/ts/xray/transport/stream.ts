@@ -16,12 +16,12 @@ export interface Stream {
      * * 'reality' xray 修改後的 tls 解決了 tls 指紋被識別 tls in tls 被識別等問題
      * @default 'none'
      */
-    security?: 'none' | 'tls' | 'reality' | 'xtls'
+    security?: 'none' | 'tls' | 'reality'
     /**
      * tls 設定，由 golang 提供
      */
     tlsSettings?: TLS
-    xtlsSettings?: TLS
+    // xtlsSettings?: TLS
     /**
      * reality 設定，由 xray 研發用於提供比直接的 tls 更隱蔽的傳輸方式
      */

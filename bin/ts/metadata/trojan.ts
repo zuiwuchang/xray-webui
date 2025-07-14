@@ -90,7 +90,7 @@ export const trojan: Metadata = {
             label: i18n.security,
             ui: 'select-editable',
             value: [
-                'xtls', 'tls', 'reality',
+                'tls', 'reality',
             ],
             class: 'col-12 md:col-4',
             from: {

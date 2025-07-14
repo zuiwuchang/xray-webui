@@ -42,6 +42,12 @@ export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inboun
                     udp: socks?.udp ?? false,
                     userLevel: 0,
                 },
+                sniffing: {
+                    enabled: true,
+                    destOverride: [
+                        'http', 'tls',
+                    ],
+                },
             })
         }
         port = userdata?.http?.port
@@ -63,6 +69,12 @@ export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inboun
                         }
                     }) : undefined,
                     userLevel: 0,
+                },
+                sniffing: {
+                    enabled: true,
+                    destOverride: [
+                        'http', 'tls',
+                    ],
                 },
             })
         }
@@ -103,7 +115,13 @@ export function generateInbounds(opts: ConfigureOptions<Userdata>): Array<Inboun
                         auth: 'noauth',
                         udp: true,
                         userLevel: 0,
-                    }
+                    },
+                    sniffing: {
+                        enabled: true,
+                        destOverride: [
+                            'http', 'tls',
+                        ],
+                    },
                 })
             }
         }

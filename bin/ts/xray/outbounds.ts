@@ -88,6 +88,9 @@ function generateOutbound(opts: ConfigureOptions<Userdata>, ip?: string): Outbou
         case '':
         case 'tcp':
         case 'raw':
+            if (opts.environment.scheme == 'vless' && (opts.fileds.flow ?? '') != "") {
+                return outbound
+            }
         case 'ws':
         case 'httpupgrade':
             const mux = opts.userdata?.strategy?.mux
@@ -229,15 +232,6 @@ class OutboundStream {
             case 'tls':
                 result.security = security
                 result.tlsSettings = {
-                    serverName: this._serverName(),
-                    alpn: this._alpn(),
-                    fingerprint: this._fingerprint(),
-                    allowInsecure: this.opts.userdata?.strategy?.allowInsecure ? true : false,
-                }
-                break
-            case 'xtls':
-                result.security = security
-                result.xtlsSettings = {
                     serverName: this._serverName(),
                     alpn: this._alpn(),
                     fingerprint: this._fingerprint(),

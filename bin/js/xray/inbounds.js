@@ -44,6 +44,12 @@ function generateInbounds(opts) {
                     udp: (_d = socks === null || socks === void 0 ? void 0 : socks.udp) !== null && _d !== void 0 ? _d : false,
                     userLevel: 0,
                 },
+                sniffing: {
+                    enabled: true,
+                    destOverride: [
+                        'http', 'tls',
+                    ],
+                },
             });
         }
         port = (_e = userdata === null || userdata === void 0 ? void 0 : userdata.http) === null || _e === void 0 ? void 0 : _e.port;
@@ -66,6 +72,12 @@ function generateInbounds(opts) {
                         };
                     }) : undefined,
                     userLevel: 0,
+                },
+                sniffing: {
+                    enabled: true,
+                    destOverride: [
+                        'http', 'tls',
+                    ],
                 },
             });
         }
@@ -107,7 +119,13 @@ function generateInbounds(opts) {
                         auth: 'noauth',
                         udp: true,
                         userLevel: 0,
-                    }
+                    },
+                    sniffing: {
+                        enabled: true,
+                        destOverride: [
+                            'http', 'tls',
+                        ],
+                    },
                 });
             }
         }

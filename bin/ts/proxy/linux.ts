@@ -432,7 +432,7 @@ fi`)
 }
 export function turnStateLinux(): string {
     const str = `#!/bin/bash
-set -e
+# set -e
 if [ -f /sbin/ip6tables-save ];then
     echo '--- v6 state ---'
     ip6tables-save
