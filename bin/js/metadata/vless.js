@@ -226,5 +226,16 @@ exports.vless = {
                 key: 'extra',
             },
         },
+        // encryption
+        {
+            key: 'encryption',
+            label: i18n_1.i18n.encryption,
+            ui: 'text',
+            class: 'col-12',
+            from: {
+                from: 'query',
+                key: 'encryption',
+            },
+        },
     ],
 };

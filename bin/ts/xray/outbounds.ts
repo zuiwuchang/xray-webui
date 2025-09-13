@@ -194,6 +194,7 @@ function generateVMess(opts: ConfigureOptions<Userdata>, ip?: string): VMess {
 }
 function generateVLess(opts: ConfigureOptions<Userdata>, ip?: string): VLess {
     const fileds: VLessFileds = opts.fileds
+    const encryption = opts.fileds.encryption ?? 'none'
     return {
         tag: 'out-proxy',
         protocol: 'vless',
@@ -205,7 +206,7 @@ function generateVLess(opts: ConfigureOptions<Userdata>, ip?: string): VLess {
                     users: [
                         {
                             id: fileds.userID!,
-                            encryption: 'none',
+                            encryption: encryption == '' ? 'none' : encryption,
                             flow: (fileds.flow ?? '') as any,
                             level: getUint(fileds.userLevel, 0),
                         },

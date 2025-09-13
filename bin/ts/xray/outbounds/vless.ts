@@ -30,7 +30,7 @@ export interface User {
     /**
      * 目前必須固定填寫爲 none，用以提示用戶 vless 本身是沒有加密的，它應該配合 tls 使用
      */
-    encryption: 'none'
+    encryption: 'none' | string
     /**
      * 流控
      * * 'none' or '' 使用普通的 tls

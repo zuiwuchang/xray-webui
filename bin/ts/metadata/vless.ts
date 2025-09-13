@@ -226,7 +226,17 @@ export const vless: Metadata = {
                 key: 'extra',
             },
         },
-
+        // encryption
+        {
+            key: 'encryption',
+            label: i18n.encryption,
+            ui: 'text',
+            class: 'col-12',
+            from: {
+                from: 'query',
+                key: 'encryption',
+            },
+        },
     ],
 }
 

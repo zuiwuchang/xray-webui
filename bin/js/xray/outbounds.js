@@ -173,8 +173,9 @@ function generateVMess(opts, ip) {
     };
 }
 function generateVLess(opts, ip) {
-    var _a;
+    var _a, _b;
     const fileds = opts.fileds;
+    const encryption = (_a = opts.fileds.encryption) !== null && _a !== void 0 ? _a : 'none';
     return {
         tag: 'out-proxy',
         protocol: 'vless',
@@ -186,8 +187,8 @@ function generateVLess(opts, ip) {
                     users: [
                         {
                             id: fileds.userID,
-                            encryption: 'none',
-                            flow: ((_a = fileds.flow) !== null && _a !== void 0 ? _a : ''),
+                            encryption: encryption == '' ? 'none' : encryption,
+                            flow: ((_b = fileds.flow) !== null && _b !== void 0 ? _b : ''),
                             level: (0, utils_1.getUint)(fileds.userLevel, 0),
                         },
                     ],
