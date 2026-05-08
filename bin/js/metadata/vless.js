@@ -237,5 +237,16 @@ exports.vless = {
                 key: 'encryption',
             },
         },
+        // finalmask 
+        {
+            key: 'finalmask',
+            label: i18n_1.i18n.finalmask,
+            ui: 'text',
+            class: 'col-12',
+            from: {
+                from: 'query',
+                key: 'fm',
+            },
+        },
     ],
 };

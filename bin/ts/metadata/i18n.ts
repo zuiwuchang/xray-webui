@@ -78,6 +78,11 @@ export const i18n = {
         'zh-Hans': '加密方式',
         'default': 'Encryption Method',
     },
+    finalmask: {
+        'zh-Hant': '通用流量僞裝',
+        'zh-Hans': '通用流量伪装',
+        'default': 'finalmask',
+    },
     publicKey: {
         default: 'publicKey',
     },

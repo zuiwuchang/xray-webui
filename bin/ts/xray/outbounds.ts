@@ -217,12 +217,23 @@ function generateVLess(opts: ConfigureOptions<Userdata>, ip?: string): VLess {
         streamSettings: new OutboundStream(opts).generate(),
     }
 }
-
+function getObject(a?: any) {
+    if (typeof a === "string") {
+        const s = a.trim()
+        if (s.startsWith('{') && s.endsWith('}')) {
+            return JSON.parse(s)
+        }
+    }
+}
 class OutboundStream {
     constructor(readonly opts: ConfigureOptions<Userdata>) { }
     generate(): Stream {
         const fileds = this.opts.fileds
         const result: Stream = {}
+        const finalmask = getObject(fileds.finalmask)
+        if (finalmask) {
+            result.finalmask = finalmask
+        }
         const security = fileds.security ?? ''
         switch (security) {
             case '':
@@ -245,7 +256,7 @@ class OutboundStream {
                     serverName: this._serverName(),
                     fingerprint: this._fingerprint() ?? 'random',
                     publicKey: fileds.publicKey ?? '',
-                    shortID: fileds.shortID ?? '',
+                    shortId: fileds.shortID ?? '',
                     spiderX: fileds.spiderX ?? '',
                 }
                 break
@@ -338,7 +349,7 @@ class OutboundStream {
                     mode: this._xhttpMode(),
                     host: this._serverName(),
                     path: this._path(),
-                    extra: this._xhttpExtra(),
+                    extra: getObject(fileds.extra),
                 }
                 break
             default:
@@ -356,14 +367,6 @@ class OutboundStream {
             }
         }
         return result
-    }
-    private _xhttpExtra(): any {
-        const fileds = this.opts.fileds
-        const val = fileds.extra ?? ''
-        if (val !== '') {
-            return JSON.parse(val)
-        }
-        return
     }
     private _xhttpMode(): string {
         const fileds = this.opts.fileds

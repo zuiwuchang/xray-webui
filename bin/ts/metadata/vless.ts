@@ -237,6 +237,17 @@ export const vless: Metadata = {
                 key: 'encryption',
             },
         },
+        // finalmask 
+        {
+            key: 'finalmask',
+            label: i18n.finalmask,
+            ui: 'text',
+            class: 'col-12',
+            from: {
+                from: 'query',
+                key: 'fm',
+            },
+        },
     ],
 }
 

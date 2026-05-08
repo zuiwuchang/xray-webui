@@ -198,6 +198,14 @@ function generateVLess(opts, ip) {
         streamSettings: new OutboundStream(opts).generate(),
     };
 }
+function getObject(a) {
+    if (typeof a === "string") {
+        const s = a.trim();
+        if (s.startsWith('{') && s.endsWith('}')) {
+            return JSON.parse(s);
+        }
+    }
+}
 class OutboundStream {
     constructor(opts) {
         this.opts = opts;
@@ -206,6 +214,10 @@ class OutboundStream {
         var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o;
         const fileds = this.opts.fileds;
         const result = {};
+        const finalmask = getObject(fileds.finalmask);
+        if (finalmask) {
+            result.finalmask = finalmask;
+        }
         const security = (_a = fileds.security) !== null && _a !== void 0 ? _a : '';
         switch (security) {
             case '':
@@ -228,7 +240,7 @@ class OutboundStream {
                     serverName: this._serverName(),
                     fingerprint: (_d = this._fingerprint()) !== null && _d !== void 0 ? _d : 'random',
                     publicKey: (_e = fileds.publicKey) !== null && _e !== void 0 ? _e : '',
-                    shortID: (_f = fileds.shortID) !== null && _f !== void 0 ? _f : '',
+                    shortId: (_f = fileds.shortID) !== null && _f !== void 0 ? _f : '',
                     spiderX: (_g = fileds.spiderX) !== null && _g !== void 0 ? _g : '',
                 };
                 break;
@@ -320,7 +332,7 @@ class OutboundStream {
                     mode: this._xhttpMode(),
                     host: this._serverName(),
                     path: this._path(),
-                    extra: this._xhttpExtra(),
+                    extra: getObject(fileds.extra),
                 };
                 break;
             default:
@@ -339,15 +351,6 @@ class OutboundStream {
             };
         }
         return result;
-    }
-    _xhttpExtra() {
-        var _a;
-        const fileds = this.opts.fileds;
-        const val = (_a = fileds.extra) !== null && _a !== void 0 ? _a : '';
-        if (val !== '') {
-            return JSON.parse(val);
-        }
-        return;
     }
     _xhttpMode() {
         var _a;

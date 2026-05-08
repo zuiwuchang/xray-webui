@@ -40,6 +40,7 @@ export interface Stream {
      * 透明代理相關設定
      */
     sockopt?: Sockopt
+    finalmask?: any
 }
 
 /**
@@ -198,7 +199,7 @@ export interface OutboundReality {
     /**
      * 對應 InboundReality.shortID 中的一個值
      */
-    shortID: string
+    shortId: string
     /**
      * 服務端私鑰對應的公鑰。 使用 ./xray x25519 -i "伺服器私鑰" 生成
      */
